@@ -4,7 +4,7 @@
 #include <unordered_set>
 #include <vector>
 #include <clang-c/Index.h>
-
+#include <utility>
 
 namespace meta::language
 {
@@ -23,6 +23,7 @@ namespace meta::language
 		CXCursor get_cursor() const;
 		CXCursorKind get_kind() const;
 		const std::string& get_name() const;
+		std::tuple<std::string, unsigned, unsigned> get_position() const;
 		node& get_parent() const;
 		friend class node_db;
 	private:

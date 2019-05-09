@@ -5,13 +5,6 @@
 namespace 
 {
 	
-	std::string to_string(const CXString &str)
-	{
-		auto temp = clang_getCString(str);
-		std::string result(temp);
-		clang_disposeString(str);
-		return result;
-	}
 	class cursor_hash
 	{
 	public:
@@ -48,11 +41,11 @@ namespace
 			const std::string& parent_name = get_qualified_name_from_cursor(parent);
 			if (parent_name.empty())
 			{
-				qualified_cache[in_cursor] = to_string(clang_getCursorDisplayName(in_cursor));
+				qualified_cache[in_cursor] = meta::utils::to_string(clang_getCursorDisplayName(in_cursor));
 			}
 			else
 			{
-				qualified_cache[in_cursor] = get_qualified_name_from_cursor(parent) + "::" + to_string(clang_getCursorDisplayName(in_cursor));
+				qualified_cache[in_cursor] = get_qualified_name_from_cursor(parent) + "::" + meta::utils::to_string(clang_getCursorDisplayName(in_cursor));
 			}
 			
 		}
@@ -67,7 +60,7 @@ namespace meta::language
 	node::node(CXCursor in_cursor)
 		: _cursor(in_cursor)
 		, _kind(in_cursor.kind)
-		, name(to_string(clang_getCursorDisplayName(in_cursor)))
+		, name(meta::utils::to_string(clang_getCursorDisplayName(in_cursor)))
 		, qualified_name(get_qualified_name_from_cursor(in_cursor))
 	{
 		if (in_cursor.kind == CXCursorKind::CXCursor_TranslationUnit)
@@ -112,6 +105,20 @@ namespace meta::language
 		});
 		return result;
 	}
+	std::tuple<std::string, unsigned, unsigned> node::get_position() const
+	{
+		auto range = clang_Cursor_getSpellingNameRange(_cursor, 0, 0);
+
+		auto start = clang_getRangeStart(range);
+
+		CXFile file;
+		unsigned line, column, offset;
+
+		clang_getFileLocation(start, &file, &line, &column, &offset);
+		std::string filename = utils::to_string(clang_getFileName(file));
+		return std::make_tuple(filename, line, column);
+
+	}
 	node_db& node_db::get_instance()
 	{
 		static node_db _instance;
@@ -127,7 +134,8 @@ namespace meta::language
 		}
 		auto temp_node = new node(_cursor);
 		_nodes[temp_node->get_qualified_name()] = temp_node;
-		utils::get_logger().debug("new node name {0} qualified name {1} kind {2}", to_string(clang_getCursorDisplayName(_cursor)), cur_name, _cursor.kind);
+		auto cursor_pos = temp_node->get_position();
+		utils::get_logger().debug("new node name {0} qualified name {1} kind {2} at file {3} row {4} col {5}", meta::utils::to_string(clang_getCursorDisplayName(_cursor)), cur_name, _cursor.kind, std::get<0>(cursor_pos), std::get<1>(cursor_pos), std::get<2>(cursor_pos));
 		return temp_node;
 	}
 	node_db::node_db()

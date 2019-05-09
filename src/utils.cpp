@@ -23,6 +23,17 @@ namespace
 
 namespace meta::utils
 {
+	std::string to_string(const CXString &str)
+	{
+		if (!str.data)
+		{
+			return "";
+		}
+		auto temp = clang_getCString(str);
+		std::string result(temp);
+		clang_disposeString(str);
+		return result;
+	}
 	std::string join(const std::vector<std::string>& param, const std::string& sep)
 	{
 		std::string result = "";
