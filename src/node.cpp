@@ -119,9 +119,15 @@ namespace meta::language
 	}
 	node* node_db::create_node(CXCursor _cursor)
 	{
+		auto& cur_name = get_qualified_name_from_cursor(_cursor);
+		auto cur_iter = _nodes.find(cur_name);
+		if (cur_iter != _nodes.end())
+		{
+			return cur_iter->second;
+		}
 		auto temp_node = new node(_cursor);
 		_nodes[temp_node->get_qualified_name()] = temp_node;
-		utils::get_logger().debug("new node {}", temp_node->get_qualified_name());
+		utils::get_logger().debug("new node name {0} qualified name {1} kind {2}", to_string(clang_getCursorDisplayName(_cursor)), cur_name, _cursor.kind);
 		return temp_node;
 	}
 	node_db::node_db()
