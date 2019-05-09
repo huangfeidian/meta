@@ -5,23 +5,7 @@
 namespace 
 {
 	
-	class cursor_hash
-	{
-	public:
-		std::size_t operator()(const CXCursor& in_cursor) const
-		{
-			return clang_hashCursor(in_cursor);
-		}
-
-	};
-	class cursor_equal
-	{
-	public:
-		bool operator()(const CXCursor& from, const CXCursor& to) const
-		{
-			return clang_equalCursors(from, to);
-		}
-	};
+	using namespace meta::language;
 	const std::string& get_qualified_name_from_cursor(CXCursor in_cursor)
 	{
 		static std::unordered_map< CXCursor, std::string, cursor_hash, cursor_equal> qualified_cache;
@@ -33,7 +17,7 @@ namespace
 		std::string result;
 		if (in_cursor.kind == CXCursorKind::CXCursor_TranslationUnit)
 		{
-			qualified_cache[in_cursor] = "";
+			qualified_cache[in_cursor] = meta::utils::to_string(clang_getCursorDisplayName(in_cursor));
 		}
 		else
 		{
@@ -45,7 +29,15 @@ namespace
 			}
 			else
 			{
-				qualified_cache[in_cursor] = get_qualified_name_from_cursor(parent) + "::" + meta::utils::to_string(clang_getCursorDisplayName(in_cursor));
+				if (parent.kind == CXCursorKind::CXCursor_TranslationUnit)
+				{
+					qualified_cache[in_cursor] = meta::utils::to_string(clang_getCursorDisplayName(in_cursor));
+				}
+				else
+				{
+					qualified_cache[in_cursor] = get_qualified_name_from_cursor(parent) + "::" + meta::utils::to_string(clang_getCursorDisplayName(in_cursor));
+				}
+				
 			}
 			
 		}
@@ -126,16 +118,16 @@ namespace meta::language
 	}
 	node* node_db::create_node(CXCursor _cursor)
 	{
-		auto& cur_name = get_qualified_name_from_cursor(_cursor);
-		auto cur_iter = _nodes.find(cur_name);
+
+		auto cur_iter = _nodes.find(_cursor);
 		if (cur_iter != _nodes.end())
 		{
 			return cur_iter->second;
 		}
 		auto temp_node = new node(_cursor);
-		_nodes[temp_node->get_qualified_name()] = temp_node;
+		_nodes[_cursor] = temp_node;
 		auto cursor_pos = temp_node->get_position();
-		utils::get_logger().debug("new node name {0} qualified name {1} kind {2} at file {3} row {4} col {5}", meta::utils::to_string(clang_getCursorDisplayName(_cursor)), cur_name, _cursor.kind, std::get<0>(cursor_pos), std::get<1>(cursor_pos), std::get<2>(cursor_pos));
+		utils::get_logger().debug("new node name {0} qualified name {1} kind {2} at file {3} row {4} col {5}", temp_node->get_name(), temp_node->get_qualified_name(), _cursor.kind, std::get<0>(cursor_pos), std::get<1>(cursor_pos), std::get<2>(cursor_pos));
 		return temp_node;
 	}
 	node_db::node_db()
