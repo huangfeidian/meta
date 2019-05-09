@@ -6,24 +6,35 @@
 #include <clang-c/Index.h>
 
 
-namespace meta
+namespace meta::language
 {
-	class language_node
+	class node
 	{
 	public:
-		std::uint32_t _id;
 		std::string name;	
-		language_node* _parent;
+		std::string qualified_name;
+		node* _parent;
 		CXTypeKind _kind;
 		CXCursor _cursor; 
-		std::vector<language_node*> _children;
-		const static std::uint32_t invalid = 0;
+		std::vector<node*> _children;
+		std::vector<node*> get_children_with_kind(CXTypeKind _filter_kind) const;
+		const std::vector<node*> get_all_children() const;
+		const std::string& get_qualified_name() const;
+		CXCursor get_cursor() const;
+		CXTypeKind get_kind() const;
+		const std::string& get_name();
+		node& get_parent() const;
+
 	};
 
 	class node_db
 	{
+	private:
+		node_db();
 	protected:
-		std::unordered_map<std::uint32_t, language_node*> _nodes;
-
+		std::unordered_map<std::string, node*> _nodes;
+	public:
+		node* create_node(CXCursor _cursor);
+		static node_db& get_instance();
 	};
 }
