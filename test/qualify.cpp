@@ -2,6 +2,19 @@
 #include <iostream>
 using namespace std;
 using namespace meta;
+bool interested_kind(CXCursorKind _cur_kind)
+{
+	switch (_cur_kind)
+	{
+	case CXCursor_ClassDecl:
+	case CXCursor_StructDecl:
+	case CXCursor_EnumDecl:
+	case CXCursor_FunctionDecl:
+		return true;
+	default:
+		return false;
+	}
+}
 int main(int argc, char* argv[])
 {
 	CXIndex m_index;
@@ -27,7 +40,7 @@ int main(int argc, char* argv[])
 		// cout << "cur_cursor kind " << cur.kind << endl;
 		if (cur.kind == CXCursor_LastPreprocessing)
 			return CXChildVisit_Break;
-		if (clang_isCursorDefinition(cur) && (cur.kind == CXCursor_ClassDecl || cur.kind == CXCursor_StructDecl))
+		if (clang_isCursorDefinition(cur) && interested_kind(cur.kind))
 		{
 			language::node_db::get_instance().create_node(cur);
 		}
