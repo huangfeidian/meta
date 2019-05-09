@@ -1,8 +1,12 @@
-#include "name_space.h"
+﻿#include "name_space.h"
 
 namespace meta
 {
 	using std::swap;
+	name_space::name_space()
+	{
+
+	}
 	bool name_space::is_anonymous() const
 	{
 		return _name.empty();
@@ -88,7 +92,7 @@ namespace meta
 	}
 	const name_space& name_space_db::create_alias_name_space(const std::string& in_name, std::uint32_t in_upper_ns, std::uint32_t in_alias_ns)
 	{
-		
+		return name_space();
 	}
 
 

@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include <vector>
 #include <unordered_map>
 namespace meta
@@ -10,7 +10,7 @@ namespace meta
 		std::string get_full_name() const;
 		bool is_anonymous() const;
 		bool is_alias() const;
-	private:
+	public:
 		name_space();
 		name_space(std::uint32_t in_id, const std::string& in_name, std::uint32_t in_alias_id, std::uint32_t in_upper_ns);
 		name_space& operator=(const name_space& other);
