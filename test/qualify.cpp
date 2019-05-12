@@ -10,6 +10,7 @@ bool interested_kind(CXCursorKind _cur_kind)
 	case CXCursor_StructDecl:
 	case CXCursor_EnumDecl:
 	case CXCursor_FunctionDecl:
+	case CXCursor_Namespace:
 		return true;
 	default:
 		return false;
@@ -32,7 +33,7 @@ int main(int argc, char* argv[])
 	}
 	bool display_diag = true;
 	m_index = clang_createIndex(true, display_diag);
-	std::string file_path = "test.cpp";
+	std::string file_path = "../test/test.cpp";
 	m_translationUnit = clang_createTranslationUnitFromSourceFile(m_index, file_path.c_str(), static_cast<int>(cstr_arguments.size()), cstr_arguments.data(), 0, nullptr);
 	auto cursor = clang_getTranslationUnitCursor(m_translationUnit);
 	auto visitor = [](CXCursor cur, CXCursor parent, CXClientData data)
