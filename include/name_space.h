@@ -1,42 +1,27 @@
 ﻿#pragma once
 #include <vector>
 #include <unordered_map>
-namespace meta
+#include <unordered_set>
+#include <vector>
+#include "node.h"
+
+namespace meta::language
 {
 	class name_space
 	{
-	public:
 
-		std::string get_full_name() const;
-		bool is_anonymous() const;
-		bool is_alias() const;
 	public:
-		name_space();
-		name_space(std::uint32_t in_id, const std::string& in_name, std::uint32_t in_alias_id, std::uint32_t in_upper_ns);
-		name_space& operator=(const name_space& other);
-		name_space(const name_space& other);
-		std::uint32_t _id;
-		std::string _name;
-		std::uint32_t _alias_id; // if the namespace is not alias _alias == _id
-		std::uint32_t _upper_ns;
-		friend class name_space_db;
-		friend void swap(name_space& a , name_space& b);
-	};
-	class name_space_db
-	{
+		using name_space_set = std::unordered_set<node*, cursor_hash, cursor_equal>;
+		const std::string& qualified_name;
+		const std::string& name;
+		const name_space_set& get_synonymouses() const;
+		bool add_synonymous(node* _in_node);
+		static const name_space_set& get_synonymous_name_spaces(const std::string& in_qualified_name);
+
 	private:
-		name_space_db();
-		name_space_db(const name_space_db& other) = delete;
-		std::unordered_map<std::uint32_t, name_space> all_namespaces;
-		std::unordered_map<std::uint32_t, std::uint32_t> _upper_ns;
-		std::unordered_map<std::uint32_t, std::vector<std::uint32_t>> _nest_ns;
-		std::uint32_t _name_space_counter;
-	public:
-		const name_space& get_name_space(std::uint32_t in_ns_id) const;
-		const name_space& create_name_space(const std::string& in_name, std::uint32_t in_upper_ns);
-		const name_space& create_alias_name_space(const std::string& in_name, std::uint32_t in_upper_ns, std::uint32_t in_alias_ns);
-		static name_space_db& get_instance();
-		const static std::uint32_t global_ns_id = 0;
-		const static std::uint32_t invalid_ns_id = 1;
+		static std::unordered_map<const std::string&, name_space*> name_space_db;
+		std::unordered_set<node*, cursor_hash, cursor_equal> synonymouses;
+
 	};
+
 }
