@@ -21,7 +21,9 @@ namespace meta::language
 	private:
 		static std::unordered_map<const std::string&, name_space*> name_space_db;
 		std::unordered_set<node*, cursor_hash, cursor_equal> synonymouses;
-
+		name_space(node* _in_node);
+		friend class node_db;
+		static name_space* get_name_space_for_node(node* _in_node);
 	};
 
 }

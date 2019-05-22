@@ -1,6 +1,7 @@
 ﻿#include <algorithm>
 #include "node.h"
 #include "utils.h"
+#include "name_space.h"
 
 namespace 
 {
@@ -127,8 +128,12 @@ namespace meta::language
 		auto temp_node = new node(_cursor);
 		_nodes[_cursor] = temp_node;
 		auto cursor_pos = temp_node->get_position();
-		utils::get_logger().debug("new node name {0} qualified name {1} kind {2}::{6} at file {3} row {4} col {5}", 
-			temp_node->get_name(), temp_node->get_qualified_name(), _cursor.kind, std::get<0>(cursor_pos), std::get<1>(cursor_pos), std::get<2>(cursor_pos), utils::cursor_kind_to_string(_cursor.kind));
+		//utils::get_logger().debug("new node name {0} qualified name {1} kind {2}::{6} at file {3} row {4} col {5}", 
+		//	temp_node->get_name(), temp_node->get_qualified_name(), _cursor.kind, std::get<0>(cursor_pos), std::get<1>(cursor_pos), std::get<2>(cursor_pos), utils::cursor_kind_to_string(_cursor.kind));
+		if (temp_node->get_kind() == CXCursor_Namespace)
+		{
+			name_space::get_name_space_for_node(temp_node);
+		}
 		return temp_node;
 	}
 	node_db::node_db()
