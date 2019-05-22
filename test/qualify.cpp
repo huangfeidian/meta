@@ -31,7 +31,7 @@ void recursive_print_decl_under_namespace(const std::string& ns_name)
 	{
 		auto temp_node = tasks.front();
 		tasks.pop();
-		if (temp_node->get_kind() == CXCursor_ClassDecl)
+		if (interested_kind(temp_node->get_kind()))
 		{
 			utils::get_logger().debug("node {} is class decl under namespace {}", temp_node->get_qualified_name(), ns_name);
 		}
