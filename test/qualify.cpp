@@ -14,6 +14,7 @@ bool interested_kind(CXCursorKind _cur_kind)
 	case CXCursor_EnumDecl:
 	case CXCursor_FunctionDecl:
 	case CXCursor_Namespace:
+	case CXCursor_VarDecl:
 		return true;
 	default:
 		return false;
@@ -27,22 +28,19 @@ void recursive_print_decl_under_namespace(const std::string& ns_name)
 	{
 		tasks.push(one_node);
 	}
-	while (!tasks.empty())
+	auto cur_visitor = [&ns_name](const language::node* temp_node)
 	{
-		auto temp_node = tasks.front();
-		tasks.pop();
 		if (interested_kind(temp_node->get_kind()))
 		{
 			utils::get_logger().debug("node {} is class decl under namespace {}", temp_node->get_qualified_name(), ns_name);
 		}
-		for (const auto& i : temp_node->get_all_children())
-		{
-			tasks.push(i);
-		}
+		return language::node_visit_result::visit_recurse;
 
+	};
+	for (const auto& i : all_ns_nodes)
+	{
+		language::bfs_visit_nodes(i, cur_visitor);
 	}
-
-
 }
 int main(int argc, char* argv[])
 {

@@ -35,18 +35,36 @@ namespace meta::language
 	}
 	name_space* name_space::get_name_space_for_node(node* _in_node)
 	{
-		const auto& qualified_name = _in_node->get_qualified_name();
-		auto cur_iter = name_space::name_space_db.find(qualified_name);
-		if (cur_iter == name_space::name_space_db.end())
+		if(!_in_node)
 		{
-			auto temp_ns = new name_space(_in_node);
-			return temp_ns;
+			return nullptr;
 		}
-		else
+		switch(_in_node->get_kind())
 		{
-			cur_iter->second->add_synonymous(_in_node);
-			return cur_iter->second;
+		case CXCursor_Namespace:
+			{
+				const auto& qualified_name = _in_node->get_qualified_name();
+				auto cur_iter = name_space::name_space_db.find(qualified_name);
+				if (cur_iter == name_space::name_space_db.end())
+				{
+					auto temp_ns = new name_space(_in_node);
+					return temp_ns;
+				}
+				else
+				{
+					cur_iter->second->add_synonymous(_in_node);
+					return cur_iter->second;
+				}
+			}
+			break;
+		case CXCursor_NamespaceAlias:
+			return nullptr;
+		case CXCursor_TranslationUnit:
+			return nullptr;
+		default:
+			return get_name_space_for_node(_in_node->get_parent());
+			// for normal nodes
+			
 		}
-
 	}
 }

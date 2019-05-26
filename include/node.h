@@ -5,9 +5,16 @@
 #include <vector>
 #include <clang-c/Index.h>
 #include <utility>
-
+#include <queue>
 namespace meta::language
 {
+	enum class node_visit_result
+	{
+		visit_break,//exit the visit and return
+		visit_continue, // not visit the children , visit next sibling
+		visit_recurse// visit the children
+
+	};
 	class node
 	{
 	public:
@@ -59,4 +66,33 @@ namespace meta::language
 		node* create_node(CXCursor _cursor);
 		static node_db& get_instance();
 	};
+
+	template <typename T>
+	void bfs_visit_nodes(const node* head, T& visitor)
+	{
+		std::queue<const node*> _nodes_to_visit;// bool for first visit
+		_nodes_to_visit.push(head);
+		while (!_nodes_to_visit.empty())
+		{
+			auto current_node = _nodes_to_visit.front();
+			_nodes_to_visit.pop();
+			node_visit_result visit_result = visitor(current_node);
+			switch (visit_result)
+			{
+			case node_visit_result::visit_break:
+				return;
+			case node_visit_result::visit_continue:
+				break;
+			case node_visit_result::visit_recurse:
+				for (const auto& i : current_node->get_all_children())
+				{
+					_nodes_to_visit.push(i);
+				}
+				break;
+			default:
+				break;
+			}
+
+		}
+	}
 }
