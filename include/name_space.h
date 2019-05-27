@@ -3,7 +3,7 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
-#include "../node.h"
+#include "node.h"
 
 namespace meta::language
 {

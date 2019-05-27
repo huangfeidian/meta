@@ -62,7 +62,7 @@ namespace meta::language
 		case CXCursor_TranslationUnit:
 			return nullptr;
 		default:
-			return get_name_space_for_node(_in_node->get_parent());
+			return get_name_space_for_node(&(_in_node->get_parent()));
 			// for normal nodes
 			
 		}

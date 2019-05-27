@@ -34,6 +34,10 @@ namespace meta::utils
 		clang_disposeString(str);
 		return result;
 	}
+	std::string to_string(const CXType& _in_type)
+	{
+		return to_string(clang_getTypeSpelling(_in_type));
+	}
 	std::string join(const std::vector<std::string>& param, const std::string& sep)
 	{
 		std::string result = "";
