@@ -66,7 +66,45 @@ namespace meta::utils
 		static std::shared_ptr<spdlog::logger> _logger = create_logger();
 		return *_logger;
 	}
-
+	std::string to_string(CXTemplateArgumentKind _in_kind)
+	{
+		switch (_in_kind)
+		{
+		case CXTemplateArgumentKind_Null:
+			return "CXTemplateArgumentKind_Null";
+			break;
+		case CXTemplateArgumentKind_Type:
+			return "CXTemplateArgumentKind_Type";
+			break;
+		case CXTemplateArgumentKind_Declaration:
+			return "CXTemplateArgumentKind_Declaration";
+			break;
+		case CXTemplateArgumentKind_NullPtr:
+			return "CXTemplateArgumentKind_NullPtr";
+			break;
+		case CXTemplateArgumentKind_Integral:
+			return "CXTemplateArgumentKind_Integral";
+			break;
+		case CXTemplateArgumentKind_Template:
+			return "CXTemplateArgumentKind_Template";
+			break;
+		case CXTemplateArgumentKind_TemplateExpansion:
+			return "CXTemplateArgumentKind_TemplateExpansion";
+			break;
+		case CXTemplateArgumentKind_Expression:
+			return "CXTemplateArgumentKind_Expression";
+			break;
+		case CXTemplateArgumentKind_Pack:
+			return "CXTemplateArgumentKind_Pack";
+			break;
+		case CXTemplateArgumentKind_Invalid:
+			return "CXTemplateArgumentKind_Invalid";
+			break;
+		default:
+			return "";
+			break;
+		}
+	}
 	const std::string& cursor_kind_to_string(CXCursorKind _in_kind)
 	{
 		const static std::string unknown = "CXCursor_UnexposedDecl";

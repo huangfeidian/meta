@@ -20,6 +20,10 @@ bool interested_kind(CXCursorKind _cur_kind)
 	case CXCursor_FunctionTemplate:
 	case CXCursor_CXXMethod:
 	case CXCursor_Constructor:
+	case CXCursor_ParmDecl:
+	case CXCursor_TemplateTypeParameter:
+	case CXCursor_NonTypeTemplateParameter:
+	case CXCursor_TemplateTemplateParameter:
 		return true;
 	default:
 		return false;
@@ -47,6 +51,63 @@ void recursive_print_decl_under_namespace(const std::string& ns_name)
 		language::bfs_visit_nodes(i, cur_visitor);
 	}
 }
+void print_template_type(CXType type_a)
+{
+	auto & the_logger = utils::get_logger();
+	auto cur_type_name = utils::to_string(clang_getTypeSpelling(type_a));
+	if (cur_type_name.find("vector") == std::string::npos)
+	{
+		return;
+	}
+	auto temp_cur = clang_getTypeDeclaration(type_a);
+	the_logger.info("type {} clang_getTypeDeclaration {}", utils::to_string(clang_getTypeSpelling(type_a)), utils::to_string(clang_getCursorSpelling(temp_cur)));
+	// 判断类型是否是一个模板实例化，普通的类的模板参数是-1
+	int num = clang_Type_getNumTemplateArguments(type_a);
+	if (num != -1)
+	{
+		the_logger.info("type {} is templated type with arg num {}", utils::to_string(clang_getTypeSpelling(type_a)), num);
+	}
+	else
+	{
+		return;
+	}
+	// 遍历全部的实例化的模板参数
+	for (auto loop = 0; loop < num; ++loop) {
+		CXType temp_type = clang_Type_getTemplateArgumentAsType(type_a, loop);
+		the_logger.info("arg num {} has type {}", loop, utils::to_string(clang_getTypeSpelling(temp_type)));
+	}
+
+}
+void print_template_func_decl_info(const language::node* _node)
+{
+	if (!_node)
+	{
+		return;
+	}
+	if (_node->get_kind() != CXCursor_FunctionDecl)
+	{
+		return;
+	}
+	auto & the_logger = utils::get_logger();
+	auto cur_cursor = _node->get_cursor();
+	auto ref_cursor = clang_getCursorDefinition(cur_cursor);
+	if (!clang_isCursorDefinition(cur_cursor))
+	{
+		the_logger.info("cursor {} is a reference to cursor {}", utils::to_string(clang_getCursorSpelling(cur_cursor)), utils::to_string(clang_getCursorSpelling(ref_cursor)));
+		return;
+	}
+	
+	const auto& all_children = _node->get_children_with_kind(CXCursor_ParmDecl);
+	the_logger.info("func {} has {} children for parm", utils::to_string(clang_getCursorSpelling(_node->get_cursor())), all_children.size());
+	for (const auto one_node : all_children)
+	{
+		auto _cur_cursor = one_node->get_cursor();
+		auto _cur_type = clang_getCursorType(_cur_cursor);
+		the_logger.info("get parameter name {} type {}", utils::to_string(clang_getCursorSpelling(_cur_cursor)), utils::to_string(clang_getTypeSpelling(_cur_type)));
+		print_template_type(_cur_type);
+	}
+
+}
 void print_func_decl_info(const language::node* _node)
 {
 	if (!_node)
@@ -54,21 +115,21 @@ void print_func_decl_info(const language::node* _node)
 		return;
 	}
 	auto _cur_cursor = _node->get_cursor();
+
 	int num_args = clang_Cursor_getNumArguments(_cur_cursor);
-	
 	auto & the_logger = utils::get_logger();
 	
 	auto _cur_type = clang_getCursorType(_cur_cursor);
 	auto func_name = utils::to_string(clang_getCursorSpelling(_cur_cursor));
 	auto func_type_name = utils::to_string(clang_getTypeSpelling(_cur_type));
-	the_logger.info("find func {} with type {}", func_name, func_type_name);
+	the_logger.info("find func {} with type {} num_args {} ", func_name, func_type_name, num_args);
 	if (num_args < 0)
 	{
 		return;
 	}
+	
 	auto return_type = utils::to_string(clang_getTypeSpelling(clang_getResultType(_cur_type)));
 	
-	the_logger.info("func {} args begin", func_name);
 	for (int i = 0; i < num_args; i++)
 	{
 		auto arg_cursor = clang_Cursor_getArgument(_cur_cursor, i);
@@ -80,7 +141,6 @@ void print_func_decl_info(const language::node* _node)
 		auto arg_data_type = utils::to_string(clang_getTypeSpelling(clang_getArgType(_cur_type, i)));
 		the_logger.info("arg idx {} has name {} type {}", i, arg_name, arg_data_type);
 	}
-	the_logger.info("func {} args end", func_name);
 }
 void recursive_print_func_under_namespace(const std::string& ns_name)
 {
@@ -89,7 +149,7 @@ void recursive_print_func_under_namespace(const std::string& ns_name)
 
 	auto cur_visitor = [&ns_name](const language::node* temp_node)
 	{
-		print_func_decl_info(temp_node);
+		print_template_func_decl_info(temp_node);
 
 		return language::node_visit_result::visit_recurse;
 
