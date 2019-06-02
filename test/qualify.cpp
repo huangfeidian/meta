@@ -29,6 +29,87 @@ bool interested_kind(CXCursorKind _cur_kind)
 		return false;
 	}
 }
+void recursive_dump_type_info(CXType _cur_type)
+{
+	auto& the_logger = utils::get_logger();
+	auto is_const = clang_isConstQualifiedType(_cur_type);
+	auto is_refer = _cur_type.kind == CXType_LValueReference;
+	auto is_volatile = clang_isVolatileQualifiedType(_cur_type);
+	auto is_pointer = clang_getPointeeType(_cur_type);
+	auto is_const_ref = false;
+	if (is_pointer.kind)
+	{
+		is_const_ref = clang_isConstQualifiedType(is_pointer);
+		recursive_dump_type_info(is_pointer);
+	}
+	auto type_decl_self = clang_getTypeDeclaration(_cur_type);
+	auto type_decl_ref = clang_getTypeDeclaration(is_pointer);
+	the_logger.info("type {} kind {} is_const {} is_reference {} is_volatile {} is_pointer to {} is_const_ref {} self decl is {} ref decl is {}", utils::to_string(_cur_type), _cur_type.kind, is_const, is_refer, is_volatile, utils::to_string(is_pointer), is_const_ref, utils::get_qualified_name_from_cursor(type_decl_self), utils::get_qualified_name_from_cursor(type_decl_ref));
+	auto tee_template_arg_num = clang_Type_getNumTemplateArguments(is_pointer);
+	if (tee_template_arg_num != -1)
+	{
+		the_logger.info("pointee {} is template", utils::to_string(is_pointer));
+		for (int i = 0; i < tee_template_arg_num; i++)
+		{
+			auto temp_type = clang_Type_getTemplateArgumentAsType(is_pointer, i);
+			the_logger.info("pointee template arg {}  has type {}", i, utils::to_string(temp_type));
+			recursive_dump_type_info(temp_type);
+
+		}
+	}
+	auto template_arg_num = clang_Type_getNumTemplateArguments(_cur_type);
+	if (template_arg_num != -1)
+	{
+		the_logger.info("{} is template", utils::to_string(_cur_type));
+		for (int i = 0; i < template_arg_num; i++)
+		{
+			auto temp_type = clang_Type_getTemplateArgumentAsType(_cur_type, i);
+			the_logger.info("template arg {}  has type {}", i, utils::to_string(temp_type));
+			recursive_dump_type_info(temp_type);
+		}
+	}
+}
+void recursive_print_anything_under_cursor(CXCursor _in_cursor)
+{
+	auto& the_logger = utils::get_logger();
+
+	auto visitor = [] (CXCursor cur, CXCursor parent, CXClientData data)
+	{
+		auto& the_logger = utils::get_logger();
+		auto ref_cursor = clang_getCursorDefinition(cur);
+		auto _cur_type = clang_getCursorType(cur);
+		auto is_const = clang_isConstQualifiedType(_cur_type);
+		auto is_refer = _cur_type.kind == CXType_LValueReference;
+		auto is_volatile = clang_isVolatileQualifiedType(_cur_type);
+		auto is_pointer = clang_getPointeeType(_cur_type);
+		auto is_const_ref = false;
+		if (is_pointer.kind)
+		{
+			is_const_ref = clang_isConstQualifiedType(is_pointer);
+		}
+		the_logger.info("parent {} meet child {} with kind {} ref name {} is_const {} is_reference {} is_volatile {} is_pointer {} is_const_ref {}", utils::to_string(parent), utils::to_string(clang_getCursorSpelling(cur)), utils::to_string(clang_getCursorKind(cur)), utils::get_qualified_name_from_cursor(ref_cursor),  is_const, is_refer, is_volatile, utils::to_string(is_pointer), is_const_ref);
+		auto tee_template_arg_num = clang_Type_getNumTemplateArguments(is_pointer);
+		if (tee_template_arg_num != -1)
+		{
+			the_logger.info("pointee {} is template", utils::to_string(is_pointer));
+			for (int i = 0; i < tee_template_arg_num; i++)
+			{
+				the_logger.info("pointee template arg {}  has type {}", i, utils::to_string(clang_Type_getTemplateArgumentAsType(is_pointer, i)));
+			}
+		}
+		auto template_arg_num = clang_Type_getNumTemplateArguments(_cur_type);
+		if (template_arg_num != -1)
+		{
+			the_logger.info("{} is template", utils::to_string(_cur_type));
+			for (int i = 0; i < template_arg_num; i++)
+			{
+				the_logger.info("template arg {}  has type {}", i, utils::to_string(clang_Type_getTemplateArgumentAsType(_cur_type, i)));
+			}
+		}
+		return CXChildVisit_Recurse;
+	};
+	clang_visitChildren(_in_cursor, visitor, nullptr);
+}
 void recursive_print_decl_under_namespace(const std::string& ns_name)
 {
 	std::queue<language::node*> tasks;
@@ -41,7 +122,7 @@ void recursive_print_decl_under_namespace(const std::string& ns_name)
 	{
 		if (interested_kind(temp_node->get_kind()))
 		{
-			utils::get_logger().debug("node {} is {} under namespace {}", temp_node->get_qualified_name(), utils::cursor_kind_to_string(temp_node->get_kind()), ns_name);
+			utils::get_logger().debug("node {} is {} under namespace {}", temp_node->get_qualified_name(), utils::to_string(temp_node->get_kind()), ns_name);
 		}
 		return language::node_visit_result::visit_recurse;
 
@@ -59,6 +140,7 @@ void print_template_type(CXType type_a)
 	{
 		return;
 	}
+	
 	auto temp_cur = clang_getTypeDeclaration(type_a);
 	the_logger.info("type {} clang_getTypeDeclaration {}", utils::to_string(clang_getTypeSpelling(type_a)), utils::to_string(clang_getCursorSpelling(temp_cur)));
 	// 判断类型是否是一个模板实例化，普通的类的模板参数是-1
@@ -84,27 +166,28 @@ void print_template_func_decl_info(const language::node* _node)
 	{
 		return;
 	}
-	if (_node->get_kind() != CXCursor_FunctionDecl)
+	if (_node->get_kind() != CXCursor_FunctionDecl && _node->get_kind() != CXCursor_FunctionTemplate)
 	{
 		return;
 	}
 	auto & the_logger = utils::get_logger();
 	auto cur_cursor = _node->get_cursor();
 	auto ref_cursor = clang_getCursorDefinition(cur_cursor);
-	if (!clang_isCursorDefinition(cur_cursor))
-	{
-		the_logger.info("cursor {} is a reference to cursor {}", utils::to_string(clang_getCursorSpelling(cur_cursor)), utils::to_string(clang_getCursorSpelling(ref_cursor)));
-		return;
-	}
+	//if (!clang_isCursorDefinition(cur_cursor))
+	//{
+	//	the_logger.info("cursor {} is a reference to cursor {}", utils::to_string(clang_getCursorSpelling(cur_cursor)), utils::to_string(clang_getCursorSpelling(ref_cursor)));
+	//	return;
+	//}
 	
 	const auto& all_children = _node->get_children_with_kind(CXCursor_ParmDecl);
 	the_logger.info("func {} has {} children for parm", utils::to_string(clang_getCursorSpelling(_node->get_cursor())), all_children.size());
 	for (const auto one_node : all_children)
 	{
+		
 		auto _cur_cursor = one_node->get_cursor();
+		the_logger.info("param name is {}", utils::to_string(_cur_cursor));
 		auto _cur_type = clang_getCursorType(_cur_cursor);
-		the_logger.info("get parameter name {} type {}", utils::to_string(clang_getCursorSpelling(_cur_cursor)), utils::to_string(clang_getTypeSpelling(_cur_type)));
-		print_template_type(_cur_type);
+		recursive_dump_type_info(_cur_type);
 	}
 
 }

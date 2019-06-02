@@ -7,44 +7,7 @@ namespace
 {
 	
 	using namespace meta::language;
-	const std::string& get_qualified_name_from_cursor(CXCursor in_cursor)
-	{
-		static std::unordered_map< CXCursor, std::string, cursor_hash, cursor_equal> qualified_cache;
-		auto cur_iter = qualified_cache.find(in_cursor);
-		if (cur_iter != qualified_cache.end())
-		{
-			return cur_iter->second;
-		}
-		std::string result;
-		if (in_cursor.kind == CXCursorKind::CXCursor_TranslationUnit)
-		{
-			qualified_cache[in_cursor] = meta::utils::to_string(clang_getCursorDisplayName(in_cursor));
-		}
-		else
-		{
-			auto parent = clang_getCursorSemanticParent(in_cursor);
-			const std::string& parent_name = get_qualified_name_from_cursor(parent);
-			if (parent_name.empty())
-			{
-				qualified_cache[in_cursor] = meta::utils::to_string(clang_getCursorDisplayName(in_cursor));
-			}
-			else
-			{
-				if (parent.kind == CXCursorKind::CXCursor_TranslationUnit)
-				{
-					qualified_cache[in_cursor] = meta::utils::to_string(clang_getCursorDisplayName(in_cursor));
-				}
-				else
-				{
-					qualified_cache[in_cursor] = get_qualified_name_from_cursor(parent) + "::" + meta::utils::to_string(clang_getCursorDisplayName(in_cursor));
-				}
-				
-			}
-			
-		}
-		return qualified_cache[in_cursor];
 
-	}
 }
 
 namespace meta::language
@@ -54,7 +17,7 @@ namespace meta::language
 		: _cursor(in_cursor)
 		, _kind(in_cursor.kind)
 		, name(meta::utils::to_string(clang_getCursorDisplayName(in_cursor)))
-		, qualified_name(get_qualified_name_from_cursor(in_cursor))
+		, qualified_name(utils::get_qualified_name_from_cursor(in_cursor))
 	{
 		if (in_cursor.kind == CXCursorKind::CXCursor_TranslationUnit)
 		{
@@ -129,7 +92,7 @@ namespace meta::language
 		_nodes[_cursor] = temp_node;
 		auto cursor_pos = temp_node->get_position();
 		utils::get_logger().debug("new node name {0} qualified name {1} kind {2}::{6} at file {3} row {4} col {5}", 
-			temp_node->get_name(), temp_node->get_qualified_name(), _cursor.kind, std::get<0>(cursor_pos), std::get<1>(cursor_pos), std::get<2>(cursor_pos), utils::cursor_kind_to_string(_cursor.kind));
+			temp_node->get_name(), temp_node->get_qualified_name(), _cursor.kind, std::get<0>(cursor_pos), std::get<1>(cursor_pos), std::get<2>(cursor_pos), utils::to_string(_cursor.kind));
 		if (temp_node->get_kind() == CXCursor_Namespace)
 		{
 			name_space::get_name_space_for_node(temp_node);

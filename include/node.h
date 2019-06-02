@@ -6,6 +6,8 @@
 #include <clang-c/Index.h>
 #include <utility>
 #include <queue>
+#include "utils.h"
+
 namespace meta::language
 {
 	enum class node_visit_result
@@ -39,29 +41,13 @@ namespace meta::language
 		
 
 	};
-	class cursor_hash
-	{
-	public:
-		std::size_t operator()(const CXCursor& in_cursor) const
-		{
-			return clang_hashCursor(in_cursor);
-		}
 
-	};
-	class cursor_equal
-	{
-	public:
-		bool operator()(const CXCursor& from, const CXCursor& to) const
-		{
-			return clang_equalCursors(from, to);
-		}
-	};
 	class node_db
 	{
 	private:
 		node_db();
 	protected:
-		std::unordered_map<CXCursor, node*, cursor_hash, cursor_equal> _nodes;
+		std::unordered_map<CXCursor, node*, meta::utils::cursor_hash, meta::utils::cursor_equal> _nodes;
 	public:
 		node* create_node(CXCursor _cursor);
 		static node_db& get_instance();
