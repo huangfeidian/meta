@@ -166,7 +166,7 @@ void print_template_func_decl_info(const language::node* _node)
 	{
 		return;
 	}
-	if (_node->get_kind() != CXCursor_FunctionDecl && _node->get_kind() != CXCursor_FunctionTemplate)
+	if (_node->get_kind() != CXCursor_FunctionDecl && _node->get_kind() != CXCursor_FunctionTemplate && _node->get_kind() != CXCursor_CXXMethod)
 	{
 		return;
 	}
