@@ -16,7 +16,7 @@ namespace A::B
         ~nothing();
         template <typename T>
         void accept(const T c);
-        void fail_nothing(const int a, const std::uint16_t b);
+        void fail_nothing(const int a, const std::uint16_t b, const int* const c);
     };
     template <typename T>
     void nothing::accept(const T c)
@@ -49,7 +49,7 @@ namespace A::B
     {
         return;
     }
-    void nothing::fail_nothing(const int  a, const std::uint16_t b)
+    void nothing::fail_nothing(const int  a, const std::uint16_t b, const int* const c)
     {
         return;
     }

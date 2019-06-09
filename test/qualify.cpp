@@ -37,6 +37,7 @@ void recursive_dump_type_info(CXType _cur_type)
 	auto is_volatile = clang_isVolatileQualifiedType(_cur_type);
 	auto is_pointer = clang_getPointeeType(_cur_type);
 	auto is_const_ref = false;
+	
 	if (is_pointer.kind)
 	{
 		is_const_ref = clang_isConstQualifiedType(is_pointer);
