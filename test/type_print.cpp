@@ -28,6 +28,7 @@ bool interested_kind(CXCursorKind _cur_kind)
 	case CXCursor_TemplateTypeParameter:
 	case CXCursor_NonTypeTemplateParameter:
 	case CXCursor_TemplateTemplateParameter:
+	case CXCursor_ClassTemplate:
 		return true;
 	default:
 		return false;
@@ -197,6 +198,41 @@ void print_template_func_decl_info(const language::node* _node)
 	}
 
 }
+void print_class_decl_info(const language::node* _node)
+{
+	if (!_node)
+	{
+		return;
+	}
+	if (_node->get_kind() != CXCursor_ClassTemplate && _node->get_kind() != CXCursor_ClassDecl && _node->get_kind() != CXCursor_StructDecl)
+	{
+		return;
+	}
+	auto & the_logger = utils::get_logger();
+	auto cur_cursor = _node->get_cursor();
+	recursive_print_anything_under_cursor(cur_cursor);
+
+}
+void recursive_print_class_under_namespace(const std::string& ns_name)
+{
+	std::queue<language::node*> tasks;
+	auto& all_ns_nodes = language::name_space::get_synonymous_name_spaces(ns_name);
+
+	auto cur_visitor = [&ns_name](const language::node* temp_node)
+	{
+		print_class_decl_info(temp_node);
+
+		return language::node_visit_result::visit_recurse;
+
+	};
+	for (const auto& i : all_ns_nodes)
+	{
+		language::bfs_visit_nodes(i, cur_visitor);
+	}
+	json result = language::type_db::instance().to_json();
+	ofstream json_out("type_info.json");
+	json_out << setw(4) << result << endl;
+}
 void print_func_decl_info(const language::node* _node)
 {
 	if (!_node)
@@ -286,9 +322,9 @@ int main(int argc, char* argv[])
 		return CXChildVisit_Recurse;
 	};
 	clang_visitChildren(cursor, visitor, nullptr);
-	recursive_print_decl_under_namespace("A");
-
-	recursive_print_func_under_namespace("A");
+	//recursive_print_decl_under_namespace("A");
+	recursive_print_class_under_namespace("A");
+	//recursive_print_func_under_namespace("A");
 	clang_disposeTranslationUnit(m_translationUnit);
 	return 0;
 }

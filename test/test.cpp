@@ -19,6 +19,12 @@ namespace A::B
         void fail_nothing(const int a, const std::uint16_t b, const int* const c);
     };
     template <typename T>
+    class silly
+    {
+        public:
+        T _v;
+    };
+    template <typename T>
     void nothing::accept(const T c)
     {
         a = 0;

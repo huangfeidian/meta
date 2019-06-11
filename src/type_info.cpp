@@ -258,6 +258,7 @@ namespace meta::language
 		}
 		else
 		{
+
 			if (clang_equalTypes(_in_type, decl_type))
 			{
 				base_type = nullptr;
