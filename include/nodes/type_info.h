@@ -26,7 +26,6 @@ namespace meta::language
 		const type_info* refer_to() const;// return (const) T for (const) T &/&& return nullptr for others
 		enum CXTypeKind kind() const;
 		const CXType& type() const;
-		std::string qualified_name() const;
 		const std::string& name() const;
 		bool has_type() const;
 		json to_json() const;

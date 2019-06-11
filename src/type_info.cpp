@@ -45,11 +45,6 @@ namespace meta::language
 	{
 		return _name;
 	}
-	std::string type_info::qualified_name() const
-	{
-		auto the_cursor = clang_getTypeDeclaration(_type);
-		return utils::get_qualified_name_from_cursor(the_cursor);
-	}
 	const CXType& type_info::type() const
 	{
 		return _type;
@@ -144,18 +139,17 @@ namespace meta::language
 	{
 		json result;
 		result["name"] = _name;
-		result["qualified_name"] = qualified_name();
 		result["kind"] = static_cast<std::uint32_t>(_kind);
 		if (_ref_type)
 		{
-			result["ref_type"] = _ref_type->qualified_name();
+			result["ref_type"] = _ref_type->name();
 		}
 		if (!_template_args.empty())
 		{
 			std::vector<std::string> args;
 			for (const auto i : _template_args)
 			{
-				args.push_back(i->qualified_name());
+				args.push_back(i->name());
 			}
 			result["args"] = args;
 		}
@@ -252,24 +246,34 @@ namespace meta::language
 		auto full_name = utils::to_string(_in_type);
 		auto argu_num = clang_Type_getNumTemplateArguments(_in_type);
 		auto decl_cursor = clang_getTypeDeclaration(_in_type);
+		auto decl_name = utils::get_qualified_name_from_cursor(decl_cursor);
 		auto temp_str0 = utils::to_string(decl_cursor);
 		auto decl_type = clang_getCursorType(decl_cursor);
 		auto temp_str1 = utils::to_string(decl_type);
 		type_info* base_type;
-		if (clang_equalTypes(_in_type, decl_type))
+		auto decl_iter = _type_data.find(decl_name);
+		if (decl_iter != _type_data.end())
 		{
-			base_type = nullptr;
+			base_type = decl_iter->second;
 		}
 		else
 		{
-			auto defi_cursor = clang_getCursorDefinition(decl_cursor);
-			auto temp_str2 = utils::to_string(defi_cursor);
-			auto defi_type = clang_getCursorType(defi_cursor);
-			auto temp_str3 = utils::to_string(defi_type);
-			base_type = get_type(decl_type);
+			if (clang_equalTypes(_in_type, decl_type))
+			{
+				base_type = nullptr;
+			}
+			else
+			{
+				auto defi_cursor = clang_getCursorDefinition(decl_cursor);
+				auto temp_str2 = utils::to_string(defi_cursor);
+				auto defi_type = clang_getCursorType(defi_cursor);
+				auto temp_str3 = utils::to_string(defi_type);
+				base_type = get_type(decl_type);
+			}
 		}
 		
-		std::vector<type_info*> arg_types;
+		
+		std::vector<const type_info*> arg_types;
 		for (int i = 0; i < argu_num; i++)
 		{
 			auto temp_arg_type = get_type(clang_Type_getTemplateArgumentAsType(_in_type, i));
@@ -277,6 +281,7 @@ namespace meta::language
 
 		}
 		auto final_result = new type_info(full_name, _in_type, base_type);
+		final_result->_template_args = arg_types;
 		_type_data[full_name] = final_result;
 		return final_result;
 	}
