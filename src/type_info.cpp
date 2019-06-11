@@ -251,7 +251,24 @@ namespace meta::language
 	{
 		auto full_name = utils::to_string(_in_type);
 		auto argu_num = clang_Type_getNumTemplateArguments(_in_type);
-		auto base_type = get_type(clang_getTypeDeclaration(_in_type));
+		auto decl_cursor = clang_getTypeDeclaration(_in_type);
+		auto temp_str0 = utils::to_string(decl_cursor);
+		auto decl_type = clang_getCursorType(decl_cursor);
+		auto temp_str1 = utils::to_string(decl_type);
+		type_info* base_type;
+		if (clang_equalTypes(_in_type, decl_type))
+		{
+			base_type = nullptr;
+		}
+		else
+		{
+			auto defi_cursor = clang_getCursorDefinition(decl_cursor);
+			auto temp_str2 = utils::to_string(defi_cursor);
+			auto defi_type = clang_getCursorType(defi_cursor);
+			auto temp_str3 = utils::to_string(defi_type);
+			base_type = get_type(decl_type);
+		}
+		
 		std::vector<type_info*> arg_types;
 		for (int i = 0; i < argu_num; i++)
 		{
@@ -300,5 +317,18 @@ namespace meta::language
 		auto final_type = new type_info(full_name, _in_type, nullptr);
 		_type_data[full_name] = final_type;
 		return final_type;
+	}
+	json type_db::to_json() const
+	{
+		json result;
+		for (const auto& one_item : _type_data)
+		{
+			result[one_item.first] = one_item.second->to_json();
+		}
+		return result;
+	}
+	type_db::type_db()
+	{
+
 	}
 }

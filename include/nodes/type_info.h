@@ -46,13 +46,13 @@ namespace meta::language
     {
     public:
 		type_info* get_type(const CXType& _in_type);
-        type_info* get_type(CXCursor in_cursor);
         static type_db& instance()
         {
             static type_db _instance;
             return _instance;
         }
         void clear_all_type_info();
+		json to_json() const;
     private:
 		type_info* get_type_for_const(const CXType& _in_type);
 		type_info* get_type_for_pointee(const CXType& _in_type);
