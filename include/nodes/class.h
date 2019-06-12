@@ -3,6 +3,9 @@
 
 namespace meta::language
 {
+    class field_node;
+    class method_node;
+    class class_node;
     class class_node: public node_base
     {
     public:

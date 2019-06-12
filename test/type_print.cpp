@@ -211,6 +211,9 @@ void print_class_decl_info(const language::node* _node)
 	auto & the_logger = utils::get_logger();
 	auto cur_cursor = _node->get_cursor();
 	recursive_print_anything_under_cursor(cur_cursor);
+	auto cur_type = clang_getCursorType(cur_cursor);
+	recursive_dump_type_info(cur_type);
+
 
 }
 void recursive_print_class_under_namespace(const std::string& ns_name)

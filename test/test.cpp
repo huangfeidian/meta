@@ -22,7 +22,7 @@ namespace A::B
     class silly
     {
         public:
-        T _v;
+        std::vector<T> _v;
     };
     template <typename T>
     void nothing::accept(const T c)
