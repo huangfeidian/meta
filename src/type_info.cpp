@@ -324,6 +324,10 @@ namespace meta::language
 		_type_data[full_name] = final_type;
 		return final_type;
 	}
+	type_info * type_db::get_type_for_template_class(CXCursor _template_class_decl)
+	{
+		return nullptr;
+	}
 	json type_db::to_json() const
 	{
 		json result;
