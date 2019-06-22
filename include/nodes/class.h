@@ -22,13 +22,12 @@ namespace meta::language
 		std::vector<std::string> _template_args;
 		std::unordered_map<std::string, const variable_node*> _fields;
 		std::unordered_map<std::string, const variable_node*> _static_fields;
-		std::unordered_multimap<std::string, const callable_node*> _methods;
-		std::unordered_multimap<std::string, const callable_node*> _static_methods;
+		std::multimap<std::string, const callable_node*> _methods;
+		std::multimap<std::string, const callable_node*> _static_methods;
 		std::vector<const callable_node*> _constructors;
 		const callable_node* _destructor;
 		std::vector<const type_info*> _bases;
-		void parse_fields();
-		void parse_methods();
+		void parse();
 		type_info* _decl_type;
 
 
