@@ -31,6 +31,12 @@ namespace meta::language
 		{
 			return nullptr;
 		}
+		json to_json() const
+		{
+			json result;
+			result["name"] = _node->get_name();
+			return result;
+		}
     private:
         const node* _node;
 

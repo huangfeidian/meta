@@ -22,5 +22,13 @@ namespace meta::language
 	{
 		return _decl_type;
 	}
+	json variable_node::to_json() const
+	{
+		json result;
+		result["name"] = name();
+		result["node_type"] = "variable";
+		result["var_type"] = _decl_type->name();
+		return result;
+	}
 	
 }

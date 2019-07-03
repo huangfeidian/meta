@@ -18,6 +18,7 @@ namespace meta::language
 		const variable_node* has_field(const std::string& _field_name) const;
 		const variable_node* has_static_field(const std::string& _field_name) const;
 		const callable_node* has_constructor_for(const std::vector<const type_info*>& _args) const;
+		json to_json() const;
 	private:
 		std::vector<std::string> _template_args;
 		std::unordered_map<std::string, const variable_node*> _fields;

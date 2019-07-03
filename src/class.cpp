@@ -177,4 +177,49 @@ namespace meta::language
 		}
 		return nullptr;
 	}
+	json class_node::to_json() const
+	{
+		json result;
+		result["name"] = name();
+		result["node_type"] = "class";
+		json static_fields_json;
+		for (const auto i : _static_fields)
+		{
+			static_fields_json[i.first] = *i.second;
+
+		}
+		result["static_fields"] = static_fields_json;
+		json fields_json;
+		for (const auto i : _fields)
+		{
+			fields_json[i.first] = *i.second;
+
+		}
+		result["fields"] = fields_json;
+		json method_json;
+		for (const auto& i : _methods)
+		{
+			method_json[i.first] = *i.second;
+		}
+		result["methods"] = method_json;
+		json static_method_json;
+		for (const auto& i : _static_methods)
+		{
+			static_method_json[i.first] = *i.second;
+		}
+		result["static_methods"] = static_method_json;
+		json bases_json;
+		for (const auto& i : _bases)
+		{
+			bases_json.push_back(i->name());
+		}
+		result["bases"] = bases_json;
+		json constructor_json;
+		for (const auto& i : _constructors)
+		{
+			constructor_json.push_back(*i);
+		}
+		result["constructors"] = constructor_json;
+		return result;
+	}
 }

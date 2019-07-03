@@ -6,7 +6,7 @@
 #include "nodes/type_info.h"
 #include <fstream>
 #include <iomanip>
-
+#include "nodes/class.h"
 
 using namespace std;
 using namespace meta;
@@ -235,6 +235,25 @@ void recursive_print_class_under_namespace(const std::string& ns_name)
 	json result = language::type_db::instance().to_json();
 	ofstream json_out("type_info.json");
 	json_out << setw(4) << result << endl;
+}
+void recursive_build_class_node_under_namespace(const std::string& ns_name)
+{
+	std::queue<language::node*> tasks;
+	auto& all_ns_nodes = language::name_space::get_synonymous_name_spaces(ns_name);
+
+	auto cur_visitor = [&ns_name](const language::node* _node)
+	{
+		if (_node->get_kind() == CXCursor_ClassTemplate || _node->get_kind() != CXCursor_ClassDecl || _node->get_kind() != CXCursor_StructDecl)
+		{
+			auto temp_node = new language::class_node(_node);
+		}
+		return language::node_visit_result::visit_recurse;
+
+	};
+	for (const auto& i : all_ns_nodes)
+	{
+		language::bfs_visit_nodes(i, cur_visitor);
+	}
 }
 void print_func_decl_info(const language::node* _node)
 {

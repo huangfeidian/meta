@@ -9,6 +9,7 @@ namespace meta::language
     public:
         variable_node(const node* _in_node);
         const type_info* decl_type() const;
+		json to_json() const;
     private:
 		//type_info* from_class_field(const node* _in_node);
 		//type_info* from_class_static_field(const node* _in_node);
