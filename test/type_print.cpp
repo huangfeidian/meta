@@ -1,4 +1,4 @@
-﻿#include "node.h"
+﻿
 #include "name_space.h"
 #include "utils.h"
 #include <iostream>
@@ -240,12 +240,13 @@ void recursive_build_class_node_under_namespace(const std::string& ns_name)
 {
 	std::queue<language::node*> tasks;
 	auto& all_ns_nodes = language::name_space::get_synonymous_name_spaces(ns_name);
-
-	auto cur_visitor = [&ns_name](const language::node* _node)
+	auto & the_logger = utils::get_logger();
+	auto cur_visitor = [&ns_name, &the_logger](const language::node* _node)
 	{
 		if (_node->get_kind() == CXCursor_ClassTemplate || _node->get_kind() != CXCursor_ClassDecl || _node->get_kind() != CXCursor_StructDecl)
 		{
 			auto temp_node = new language::class_node(_node);
+			the_logger.info("new class {}", temp_node->to_json().dump(4));
 		}
 		return language::node_visit_result::visit_recurse;
 
@@ -345,7 +346,7 @@ int main(int argc, char* argv[])
 	};
 	clang_visitChildren(cursor, visitor, nullptr);
 	//recursive_print_decl_under_namespace("A");
-	recursive_print_class_under_namespace("A");
+	recursive_build_class_node_under_namespace("A");
 	//recursive_print_func_under_namespace("A");
 	clang_disposeTranslationUnit(m_translationUnit);
 	return 0;

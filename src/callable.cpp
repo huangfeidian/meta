@@ -49,7 +49,11 @@ namespace meta::language
 			arg_type_json.push_back(json(*i));
 		}
 		result["args_type"] = arg_type_json;
-		result["result_type"] = json(*_result_type);
+		if (_result_type)
+		{
+			result["result_type"] = _result_type->to_json();
+		}
+		
 		return result;
 
 	}

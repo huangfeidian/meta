@@ -26,10 +26,10 @@ namespace meta::language
 		std::multimap<std::string, const callable_node*> _methods;
 		std::multimap<std::string, const callable_node*> _static_methods;
 		std::vector<const callable_node*> _constructors;
-		const callable_node* _destructor;
+		callable_node* _destructor = nullptr;
 		std::vector<const type_info*> _bases;
 		void parse();
-		type_info* _decl_type;
+		type_info* _decl_type = nullptr;
 
 
 	};

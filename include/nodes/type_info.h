@@ -3,9 +3,9 @@
 #include <nlohmann/json.hpp>
 #include "node_base.h"
 #include "../name_space.h"
+using json = nlohmann::json;
 namespace meta::language
 {
-	using json = nlohmann::json;
     class type_info
     {
     public:

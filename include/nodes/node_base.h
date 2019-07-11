@@ -3,8 +3,12 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
+#include <nlohmann/json.hpp>
 #include "../node.h"
 #include "../name_space.h"
+
+using json = nlohmann::json;
+
 namespace meta::language
 {
     class node_base
@@ -31,7 +35,7 @@ namespace meta::language
 		{
 			return nullptr;
 		}
-		json to_json() const
+		virtual json to_json() const
 		{
 			json result;
 			result["name"] = _node->get_name();

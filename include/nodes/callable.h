@@ -15,7 +15,7 @@ namespace meta::language
 		bool can_accept(const std::vector<const type_info*>& _in_args) const;
 		json to_json() const;
 	private:
-		type_info* _result_type;
+		type_info* _result_type = nullptr;
 		std::vector<const variable_node*> _args;
 		void parse();
 
