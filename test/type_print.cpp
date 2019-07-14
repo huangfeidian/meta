@@ -243,7 +243,7 @@ void recursive_build_class_node_under_namespace(const std::string& ns_name)
 	auto & the_logger = utils::get_logger();
 	auto cur_visitor = [&ns_name, &the_logger](const language::node* _node)
 	{
-		if (_node->get_kind() == CXCursor_ClassTemplate || _node->get_kind() != CXCursor_ClassDecl || _node->get_kind() != CXCursor_StructDecl)
+		if (_node->get_kind() == CXCursor_ClassTemplate || _node->get_kind() == CXCursor_ClassDecl || _node->get_kind() == CXCursor_StructDecl)
 		{
 			auto temp_node = new language::class_node(_node);
 			the_logger.info("new class {}", temp_node->to_json().dump(4));
