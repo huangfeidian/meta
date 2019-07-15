@@ -17,15 +17,24 @@ namespace meta::language
 	}
 	bool callable_node::is_class_method() const
 	{
-		return false;
+		return get_node()->get_kind() == CXCursor_CXXMethod;
 	}
 	bool callable_node::is_static_method() const
 	{
-		return false;
+		if (is_class_method())
+		{
+			return clang_CXXMethod_isStatic(get_node()->get_cursor());
+		}
+		else
+		{
+			return false;
+		}
+
+		
 	}
 	bool callable_node::is_public_method() const
 	{
-		return false;
+		return clang_getCXXAccessSpecifier(get_node()->get_cursor()) == CX_CXXPublic;
 	}
 	bool callable_node::can_accept(const std::vector<const type_info*>& _in_args) const
 	{
@@ -33,7 +42,30 @@ namespace meta::language
 	}
 	void callable_node::parse()
 	{
-		return;
+		auto& the_logger = utils::get_logger();
+		std::vector<CXCursor> children;
+
+		auto visitor = [](CXCursor cursor, CXCursor parent, CXClientData data)
+		{
+			auto container = static_cast<std::vector<CXCursor> *>(data);
+
+			container->emplace_back(cursor);
+
+			if (cursor.kind == CXCursor_LastPreprocessing)
+				return CXChildVisit_Break;
+
+			return CXChildVisit_Continue;
+		};
+		const auto& _cur_cursor = get_node()->get_cursor();
+		clang_visitChildren(_cur_cursor, visitor, &children);
+		int num_args = clang_Cursor_getNumArguments(_cur_cursor);
+		auto _cur_type = clang_getCursorType(_cur_cursor);
+		_result_type = type_db::instance().get_type(clang_getResultType(_cur_type));
+		for (int i = 0; i < num_args; i++)
+		{
+			auto arg_cursor = clang_Cursor_getArgument(_cur_cursor, i);
+			_args.push_back(new variable_node(node_db::get_instance().create_node(arg_cursor)));
+		}
 	}
 	json callable_node::to_json() const
 	{

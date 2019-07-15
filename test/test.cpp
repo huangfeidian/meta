@@ -7,8 +7,18 @@ namespace A::B
 {
     struct C
     {
+    public:
         int a;
+    private:
+        int c;
+        static int d;
+
+        static int fail_me();
     };
+    int C::fail_me()
+    {
+        return 1;
+    }
     struct nothing
     {
         int a;
