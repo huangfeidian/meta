@@ -25,14 +25,31 @@ namespace meta::language
 	void class_node::parse()
 	{
 		auto& the_logger = utils::get_logger();
-		for (const auto& i : get_node()->get_all_children())
+		std::vector<CXCursor> children;
+
+		auto visitor = [](CXCursor cursor, CXCursor parent, CXClientData data)
 		{
-			switch (i->get_kind())
+			auto container = static_cast<std::vector<CXCursor> *>(data);
+
+			container->emplace_back(cursor);
+
+			if (cursor.kind == CXCursor_LastPreprocessing)
+				return CXChildVisit_Break;
+
+			return CXChildVisit_Continue;
+		};
+
+		clang_visitChildren(get_node()->get_cursor(), visitor, &children);
+
+		for (const auto& i : children)
+		{
+			switch (clang_getCursorKind(i))
 			{
 			case CXCursor_FieldDecl:
 			{
-				auto cur_var_name = i->get_name();
-				auto cur_var_node = new variable_node(i);
+				
+				auto cur_var_node = new variable_node(node_db::get_instance().create_node(i));
+				auto cur_var_name = cur_var_node->name();
 				auto pre_iter = _fields.find(cur_var_name);
 				if (pre_iter != _fields.end())
 				{
@@ -45,8 +62,9 @@ namespace meta::language
 				
 			case CXCursor_VarDecl:
 			{
-				auto cur_var_name = i->get_name();
-				auto cur_var_node = new variable_node(i);
+				
+				auto cur_var_node = new variable_node(node_db::get_instance().create_node(i));
+				auto cur_var_name = cur_var_node->name();
 				auto pre_iter = _static_fields.find(cur_var_name);
 				if (pre_iter != _static_fields.end())
 				{
@@ -58,10 +76,11 @@ namespace meta::language
 			}
 			case CXCursor_CXXMethod:
 			{
-				auto cur_func_name = i->get_name();
-				auto cur_func_node = new callable_node(i);
+				
+				auto cur_func_node = new callable_node(node_db::get_instance().create_node(i));
+				auto cur_func_name = cur_func_node->name();
 				the_logger.debug("class {} has func {} with arg_size {}", get_node()->get_name(), cur_func_name, cur_func_node->args_type().size());
-				if (clang_CXXMethod_isStatic(i->get_cursor()))
+				if (clang_CXXMethod_isStatic(i))
 				{
 					_static_methods.emplace(cur_func_name, cur_func_node);
 				}
@@ -73,20 +92,20 @@ namespace meta::language
 			}
 			case CXCursor_Constructor:
 			{
-				auto cur_func_node = new callable_node(i);
+				auto cur_func_node = new callable_node(node_db::get_instance().create_node(i));
 				the_logger.debug("class {} has constructor with arg_size {}", get_node()->get_name(), cur_func_node->args_type().size());
 				_constructors.push_back(cur_func_node);
 			}
 			case CXCursor_Destructor:
 			{
-				auto cur_func_node = new callable_node(i);
+				auto cur_func_node = new callable_node(node_db::get_instance().create_node(i));
 				the_logger.debug("class {} has destructor", get_node()->get_name());
 				_destructor = cur_func_node;
 				break;
 			}
 			case CXCursor_CXXBaseSpecifier:
 			{
-				auto cur_type_info = type_db::instance().get_type(clang_getCursorType(i->get_cursor()));
+				auto cur_type_info = type_db::instance().get_type(clang_getCursorType(i));
 				_bases.push_back(cur_type_info);
 				break;
 
