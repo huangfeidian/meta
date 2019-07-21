@@ -2,7 +2,7 @@
 #include "nodes/callable.h"
 #include "nodes/variable.h"
 #include "nodes/class.h"
-
+#include "nodes/enum.h"
 
 namespace meta::language
 {
@@ -15,6 +15,10 @@ namespace meta::language
 		j = cur_node.to_json();
 	}
 	void to_json(json& j, const callable_node& cur_node)
+	{
+		j = cur_node.to_json();
+	}
+	void to_json(json& j, const enum_node& cur_node)
 	{
 		j = cur_node.to_json();
 	}

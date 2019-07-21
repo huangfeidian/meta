@@ -5,6 +5,15 @@
 using namespace std;
 namespace A::B
 {
+    enum e_a
+    {
+        test_e_1
+    };
+    enum class e_b:std::uint8_t
+    {
+        test_e_2,
+        test_e_3
+    };
     struct C
     {
     public:
@@ -14,6 +23,10 @@ namespace A::B
         static int d;
 
         static int fail_me();
+        enum e_c
+        {
+            test_e_d
+        };
     };
     int C::fail_me()
     {

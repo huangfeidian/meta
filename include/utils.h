@@ -2,7 +2,7 @@
 #include <spdlog/spdlog.h>
 #include <string>
 #include <clang-c/Index.h>
-
+#include <optional>
 
 namespace meta::utils
 {
@@ -32,4 +32,6 @@ namespace meta::utils
 			return clang_equalCursors(from, to);
 		}
 	};
+	std::vector<CXCursor> cursor_get_children(CXCursor parent);
+	CXTypeKind expect_std_int(CXType int_type);
 }

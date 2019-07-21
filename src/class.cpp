@@ -25,21 +25,7 @@ namespace meta::language
 	void class_node::parse()
 	{
 		auto& the_logger = utils::get_logger();
-		std::vector<CXCursor> children;
-
-		auto visitor = [](CXCursor cursor, CXCursor parent, CXClientData data)
-		{
-			auto container = static_cast<std::vector<CXCursor> *>(data);
-
-			container->emplace_back(cursor);
-
-			if (cursor.kind == CXCursor_LastPreprocessing)
-				return CXChildVisit_Break;
-
-			return CXChildVisit_Continue;
-		};
-
-		clang_visitChildren(get_node()->get_cursor(), visitor, &children);
+		std::vector<CXCursor> children = utils::cursor_get_children(get_node()->get_cursor());
 
 		for (const auto& i : children)
 		{

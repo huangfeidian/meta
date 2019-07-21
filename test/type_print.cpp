@@ -7,7 +7,7 @@
 #include <fstream>
 #include <iomanip>
 #include "nodes/class.h"
-
+#include "nodes/enum.h"
 using namespace std;
 using namespace meta;
 using json = nlohmann::json;
@@ -248,8 +248,14 @@ void recursive_build_class_node_under_namespace(const std::string& ns_name)
 			auto temp_node = new language::class_node(_node);
 			the_logger.info("new class {}", temp_node->to_json().dump(4));
 		}
+		if (_node->get_kind() == CXCursor_EnumDecl)
+		{
+			auto temp_node = new language::enum_node(_node);
+			the_logger.info("new enum {}", temp_node->to_json().dump(4));
+			
+		}
 		return language::node_visit_result::visit_recurse;
-
+		
 	};
 	for (const auto& i : all_ns_nodes)
 	{

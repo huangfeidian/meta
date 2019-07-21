@@ -43,21 +43,8 @@ namespace meta::language
 	void callable_node::parse()
 	{
 		auto& the_logger = utils::get_logger();
-		std::vector<CXCursor> children;
-
-		auto visitor = [](CXCursor cursor, CXCursor parent, CXClientData data)
-		{
-			auto container = static_cast<std::vector<CXCursor> *>(data);
-
-			container->emplace_back(cursor);
-
-			if (cursor.kind == CXCursor_LastPreprocessing)
-				return CXChildVisit_Break;
-
-			return CXChildVisit_Continue;
-		};
 		const auto& _cur_cursor = get_node()->get_cursor();
-		clang_visitChildren(_cur_cursor, visitor, &children);
+		std::vector<CXCursor> children = utils::cursor_get_children(_cur_cursor);
 		int num_args = clang_Cursor_getNumArguments(_cur_cursor);
 		auto _cur_type = clang_getCursorType(_cur_cursor);
 		_result_type = type_db::instance().get_type(clang_getResultType(_cur_type));

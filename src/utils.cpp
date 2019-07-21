@@ -455,5 +455,55 @@ namespace meta::utils
 
 	}
 
+	std::vector<CXCursor> cursor_get_children(CXCursor parent)
+	{
+		std::vector<CXCursor> children;
+
+		auto visitor = [](CXCursor cursor, CXCursor parent, CXClientData data)
+		{
+			auto container = static_cast<std::vector<CXCursor> *>(data);
+
+			container->emplace_back(cursor);
+
+			if (cursor.kind == CXCursor_LastPreprocessing)
+				return CXChildVisit_Break;
+
+			return CXChildVisit_Continue;
+		};
+
+		clang_visitChildren(parent, visitor, &children);
+		return children;
+	}
+	CXTypeKind expect_std_int(CXType int_type)
+	{
+		const static std::unordered_map<std::string, CXTypeKind> std_int_map = {
+			{"std::int8_t", CXType_SChar},
+			{"std::uint8_t", CXType_UChar},
+			{"std::int16_t", CXType_Short},
+			{"std::uint16_t", CXType_UShort},
+			{"std::int32_t", CXType_Int},
+			{"std::uint32_t", CXType_UInt},
+			{"std::int64_t", CXType_LongLong},
+			{"std::uint64_t", CXType_ULongLong}
+		};
+		if (int_type.kind != CXType_Elaborated)
+		{
+			return int_type.kind;
+		}
+		else
+		{
+			auto cur_iter = std_int_map.find(to_string(int_type));
+			if (cur_iter != std_int_map.end())
+			{
+				return cur_iter->second;
+			}
+			else
+			{
+				return CXType_Invalid;
+			}
+
+		}
+
+	}
 
 }
