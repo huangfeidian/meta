@@ -83,7 +83,7 @@ namespace meta::language
 	}
 	std::uint64_t enum_node::value_for(const std::string& _in_key) const
 	{
-		for (int i = 0; i < _keys.size(); i++)
+		for (std::size_t i = 0; i < _keys.size(); i++)
 		{
 			if (_keys[i] == _in_key)
 			{

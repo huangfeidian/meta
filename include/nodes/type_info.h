@@ -13,6 +13,7 @@ namespace meta::language
         
         const type_info* ref_type() const; // return the base type example: int vector
         const std::vector<const type_info*>& template_args() const;
+		bool is_alias() const;
         bool is_completed() const; // is this a type that depends on other variable not in current lexical scope
         bool is_templated() const;// is this a template type
 		bool is_base() const; // is this a type declare
@@ -25,12 +26,14 @@ namespace meta::language
 		bool is_pointer() const; // is T* const T*
 		const type_info* point_to() const;// return T for T * return const T for const T * else nullptr
 		const type_info* refer_to() const;// return (const) T for (const) T &/&& return nullptr for others
+		const type_info* alias_to() const; // return typedef or alias type_info if any
 		enum CXTypeKind kind() const;
 		const CXType& type() const;
 		const std::string& name() const;
 		bool has_type() const;
 		const class_node* related_class() const;
 		bool set_related_class(class_node* _in_class);
+		bool can_accept_arg_type(const type_info* arg_type) const;
 		json to_json() const;
     private:
 
@@ -50,6 +53,7 @@ namespace meta::language
     {
     public:
 		type_info* get_type(const CXType& _in_type);
+		type_info* get_alias_typedef(CXCursor _in_cursor);
         static type_db& instance()
         {
             static type_db _instance;

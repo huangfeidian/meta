@@ -16,19 +16,22 @@ namespace A::B
     };
     struct C
     {
+
+        using a_int = const std::uint8_t;
+        typedef std::uint16_t b_int;
     public:
         int a;
     private:
         int c;
         static int d;
 
-        static int fail_me(const void * const a);
+        static int fail_me(const a_int * const a);
         enum e_c
         {
             test_e_d
         };
     };
-    int C::fail_me(const void * const a)
+    int C::fail_me(const C::a_int * const a)
     {
         return 1;
     }

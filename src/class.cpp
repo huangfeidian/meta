@@ -97,6 +97,13 @@ namespace meta::language
 				break;
 
 			}
+			case CXCursor_TypedefDecl:
+			case CXCursor_TypeAliasDecl:
+
+			{
+				type_db::instance().get_alias_typedef(i);
+				break;
+			}
 			default:
 				break;
 			}
@@ -131,7 +138,20 @@ namespace meta::language
 			}
 			candi_begin++;
 		}
-		return nullptr;
+		for (const auto& i : _bases)
+		{
+			auto temp_base_class = i->related_class();
+			if (temp_base_class)
+			{
+				auto temp_result = temp_base_class->has_method_for(_func_name, _args);
+				if (temp_result)
+				{
+					return temp_result;
+				}
+			}
+			
+		}
+		return has_static_method_for(_func_name, _args);
 	}
 	const callable_node* class_node::has_static_method_for(const std::string& _func_name, const std::vector<const type_info*>& _args) const
 	{
@@ -146,6 +166,20 @@ namespace meta::language
 			}
 			candi_begin++;
 		}
+		for (const auto& i : _bases)
+		{
+			auto temp_base_class = i->related_class();
+			if (temp_base_class)
+			{
+				auto temp_result = temp_base_class->has_static_method_for(_func_name, _args);
+				if (temp_result)
+				{
+					return temp_result;
+				}
+			}
+
+		}
+		return nullptr;
 		return nullptr;
 	}
 	const variable_node* class_node::has_field(const std::string& _field_name) const

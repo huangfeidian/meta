@@ -244,17 +244,32 @@ void recursive_build_class_node_under_namespace(const std::string& ns_name)
 	auto & the_logger = utils::get_logger();
 	auto cur_visitor = [&ns_name, &the_logger](const language::node* _node)
 	{
-		if (_node->get_kind() == CXCursor_ClassTemplate || _node->get_kind() == CXCursor_ClassDecl || _node->get_kind() == CXCursor_StructDecl)
+		switch (_node->get_kind())
+		{
+		case CXCursor_ClassTemplate:
+		case CXCursor_ClassDecl:
+		case CXCursor_StructDecl:
 		{
 			auto temp_node = new language::class_node(_node);
 			the_logger.info("new class {}", temp_node->to_json().dump(4));
+			break;
 		}
-		if (_node->get_kind() == CXCursor_EnumDecl)
+		case CXCursor_EnumDecl:
 		{
 			auto temp_node = new language::enum_node(_node);
 			the_logger.info("new enum {}", temp_node->to_json().dump(4));
-			
+			break;
 		}
+		case CXCursor_TypedefDecl:
+		case CXCursor_TypeAliasDecl:
+		{
+			language::type_db::instance().get_alias_typedef(_node->get_cursor());
+			break;
+		}
+		default:
+			break;
+		}
+
 		return language::node_visit_result::visit_recurse;
 		
 	};
@@ -354,7 +369,7 @@ int main(int argc, char* argv[])
 	};
 	clang_visitChildren(cursor, visitor, nullptr);
 	//recursive_print_decl_under_namespace("A");
-	//recursive_build_class_node_under_namespace("std");
+	recursive_build_class_node_under_namespace("std");
 	recursive_build_class_node_under_namespace("A");
 	//recursive_print_func_under_namespace("A");
 	json result = language::type_db::instance().to_json();

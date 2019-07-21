@@ -23,6 +23,10 @@ namespace
 	{
 		return clang_isConstQualifiedType(_cur_type);
 	}
+	bool is_alias(CXType _cur_type)
+	{
+		return _cur_type.kind == CXType_Typedef;
+	}
     
 }
 namespace meta::language
@@ -108,6 +112,10 @@ namespace meta::language
 	{
 		return _kind == CXTypeKind::CXType_LValueReference || _kind == CXTypeKind::CXType_RValueReference;
 	}
+	bool type_info::is_alias()const
+	{
+		return _kind == CXTypeKind::CXType_Typedef;
+	}
 	bool type_info::is_lvalue_refer() const
 	{
 		return _kind == CXTypeKind::CXType_LValueReference;
@@ -135,6 +143,19 @@ namespace meta::language
 			return nullptr;
 		}
 		return _ref_type;
+	}
+	const type_info* type_info::alias_to() const
+	{
+		if (!is_alias())
+		{
+			return nullptr;
+		}
+		return _ref_type;
+	}
+	bool type_info::can_accept_arg_type(const type_info* arg_type) const
+	{
+		//TODO 完成类型转换相关
+		return false;
 	}
 	bool type_info::set_related_class(class_node* _in_class)
 	{
@@ -168,6 +189,10 @@ namespace meta::language
 		json result;
 		result["name"] = _name;
 		result["kind"] = static_cast<std::uint32_t>(_kind);
+		result["is_const"] = is_const();
+		result["is_pointer"] = is_pointer();
+		result["is_alias"] = is_alias();
+		result["is_refer"] = is_reference();
 		if (_ref_type)
 		{
 			result["ref_type"] = _ref_type->name();
@@ -332,9 +357,9 @@ namespace meta::language
 			}
 			return type_iter->second;
 		}
-		if (full_name == "auto")
+		if (_in_type.kind == CXType_Auto)
 		{
-			auto final_type = new type_info("auto", _in_type, nullptr);
+			auto final_type = new type_info(full_name, _in_type, nullptr);
 			_type_data[full_name] = final_type;
 			return final_type;
 		}
@@ -366,6 +391,30 @@ namespace meta::language
 	type_info * type_db::get_type_for_template_class(CXCursor _template_class_decl)
 	{
 		return nullptr;
+	}
+	type_info* type_db::get_alias_typedef(CXCursor _in_cursor)
+	{
+		auto& the_logger = utils::get_logger();
+		if (_in_cursor.kind != CXCursor_TypedefDecl && _in_cursor.kind != CXCursor_TypeAliasDecl)
+		{
+			
+			the_logger.warn("get_alias_typedef for invalid cursor {}", utils::to_string(_in_cursor));
+			return nullptr;
+		}
+		auto cur_type = clang_getCursorType(_in_cursor);
+		auto full_name = utils::to_string(cur_type);
+		if (full_name.empty())
+		{
+			the_logger.warn("get_alias_typedef for empty cursor {} with empty full name", utils::to_string(_in_cursor));
+			return nullptr;
+		}
+		auto alias_type = clang_getTypedefDeclUnderlyingType(_in_cursor);
+		auto alias_type_info = get_type(alias_type);
+		the_logger.debug("get_alias_typedef from type {} to type {}", utils::to_string(cur_type), utils::to_string(alias_type));
+		auto result_type = new type_info(full_name, cur_type, alias_type_info);
+		_type_data[full_name] = result_type;
+		return result_type;
+
 	}
 	json type_db::to_json() const
 	{
