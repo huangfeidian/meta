@@ -22,13 +22,13 @@ namespace A::B
         int c;
         static int d;
 
-        static int fail_me();
+        static int fail_me(const void * const a);
         enum e_c
         {
             test_e_d
         };
     };
-    int C::fail_me()
+    int C::fail_me(const void * const a)
     {
         return 1;
     }

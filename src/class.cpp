@@ -10,6 +10,7 @@ namespace meta::language
 		auto cur_cursor = _in_node->get_cursor();
 		auto cur_cursor_type = clang_getCursorType(cur_cursor);
 		_decl_type = type_db::instance().get_type(cur_cursor_type);
+		_decl_type->set_related_class(this);
 		auto& the_logger = utils::get_logger();
 		if (_decl_type)
 		{
@@ -186,6 +187,7 @@ namespace meta::language
 	{
 		json result;
 		result["name"] = name();
+		result["qualified_name"] = qualified_name();
 		result["node_type"] = "class";
 		json static_fields_json;
 		for (const auto i : _static_fields)

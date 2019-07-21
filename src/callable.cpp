@@ -58,6 +58,7 @@ namespace meta::language
 	{
 		json result;
 		result["name"] = name();
+		result["qualified_name"] = qualified_name();
 		result["node_type"] = "callable";
 		result["is_class_method"] = is_class_method();
 		result["is_static_method"] = is_static_method();

@@ -1,4 +1,5 @@
 ﻿#include "nodes/type_info.h"
+#include "nodes/class.h"
 namespace
 {
     
@@ -135,6 +136,33 @@ namespace meta::language
 		}
 		return _ref_type;
 	}
+	bool type_info::set_related_class(class_node* _in_class)
+	{
+		auto& the_logger = utils::get_logger();
+		if (_related_class)
+		{
+			return false;
+		}
+		if (!_in_class)
+		{
+			return false;
+		}
+		auto & qualified_class_name = _in_class->get_node()->get_qualified_name();
+		if (qualified_class_name != _name)
+		{
+			the_logger.info("fail to set related class with class qualified name {} type name {}", qualified_class_name, _name);
+			return false;
+		}
+		else
+		{
+			_related_class = _in_class;
+			return true;
+		}
+	}
+	const class_node* type_info::related_class() const
+	{
+		return _related_class;
+	}
 	json type_info::to_json() const
 	{
 		json result;
@@ -153,6 +181,10 @@ namespace meta::language
 			}
 			result["args"] = args;
 		}
+		if (_related_class)
+		{
+			result["related_class"] = _related_class->name();
+		}
 		return result;
 	}
 
@@ -161,7 +193,7 @@ namespace meta::language
 		auto full_name = utils::to_string(_in_type);
 		auto cur_kind = _in_type.kind;
 		auto decl_cursor = clang_getTypeDeclaration(_in_type);
-		if (clang_Cursor_isNull(decl_cursor))
+		if (clang_Cursor_isNull(decl_cursor) || decl_cursor.kind == CXCursor_NoDeclFound)
 		{
 			if (cur_kind >= CXType_Void && cur_kind <= CXType_Float16)
 			{
@@ -300,11 +332,18 @@ namespace meta::language
 			}
 			return type_iter->second;
 		}
+		if (full_name == "auto")
+		{
+			auto final_type = new type_info("auto", _in_type, nullptr);
+			_type_data[full_name] = final_type;
+			return final_type;
+		}
 		auto is_const = clang_isConstQualifiedType(_in_type);
 		if (is_const)
 		{
 			return get_type_for_const(_in_type);
 		}
+
 		auto pointer_to_type = clang_getPointeeType(_in_type);
 		
 		if (pointer_to_type.kind != CXTypeKind::CXType_Invalid)

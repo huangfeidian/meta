@@ -8,6 +8,7 @@
 #include <iomanip>
 #include "nodes/class.h"
 #include "nodes/enum.h"
+#include <cstdint>
 using namespace std;
 using namespace meta;
 using json = nlohmann::json;
@@ -261,6 +262,7 @@ void recursive_build_class_node_under_namespace(const std::string& ns_name)
 	{
 		language::bfs_visit_nodes(i, cur_visitor);
 	}
+
 }
 void print_func_decl_info(const language::node* _node)
 {
@@ -352,8 +354,12 @@ int main(int argc, char* argv[])
 	};
 	clang_visitChildren(cursor, visitor, nullptr);
 	//recursive_print_decl_under_namespace("A");
+	//recursive_build_class_node_under_namespace("std");
 	recursive_build_class_node_under_namespace("A");
 	//recursive_print_func_under_namespace("A");
+	json result = language::type_db::instance().to_json();
+	ofstream json_out("type_info.json");
+	json_out << setw(4) << result << endl;
 	clang_disposeTranslationUnit(m_translationUnit);
 	return 0;
 }

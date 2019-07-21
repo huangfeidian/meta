@@ -3,6 +3,7 @@
 #include <nlohmann/json.hpp>
 #include "node_base.h"
 #include "../name_space.h"
+#include "forward.h"
 using json = nlohmann::json;
 namespace meta::language
 {
@@ -28,6 +29,8 @@ namespace meta::language
 		const CXType& type() const;
 		const std::string& name() const;
 		bool has_type() const;
+		const class_node* related_class() const;
+		bool set_related_class(class_node* _in_class);
 		json to_json() const;
     private:
 
@@ -39,7 +42,9 @@ namespace meta::language
 		const std::string _name;
 		enum CXTypeKind _kind;
 		const type_info* _ref_type;
+		class_node* _related_class = nullptr;
         friend class type_db;
+
 	};
     class type_db
     {

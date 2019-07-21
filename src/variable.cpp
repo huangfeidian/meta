@@ -26,6 +26,7 @@ namespace meta::language
 	{
 		json result;
 		result["name"] = name();
+		result["qualified_name"] = qualified_name();
 		result["node_type"] = "variable";
 		result["var_type"] = _decl_type->name();
 		return result;

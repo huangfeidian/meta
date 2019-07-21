@@ -100,6 +100,7 @@ namespace meta::language
 	{
 		json result;
 		result["name"] = name();
+		result["qualified_name"] = qualified_name();
 		result["node_type"] = "enum";
 		json values;
 		for (int i = 0; i < _keys.size(); i++)
