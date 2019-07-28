@@ -39,6 +39,7 @@ namespace meta::language
 		{
 			json result;
 			result["name"] = _node->get_qualified_name();
+			result["location"] = _node->get_position();
 			return result;
 		}
     private:

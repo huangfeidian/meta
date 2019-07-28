@@ -4,6 +4,7 @@
 #include <variant>
 #include <optional>
 #include <string>
+#include <vector>
 using namespace std;
 namespace A
 {
@@ -37,7 +38,7 @@ namespace A
     template <typename T, typename B = std::vector<T>>
     struct s_4
     {
-        T _v;
+        vector<T> _v;
         B _s;
     };
 }

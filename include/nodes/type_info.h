@@ -68,6 +68,9 @@ namespace meta::language
 		type_info* get_type_for_pointee(CXType _in_type);
 		type_info* get_type_for_template(CXType _in_type);
 		type_info * get_type_for_template_class(CXCursor _template_class_decl);
+		type_info* get_base_type_for_template(CXType _in_type);
+
+	private:
         std::unordered_map<std::string, type_info*> _type_data; // qualified name to type_info
 		std::unordered_map<std::string, class_node*> _class_data;// qualified name to class_node
         type_db();

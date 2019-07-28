@@ -7,11 +7,14 @@ namespace meta::language
 	class_node::class_node(const node* _in_node):
 		node_base(_in_node)
 	{
+		auto& the_logger = utils::get_logger();
 		auto cur_cursor = _in_node->get_cursor();
 		auto cur_cursor_type = clang_getCursorType(cur_cursor);
+		//TODO template classes has invalid cur_cursor_type so actions below has no effect
+		the_logger.info("class {} has cursor_type {}", name(), utils::to_string(cur_cursor_type));
 		_decl_type = type_db::instance().get_type(cur_cursor_type);
 		
-		auto& the_logger = utils::get_logger();
+		
 		if (_decl_type)
 		{
 			the_logger.info("class {} has type {}", name(), _decl_type->name());
@@ -113,7 +116,14 @@ namespace meta::language
 			case CXCursor_TemplateTypeParameter:
 			{
 				the_logger.debug("get template type arg {}  cursor_type {} for class {}", utils::full_name(i), utils::to_string(clang_getCursorType(i)), name());
+				_template_args.push_back(utils::to_string(i));
 				utils::template_types::instance().add_type(i);
+				break;
+			}
+			case CXCursor_NonTypeTemplateParameter:
+			{
+				the_logger.debug("get non type template type arg {}  cursor_type {} for class {}", utils::full_name(i), utils::to_string(clang_getCursorType(i)), name());
+				_template_args.push_back(utils::to_string(i));
 				break;
 			}
 			default:
@@ -274,7 +284,8 @@ namespace meta::language
 			constructor_json.push_back(*i);
 		}
 		result["constructors"] = constructor_json;
-		result["template_arg_num"] = _template_args.size();
+		result["template_args"] = _template_args;
+		result["location"] = get_node()->get_position();
 		return result;
 	}
 }

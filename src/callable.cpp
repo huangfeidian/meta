@@ -73,7 +73,7 @@ namespace meta::language
 		{
 			result["result_type"] = _result_type->to_json();
 		}
-		
+		result["location"] = get_node()->get_position();
 		return result;
 
 	}

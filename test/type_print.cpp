@@ -378,7 +378,7 @@ int main(int argc, char* argv[])
 	};
 	clang_visitChildren(cursor, visitor, nullptr);
 	//recursive_print_decl_under_namespace("A");
-	//recursive_build_class_node_under_namespace("std");
+	recursive_build_class_node_under_namespace("std");
 	recursive_build_class_node_under_namespace("A");
 	//recursive_print_func_under_namespace("A");
 	json result = language::type_db::instance().to_json();

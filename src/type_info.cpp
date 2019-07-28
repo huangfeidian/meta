@@ -216,7 +216,7 @@ namespace meta::language
 
 	type_info* type_db::get_type_for_const(CXType _in_type)
 	{
-		_in_type = clang_getCanonicalType(_in_type);
+		//_in_type = clang_getCanonicalType(_in_type);
 		auto full_name = utils::to_string(_in_type);
 		auto cur_kind = _in_type.kind;
 		auto decl_cursor = clang_getTypeDeclaration(_in_type);
@@ -248,6 +248,7 @@ namespace meta::language
 			else
 			{
 				
+				//auto pointer_to_type = clang_getCanonicalType(clang_getPointeeType(_in_type));
 				auto pointer_to_type = clang_getPointeeType(_in_type);
 				if (pointer_to_type.kind != CXTypeKind::CXType_Invalid)
 				{
@@ -293,8 +294,9 @@ namespace meta::language
 	}
 	type_info* type_db::get_type_for_pointee(CXType _in_type)
 	{
-		_in_type = clang_getCanonicalType(_in_type);
+		//_in_type = clang_getCanonicalType(_in_type);
 		auto full_name = utils::to_string(_in_type);
+		//auto pointer_to_type = clang_getCanonicalType(clang_getPointeeType(_in_type));
 		auto pointer_to_type = clang_getPointeeType(_in_type);
 		auto pointee_type = get_type(pointer_to_type);
 		auto final_result = new type_info(full_name, _in_type, pointee_type);
@@ -303,37 +305,10 @@ namespace meta::language
 	}
 	type_info* type_db::get_type_for_template(CXType _in_type)
 	{
-		_in_type = clang_getCanonicalType(_in_type);
-		auto full_name = utils::to_string(_in_type);
+		auto full_name = utils::to_string(clang_getCanonicalType(_in_type));
 		auto argu_num = clang_Type_getNumTemplateArguments(_in_type);
-		auto decl_cursor = clang_getTypeDeclaration(_in_type);
-		auto decl_name = utils::full_name(decl_cursor);
-		auto temp_str0 = utils::to_string(decl_cursor);
-		auto decl_type = clang_getCursorType(decl_cursor);
-		auto temp_str1 = utils::to_string(decl_type);
-		type_info* base_type;
-		auto decl_iter = _type_data.find(decl_name);
-		if (decl_iter != _type_data.end())
-		{
-			base_type = decl_iter->second;
-		}
-		else
-		{
+		type_info* base_type = get_base_type_for_template(_in_type);
 
-			if (clang_equalTypes(_in_type, decl_type))
-			{
-				base_type = nullptr;
-			}
-			else
-			{
-				auto defi_cursor = clang_getCursorDefinition(decl_cursor);
-				auto temp_str2 = utils::to_string(defi_cursor);
-				auto defi_type = clang_getCursorType(defi_cursor);
-				auto temp_str3 = utils::to_string(defi_type);
-				base_type = get_type(decl_type);
-			}
-		}
-		
 		
 		std::vector<const type_info*> arg_types;
 		for (int i = 0; i < argu_num; i++)
@@ -347,10 +322,45 @@ namespace meta::language
 		_type_data[full_name] = final_result;
 		return final_result;
 	}
+	type_info* type_db::get_base_type_for_template(CXType _in_type)
+	{
+		auto decl_cursor = clang_getTypeDeclaration(_in_type);
+		auto decl_name = utils::full_name(decl_cursor);
+		auto temp_str0 = utils::to_string(decl_cursor);
+		auto decl_type = clang_getCursorType(decl_cursor);
+		auto temp_str1 = utils::to_string(decl_type);
+		auto& the_logger = utils::get_logger();
+		the_logger.debug("get_base_type_for_template in_type {} decl_name {} temp_str0 {} decl_type {}", utils::to_string(_in_type), decl_name, temp_str0, temp_str1);
+		auto decl_iter = _type_data.find(decl_name);
+		if (decl_iter != _type_data.end())
+		{
+			return decl_iter->second;
+		}
 
+		if (clang_equalTypes(_in_type, decl_type))
+		{
+			return nullptr;
+		}
+		else
+		{
+			auto defi_cursor = clang_getCursorDefinition(decl_cursor);
+			auto temp_str2 = utils::to_string(defi_cursor);
+			auto defi_type = clang_getCursorType(defi_cursor);
+			auto temp_str3 = utils::to_string(defi_type);
+			the_logger.debug("get defi_cursor {} defi_type {}", temp_str2, temp_str3);
+			return get_type(defi_type);
+		}
+		//if (base_type == nullptr)
+		//{
+		//	if (_in_type.kind == CXTypeKind::CXType_Unexposed)
+		//	{
+
+		//	}
+		//}
+	}
 	type_info* type_db::get_type(CXType _in_type)
 	{
-		_in_type = clang_getCanonicalType(_in_type);
+		//_in_type = clang_getCanonicalType(_in_type);
 		auto full_name = utils::to_string(_in_type);
 		auto type_iter = _type_data.find(full_name);
 		if (type_iter != _type_data.end())

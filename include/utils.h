@@ -9,7 +9,7 @@ namespace meta::utils
 	std::string to_string(const CXCursor& _in_cursor);
 	std::string to_string(const CXString &str);
 	std::string to_string(const CXType& _in_type);
-	const std::string& full_name(const CXType& _in_type);
+	std::string full_name(const CXType& _in_type);
 	std::string to_string(CXTemplateArgumentKind _in_kind);
 	std::string to_string(CXTypeKind _in_kind);
 	const std::string& full_name(CXCursor in_cursor);

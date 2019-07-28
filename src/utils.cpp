@@ -47,10 +47,16 @@ namespace meta::utils
 		}
 		return to_string(clang_getTypeSpelling(_in_type));
 	}
-	const std::string& full_name(const CXType& _in_type)
+	std::string full_name(const CXType& _in_type)
 	{
 		auto decl_cursor = clang_getTypeDeclaration(_in_type);
-		return full_name(decl_cursor);
+
+		auto& result = full_name(decl_cursor);
+		if (result.empty())
+		{
+			return utils::to_string(_in_type);
+		}
+		return result;
 	}
 	std::string to_string(CXTypeKind _in_kind)
 	{

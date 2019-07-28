@@ -10,11 +10,11 @@ namespace meta::language
 		auto& the_logger = utils::get_logger();
 		if (_decl_type)
 		{
-			the_logger.info("get_type {} fullname {} for variable {}", _decl_type->name(), utils::full_name(clang_getCursorType(_in_node->get_cursor())), _in_node->get_name());
+			the_logger.info("get_type {} fullname {} canocial type {} for variable {}", _decl_type->name(), utils::full_name(clang_getCursorType(_in_node->get_cursor())), utils::full_name(clang_getCanonicalType(clang_getCursorType(_in_node->get_cursor()))), _in_node->get_name());
 		}
 		else
 		{
-			the_logger.info("cant get_type for variable {}", _in_node->get_name());
+			the_logger.warn("cant get_type for variable {}", _in_node->get_name());
 		}
 		
 	}
@@ -29,6 +29,7 @@ namespace meta::language
 		result["qualified_name"] = qualified_name();
 		result["node_type"] = "variable";
 		result["var_type"] = _decl_type->name();
+		result["location"] = get_node()->get_position();
 
 		return result;
 	}
