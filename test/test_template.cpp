@@ -27,14 +27,14 @@ namespace A
         using string::size;
     };
     class s_3;
-    class s_3:public variant<bool, int, double, string, vector<s_3>>
+    class s_3:public variant<bool, uint32_t, double, string, std::vector<s_3>>
     {
         public:
-        using base = variant<bool, int, double, string, vector<s_3>>;
+        using base = variant<bool, uint32_t, double, string, std::vector<s_3>>;
         using base::base;
         using base::operator=;
     };
-    template <typename T, typename B = vector<T>>
+    template <typename T, typename B = std::vector<T>>
     struct s_4
     {
         T _v;

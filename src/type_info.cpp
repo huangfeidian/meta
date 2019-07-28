@@ -38,7 +38,7 @@ namespace meta::language
 	{
 
 	}
-	type_info::type_info(const std::string& _in_name, const CXType& _in_type, const type_info* _in_ref_type):
+	type_info::type_info(const std::string& _in_name, CXType _in_type, const type_info* _in_ref_type):
 		_type(_in_type),
 		_kind(_in_type.kind),
 		_ref_type(_in_ref_type),
@@ -50,7 +50,7 @@ namespace meta::language
 	{
 		return _name;
 	}
-	const CXType& type_info::type() const
+	CXType type_info::type() const
 	{
 		return _type;
 	}
@@ -128,17 +128,6 @@ namespace meta::language
 	{
 		return _kind == CXTypeKind::CXType_Pointer || _kind == CXTypeKind::CXType_BlockPointer;
 	}
-	bool type_info::is_brief() const
-	{
-		if (_kind == CXTypeKind::CXType_Unexposed && !_template_args.empty())
-		{
-			return true;
-		}
-		else
-		{
-			return false;
-		}
-	}
 	const type_info* type_info::point_to() const
 	{
 		if (!is_pointer())
@@ -162,17 +151,6 @@ namespace meta::language
 			return nullptr;
 		}
 		return _ref_type;
-	}
-	const type_info* type_info::brief_to() const
-	{
-		if (!is_brief())
-		{
-			return nullptr;
-		}
-		else
-		{
-			_ref_type;
-		}
 	}
 	bool type_info::can_accept_arg_type(const type_info* arg_type) const
 	{
@@ -216,7 +194,6 @@ namespace meta::language
 		result["is_pointer"] = is_pointer();
 		result["is_alias"] = is_alias();
 		result["is_refer"] = is_reference();
-		result["is_brief"] = is_brief();
 		if (_ref_type)
 		{
 			result["ref_type"] = _ref_type->name();
@@ -237,8 +214,9 @@ namespace meta::language
 		return result;
 	}
 
-	type_info* type_db::get_type_for_const(const CXType& _in_type)
+	type_info* type_db::get_type_for_const(CXType _in_type)
 	{
+		_in_type = clang_getCanonicalType(_in_type);
 		auto full_name = utils::to_string(_in_type);
 		auto cur_kind = _in_type.kind;
 		auto decl_cursor = clang_getTypeDeclaration(_in_type);
@@ -313,8 +291,9 @@ namespace meta::language
 			return final_type;
 		}
 	}
-	type_info* type_db::get_type_for_pointee(const CXType& _in_type)
+	type_info* type_db::get_type_for_pointee(CXType _in_type)
 	{
+		_in_type = clang_getCanonicalType(_in_type);
 		auto full_name = utils::to_string(_in_type);
 		auto pointer_to_type = clang_getPointeeType(_in_type);
 		auto pointee_type = get_type(pointer_to_type);
@@ -322,8 +301,9 @@ namespace meta::language
 		_type_data[full_name] = final_result;
 		return final_result;
 	}
-	type_info* type_db::get_type_for_template(const CXType& _in_type)
+	type_info* type_db::get_type_for_template(CXType _in_type)
 	{
+		_in_type = clang_getCanonicalType(_in_type);
 		auto full_name = utils::to_string(_in_type);
 		auto argu_num = clang_Type_getNumTemplateArguments(_in_type);
 		auto decl_cursor = clang_getTypeDeclaration(_in_type);
@@ -368,8 +348,9 @@ namespace meta::language
 		return final_result;
 	}
 
-	type_info* type_db::get_type(const CXType& _in_type)
+	type_info* type_db::get_type(CXType _in_type)
 	{
+		_in_type = clang_getCanonicalType(_in_type);
 		auto full_name = utils::to_string(_in_type);
 		auto type_iter = _type_data.find(full_name);
 		if (type_iter != _type_data.end())

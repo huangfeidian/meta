@@ -24,13 +24,11 @@ namespace meta::language
 		bool is_lvalue_refer() const;// is &
 		bool is_rvalue_refer() const;// is &&
 		bool is_pointer() const; // is T* const T*
-		bool is_brief() const; // is somekind indirect using  for example uint32_t is brief for std::uint32_t
 		const type_info* point_to() const;// return T for T * return const T for const T * else nullptr
 		const type_info* refer_to() const;// return (const) T for (const) T &/&& return nullptr for others
 		const type_info* alias_to() const; // return typedef or alias type_info if any
-		const type_info* brief_to() const; // return detail type if any
 		enum CXTypeKind kind() const;
-		const CXType& type() const;
+		CXType type() const;
 		const std::string& name() const;
 		bool has_type() const;
 		const class_node* related_class() const;
@@ -40,7 +38,7 @@ namespace meta::language
     private:
 
 		void set_type(CXType _in_type);
-        type_info(const std::string& _in_name, const CXType& _in_type, const type_info* _in_ref_type);
+        type_info(const std::string& _in_name, CXType _in_type, const type_info* _in_ref_type);
 		type_info(const std::string& _in_name, enum CXTypeKind _in_kind);
         std::vector<const type_info*> _template_args;
 		CXType _type;
@@ -54,7 +52,7 @@ namespace meta::language
     class type_db
     {
     public:
-		type_info* get_type(const CXType& _in_type);
+		type_info* get_type(CXType _in_type);
 		class_node* get_class(const std::string& _class_name);
 		bool add_class(class_node* _cur_class);
 		type_info* get_alias_typedef(CXCursor _in_cursor);
@@ -66,9 +64,9 @@ namespace meta::language
         void clear_all_type_info();
 		json to_json() const;
     private:
-		type_info* get_type_for_const(const CXType& _in_type);
-		type_info* get_type_for_pointee(const CXType& _in_type);
-		type_info* get_type_for_template(const CXType& _in_type);
+		type_info* get_type_for_const(CXType _in_type);
+		type_info* get_type_for_pointee(CXType _in_type);
+		type_info* get_type_for_template(CXType _in_type);
 		type_info * get_type_for_template_class(CXCursor _template_class_decl);
         std::unordered_map<std::string, type_info*> _type_data; // qualified name to type_info
 		std::unordered_map<std::string, class_node*> _class_data;// qualified name to class_node
