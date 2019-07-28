@@ -17,7 +17,7 @@ namespace meta::language
 		: _cursor(in_cursor)
 		, _kind(in_cursor.kind)
 		, name(meta::utils::to_string(clang_getCursorDisplayName(in_cursor)))
-		, qualified_name(utils::get_qualified_name_from_cursor(in_cursor))
+		, qualified_name(utils::full_name(in_cursor))
 	{
 		if (in_cursor.kind == CXCursorKind::CXCursor_TranslationUnit)
 		{
@@ -38,6 +38,10 @@ namespace meta::language
 		return _kind;
 	}
 	const std::string& node::get_name() const
+	{
+		return qualified_name;
+	}
+	const std::string& node::get_brief_name() const
 	{
 		return name;
 	}

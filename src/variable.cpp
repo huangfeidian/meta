@@ -10,7 +10,7 @@ namespace meta::language
 		auto& the_logger = utils::get_logger();
 		if (_decl_type)
 		{
-			the_logger.info("get_type {} for variable {}", _decl_type->name(), _in_node->get_name());
+			the_logger.info("get_type {} fullname {} for variable {}", _decl_type->name(), utils::full_name(clang_getCursorType(_in_node->get_cursor())), _in_node->get_name());
 		}
 		else
 		{

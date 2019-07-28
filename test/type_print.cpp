@@ -52,7 +52,7 @@ void recursive_dump_type_info(CXType _cur_type)
 	}
 	auto type_decl_self = clang_getTypeDeclaration(_cur_type);
 	auto type_decl_ref = clang_getTypeDeclaration(is_pointer);
-	the_logger.info("type {} kind {} is_const {} is_reference {} is_volatile {} is_pointer to {} is_const_ref {} self decl is {} ref decl is {}", utils::to_string(_cur_type), _cur_type.kind, is_const, is_refer, is_volatile, utils::to_string(is_pointer), is_const_ref, utils::get_qualified_name_from_cursor(type_decl_self), utils::get_qualified_name_from_cursor(type_decl_ref));
+	the_logger.info("type {} kind {} is_const {} is_reference {} is_volatile {} is_pointer to {} is_const_ref {} self decl is {} ref decl is {}", utils::to_string(_cur_type), _cur_type.kind, is_const, is_refer, is_volatile, utils::to_string(is_pointer), is_const_ref, utils::full_name(type_decl_self), utils::full_name(type_decl_ref));
 	auto tee_template_arg_num = clang_Type_getNumTemplateArguments(is_pointer);
 	if (tee_template_arg_num != -1)
 	{
@@ -95,7 +95,7 @@ void recursive_print_anything_under_cursor(CXCursor _in_cursor)
 		{
 			is_const_ref = clang_isConstQualifiedType(is_pointer);
 		}
-		the_logger.info("parent {} meet child {} with kind {} ref name {} is_const {} is_reference {} is_volatile {} is_pointer {} is_const_ref {}", utils::to_string(parent), utils::to_string(clang_getCursorSpelling(cur)), utils::to_string(clang_getCursorKind(cur)), utils::get_qualified_name_from_cursor(ref_cursor),  is_const, is_refer, is_volatile, utils::to_string(is_pointer), is_const_ref);
+		the_logger.info("parent {} meet child {} with kind {} ref name {} is_const {} is_reference {} is_volatile {} is_pointer {} is_const_ref {}", utils::to_string(parent), utils::to_string(clang_getCursorSpelling(cur)), utils::to_string(clang_getCursorKind(cur)), utils::full_name(ref_cursor),  is_const, is_refer, is_volatile, utils::to_string(is_pointer), is_const_ref);
 		auto tee_template_arg_num = clang_Type_getNumTemplateArguments(is_pointer);
 		if (tee_template_arg_num != -1)
 		{
@@ -250,9 +250,18 @@ void recursive_build_class_node_under_namespace(const std::string& ns_name)
 		case CXCursor_ClassDecl:
 		case CXCursor_StructDecl:
 		{
-			auto temp_node = new language::class_node(_node);
-			the_logger.info("new class {}", temp_node->to_json().dump(4));
-			break;
+			if (clang_isCursorDefinition(_node->get_cursor()))
+			{
+				auto temp_node = new language::class_node(_node);
+				the_logger.info("new class {}", temp_node->to_json().dump(4));
+				break;
+			}
+			else
+			{
+				the_logger.info("pre decl for class {}", _node->get_name());
+				break;
+			}
+			
 		}
 		case CXCursor_EnumDecl:
 		{
@@ -352,7 +361,7 @@ int main(int argc, char* argv[])
 	}
 	bool display_diag = true;
 	m_index = clang_createIndex(true, display_diag);
-	std::string file_path = "../test/test.cpp";
+	std::string file_path = "../test/test_template.cpp";
 	m_translationUnit = clang_createTranslationUnitFromSourceFile(m_index, file_path.c_str(), static_cast<int>(cstr_arguments.size()), cstr_arguments.data(), 0, nullptr);
 	auto cursor = clang_getTranslationUnitCursor(m_translationUnit);
 	auto visitor = [](CXCursor cur, CXCursor parent, CXClientData data)
@@ -369,7 +378,7 @@ int main(int argc, char* argv[])
 	};
 	clang_visitChildren(cursor, visitor, nullptr);
 	//recursive_print_decl_under_namespace("A");
-	recursive_build_class_node_under_namespace("std");
+	//recursive_build_class_node_under_namespace("std");
 	recursive_build_class_node_under_namespace("A");
 	//recursive_print_func_under_namespace("A");
 	json result = language::type_db::instance().to_json();

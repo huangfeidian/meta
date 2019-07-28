@@ -29,6 +29,7 @@ namespace meta::language
 		std::vector<node*> get_children_with_kind(CXCursorKind _filter_kind) const;
 		const std::vector<node*>& get_all_children() const;
 		const std::string& get_qualified_name() const;
+		const std::string& get_brief_name() const;
 		CXCursor get_cursor() const;
 		CXCursorKind get_kind() const;
 		const std::string& get_name() const;

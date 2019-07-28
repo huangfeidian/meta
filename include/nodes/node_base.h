@@ -21,7 +21,7 @@ namespace meta::language
 		}
 		const std::string& name() const
 		{
-			return _node->get_name();
+			return _node->get_qualified_name();
 		}
 		const std::string& qualified_name() const
 		{
@@ -38,7 +38,7 @@ namespace meta::language
 		virtual json to_json() const
 		{
 			json result;
-			result["name"] = _node->get_name();
+			result["name"] = _node->get_qualified_name();
 			return result;
 		}
     private:

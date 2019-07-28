@@ -128,6 +128,17 @@ namespace meta::language
 	{
 		return _kind == CXTypeKind::CXType_Pointer || _kind == CXTypeKind::CXType_BlockPointer;
 	}
+	bool type_info::is_brief() const
+	{
+		if (_kind == CXTypeKind::CXType_Unexposed && !_template_args.empty())
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
 	const type_info* type_info::point_to() const
 	{
 		if (!is_pointer())
@@ -151,6 +162,17 @@ namespace meta::language
 			return nullptr;
 		}
 		return _ref_type;
+	}
+	const type_info* type_info::brief_to() const
+	{
+		if (!is_brief())
+		{
+			return nullptr;
+		}
+		else
+		{
+			_ref_type;
+		}
 	}
 	bool type_info::can_accept_arg_type(const type_info* arg_type) const
 	{
@@ -189,10 +211,12 @@ namespace meta::language
 		json result;
 		result["name"] = _name;
 		result["kind"] = static_cast<std::uint32_t>(_kind);
+		result["kind_name"] = utils::to_string(_kind);
 		result["is_const"] = is_const();
 		result["is_pointer"] = is_pointer();
 		result["is_alias"] = is_alias();
 		result["is_refer"] = is_reference();
+		result["is_brief"] = is_brief();
 		if (_ref_type)
 		{
 			result["ref_type"] = _ref_type->name();
@@ -303,7 +327,7 @@ namespace meta::language
 		auto full_name = utils::to_string(_in_type);
 		auto argu_num = clang_Type_getNumTemplateArguments(_in_type);
 		auto decl_cursor = clang_getTypeDeclaration(_in_type);
-		auto decl_name = utils::get_qualified_name_from_cursor(decl_cursor);
+		auto decl_name = utils::full_name(decl_cursor);
 		auto temp_str0 = utils::to_string(decl_cursor);
 		auto decl_type = clang_getCursorType(decl_cursor);
 		auto temp_str1 = utils::to_string(decl_type);
@@ -383,7 +407,6 @@ namespace meta::language
 		{
 			return get_type_for_template(_in_type);
 		}
-
 		auto final_type = new type_info(full_name, _in_type, nullptr);
 		_type_data[full_name] = final_type;
 		return final_type;
@@ -416,13 +439,53 @@ namespace meta::language
 		return result_type;
 
 	}
+	bool type_db::add_class(class_node* _cur_class)
+	{
+		if (!_cur_class)
+		{
+			return false;
+		}
+		auto cur_class_name = _cur_class->name();
+		auto cur_iter = _class_data.find(cur_class_name);
+		if (cur_iter == _class_data.end())
+		{
+			_class_data[cur_class_name] = _cur_class;
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+	class_node* type_db::get_class(const std::string& _class_name)
+	{
+		auto cur_iter = _class_data.find(_class_name);
+		if (cur_iter == _class_data.end())
+		{
+			return nullptr;
+		}
+		else
+		{
+			return cur_iter->second;
+		}
+	}
 	json type_db::to_json() const
 	{
 		json result;
+		json type_data;
 		for (const auto& one_item : _type_data)
 		{
-			result[one_item.first] = one_item.second->to_json();
+			type_data[one_item.first] = one_item.second->to_json();
 		}
+		result["types"] = type_data;
+		json class_data;
+		for (const auto& one_item : _class_data)
+		{
+			class_data[one_item.first] = one_item.second->to_json();
+		}
+		result["classes"] = class_data;
+		result["template_types"] = utils::template_types::instance().all_values();
+		
 		return result;
 	}
 	type_db::type_db()

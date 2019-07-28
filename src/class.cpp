@@ -10,17 +10,22 @@ namespace meta::language
 		auto cur_cursor = _in_node->get_cursor();
 		auto cur_cursor_type = clang_getCursorType(cur_cursor);
 		_decl_type = type_db::instance().get_type(cur_cursor_type);
-		_decl_type->set_related_class(this);
+		
 		auto& the_logger = utils::get_logger();
 		if (_decl_type)
 		{
 			the_logger.info("class {} has type {}", name(), _decl_type->name());
+			_decl_type->set_related_class(this);
 		}
 		else
 		{
 			the_logger.info("class {} fail to construct type", name());
 		}
 		parse();
+		if (!type_db::instance().add_class(this))
+		{
+			the_logger.warn("fail to add class {} to type_db", name());
+		}
 		
 	}
 	void class_node::parse()
@@ -30,7 +35,8 @@ namespace meta::language
 
 		for (const auto& i : children)
 		{
-			switch (clang_getCursorKind(i))
+			auto cur_kind = clang_getCursorKind(i);
+			switch (cur_kind)
 			{
 			case CXCursor_FieldDecl:
 			{
@@ -104,7 +110,14 @@ namespace meta::language
 				type_db::instance().get_alias_typedef(i);
 				break;
 			}
+			case CXCursor_TemplateTypeParameter:
+			{
+				the_logger.debug("get template type arg {}  cursor_type {} for class {}", utils::full_name(i), utils::to_string(clang_getCursorType(i)), name());
+				utils::template_types::instance().add_type(i);
+				break;
+			}
 			default:
+				the_logger.debug("visit unknown cursor {} with kind {} in class {}", utils::to_string(i), utils::to_string(cur_kind), name());
 				break;
 			}
 		}
@@ -261,6 +274,7 @@ namespace meta::language
 			constructor_json.push_back(*i);
 		}
 		result["constructors"] = constructor_json;
+		result["template_arg_num"] = _template_args.size();
 		return result;
 	}
 }
