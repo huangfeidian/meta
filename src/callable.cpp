@@ -38,6 +38,10 @@ namespace meta::language
 	}
 	bool callable_node::can_accept(const std::vector<const type_info*>& _in_args) const
 	{
+		if (_in_args.size() > _args.size())
+		{
+			return false;
+		}
 		return false;
 	}
 	void callable_node::parse()
@@ -52,6 +56,15 @@ namespace meta::language
 		{
 			auto arg_cursor = clang_Cursor_getArgument(_cur_cursor, i);
 			_args.push_back(new variable_node(node_db::get_instance().create_node(arg_cursor)));
+			auto argument_childrens = utils::cursor_get_children(arg_cursor);
+			for (const auto& i : argument_childrens)
+			{
+				if (i.kind >= static_cast<std::uint32_t>(CXCursor_BlockExpr) && i.kind <= static_cast<std::uint32_t>(CXCursor_ParenExpr))
+				{
+					the_logger.debug("fuction {} argument {} has default value ", name(), utils::to_string(arg_cursor));
+					break;
+				}
+			}
 		}
 	}
 	json callable_node::to_json() const

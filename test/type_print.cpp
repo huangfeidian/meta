@@ -381,6 +381,7 @@ int main(int argc, char* argv[])
 	recursive_build_class_node_under_namespace("std");
 	recursive_build_class_node_under_namespace("A");
 	//recursive_print_func_under_namespace("A");
+	//recursive_print_class_under_namespace("A");
 	json result = language::type_db::instance().to_json();
 	ofstream json_out("type_info.json");
 	json_out << setw(4) << result << endl;

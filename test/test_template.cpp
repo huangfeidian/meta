@@ -21,11 +21,15 @@ namespace A
     class MyString: private string
     {
         public:
-        MyString(string s):string(s)
+        MyString(string s = ""):string(s)
         {
 
         }
         using string::size;
+        std::string _Convert_size(char del = ',') const
+        {
+            return "";
+        }
     };
     class s_3;
     class s_3:public variant<bool, uint32_t, double, string, std::vector<s_3>>

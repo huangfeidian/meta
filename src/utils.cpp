@@ -71,7 +71,16 @@ namespace meta::utils
 			}
 			return template_full_name + "<" + join(arg_names, ",") + ">";
 		}
-		return to_string(clang_getTypeSpelling(_in_type));
+		auto canonical_type = clang_getCanonicalType(_in_type);
+		if (!clang_equalTypes(canonical_type, _in_type))
+		{
+			return full_name(canonical_type);
+		}
+		else
+		{
+			return to_string(clang_getTypeSpelling(_in_type));
+		}
+		
 	}
 	std::string full_name(const CXType& _in_type)
 	{

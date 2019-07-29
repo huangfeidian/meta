@@ -10,10 +10,11 @@ namespace meta::language
 		auto& the_logger = utils::get_logger();
 		auto cur_cursor = _in_node->get_cursor();
 		auto cur_cursor_type = clang_getCursorType(cur_cursor);
-		//TODO template classes has invalid cur_cursor_type so actions below has no effect
+		
 		the_logger.info("class {} has cursor_type {}", name(), utils::to_string(cur_cursor_type));
 		if (cur_cursor.kind == CXCursorKind::CXCursor_ClassTemplate)
 		{
+			//template classes has invalid cur_cursor_type so actions below has no effect
 			_decl_type = type_db::instance().get_type_for_template_class(cur_cursor);
 		}
 		else
