@@ -56,6 +56,7 @@ namespace meta::language
 		class_node* get_class(const std::string& _class_name);
 		bool add_class(class_node* _cur_class);
 		type_info* get_alias_typedef(CXCursor _in_cursor);
+		type_info* get_type_for_template_class(CXCursor _template_class_decl);
         static type_db& instance()
         {
             static type_db _instance;
@@ -67,7 +68,7 @@ namespace meta::language
 		type_info* get_type_for_const(CXType _in_type);
 		type_info* get_type_for_pointee(CXType _in_type);
 		type_info* get_type_for_template(CXType _in_type);
-		type_info * get_type_for_template_class(CXCursor _template_class_decl);
+		
 		type_info* get_base_type_for_template(CXType _in_type);
 
 	private:

@@ -40,10 +40,36 @@ namespace meta::utils
 	}
 	std::string to_string(const CXType& _in_type)
 	{
+		
 		const auto& template_type_name = utils::template_types::instance().get_type(_in_type);
 		if (!template_type_name.empty())
 		{
 			return template_type_name;
+		}
+		auto argu_num = clang_Type_getNumTemplateArguments(_in_type);
+		if (argu_num > 0)
+		{
+			// 这里需要对模板参数进行展开
+			auto template_full_name = full_name(clang_getTypeDeclaration(_in_type));
+			auto canonical_type = clang_getCanonicalType(_in_type);
+			if (!clang_equalTypes(canonical_type, _in_type))
+			{
+				template_full_name = full_name(canonical_type);
+			}
+			auto template_anchor = template_full_name.find("<");
+			if (template_anchor != std::string::npos)
+			{
+				template_full_name = template_full_name.substr(0, template_anchor);
+			}
+			
+			std::vector<std::string> arg_names;
+			for (int i = 0; i < argu_num; i++)
+			{
+				auto temp_arg_type = clang_Type_getTemplateArgumentAsType(_in_type, i);
+				arg_names.push_back(to_string(temp_arg_type));
+
+			}
+			return template_full_name + "<" + join(arg_names, ",") + ">";
 		}
 		return to_string(clang_getTypeSpelling(_in_type));
 	}

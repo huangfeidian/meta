@@ -217,7 +217,9 @@ namespace meta::language
 	type_info* type_db::get_type_for_const(CXType _in_type)
 	{
 		//_in_type = clang_getCanonicalType(_in_type);
+		auto& the_logger = utils::get_logger();
 		auto full_name = utils::to_string(_in_type);
+		the_logger.debug("get_type_for_const {}", full_name);
 		auto cur_kind = _in_type.kind;
 		auto decl_cursor = clang_getTypeDeclaration(_in_type);
 		if (clang_Cursor_isNull(decl_cursor) || decl_cursor.kind == CXCursor_NoDeclFound)
@@ -296,6 +298,8 @@ namespace meta::language
 	{
 		//_in_type = clang_getCanonicalType(_in_type);
 		auto full_name = utils::to_string(_in_type);
+		auto& the_logger = utils::get_logger();
+		the_logger.debug("get_type_for_pointee {}", full_name);
 		//auto pointer_to_type = clang_getCanonicalType(clang_getPointeeType(_in_type));
 		auto pointer_to_type = clang_getPointeeType(_in_type);
 		auto pointee_type = get_type(pointer_to_type);
@@ -305,7 +309,9 @@ namespace meta::language
 	}
 	type_info* type_db::get_type_for_template(CXType _in_type)
 	{
-		auto full_name = utils::to_string(clang_getCanonicalType(_in_type));
+		auto full_name = utils::to_string(_in_type);
+		auto& the_logger = utils::get_logger();
+		the_logger.debug("get_type_for_template {}", full_name);
 		auto argu_num = clang_Type_getNumTemplateArguments(_in_type);
 		type_info* base_type = get_base_type_for_template(_in_type);
 
@@ -361,7 +367,9 @@ namespace meta::language
 	type_info* type_db::get_type(CXType _in_type)
 	{
 		//_in_type = clang_getCanonicalType(_in_type);
+		auto& the_logger = utils::get_logger();
 		auto full_name = utils::to_string(_in_type);
+		the_logger.debug("get_type for type {}", full_name);
 		auto type_iter = _type_data.find(full_name);
 		if (type_iter != _type_data.end())
 		{
@@ -404,7 +412,24 @@ namespace meta::language
 	}
 	type_info * type_db::get_type_for_template_class(CXCursor _template_class_decl)
 	{
-		return nullptr;
+		auto& the_logger = utils::get_logger();
+		auto qualified_name = utils::full_name(_template_class_decl);
+		if (_template_class_decl.kind != CXCursorKind::CXCursor_ClassTemplate)
+		{
+			the_logger.warn("get_type_for_template_class for cursor {} with invalid kind {}", qualified_name, utils::to_string(_template_class_decl.kind));
+			return nullptr;
+		}
+		auto cur_iter = _type_data.find(qualified_name);
+		if (cur_iter != _type_data.end())
+		{
+			the_logger.warn("duplicated template class decl {}", qualified_name);
+			return cur_iter->second;
+		}
+		the_logger.debug("create type_info for  template class decl {}", qualified_name);
+		auto new_type_info = new type_info(qualified_name, CXTypeKind::CXType_Invalid);
+		_type_data[qualified_name] = new_type_info;
+		return new_type_info;
+		
 	}
 	type_info* type_db::get_alias_typedef(CXCursor _in_cursor)
 	{
