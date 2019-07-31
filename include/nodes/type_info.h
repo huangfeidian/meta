@@ -16,6 +16,7 @@ namespace meta::language
 		bool is_alias() const;
         bool is_completed() const; // is this a type that depends on other variable not in current lexical scope
         bool is_templated() const;// is this a template type
+		bool is_template_arg() const; // is this a template arg type for example typename T
 		bool is_base() const; // is this a type declare
 		bool is_callable() const; // is this a callable
         bool is_const() const;// is const

@@ -35,6 +35,11 @@ namespace meta::language
 	{
 		return _has_default_value;
 	}
+	bool variable_node::can_accept(const type_info* in_arg_type) const
+	{
+		return _decl_type->can_accept_arg_type(in_arg_type);
+
+	}
 	json variable_node::to_json() const
 	{
 		json result;

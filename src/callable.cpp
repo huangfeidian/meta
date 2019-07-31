@@ -38,11 +38,30 @@ namespace meta::language
 	}
 	bool callable_node::can_accept(const std::vector<const type_info*>& _in_args) const
 	{
-		if (_in_args.size() > _args.size())
+		auto in_arg_sz = _in_args.size();
+		auto req_arg_sz = _args.size();
+		if (in_arg_sz > req_arg_sz)
 		{
 			return false;
 		}
-		return false;
+		else
+		{
+			for (std::size_t i = 0; i < in_arg_sz; i++)
+			{
+				if (!_args[i]->can_accept(_in_args[i]))
+				{
+					return false;
+				}
+			}
+			if (in_arg_sz < req_arg_sz)
+			{
+				if (!(_args[in_arg_sz]->has_default_value()))
+				{
+					return false;
+				}
+			}
+		}
+		return true;
 	}
 	void callable_node::parse()
 	{

@@ -100,6 +100,11 @@ namespace meta::language
 	{
 		return !_template_args.empty();
 	}
+	bool type_info::is_template_arg() const
+	{
+		auto& all_template_names = utils::template_types::instance();
+		auto cur_iter = all_template_names.find(_name);
+	}
 	bool type_info::is_callable() const
 	{
 		return false;
@@ -154,8 +159,51 @@ namespace meta::language
 	}
 	bool type_info::can_accept_arg_type(const type_info* arg_type) const
 	{
-		//TODO 完成类型转换相关
+		// TODO const and non const mismatch
+		if (arg_type == this)
+		{
+			return true;
+		}
+		auto alias_to_type = alias_to();
+		if (alias_to_type)
+		{
+			return alias_to_type->can_accept_arg_type(arg_type);
+		}
+		auto other_alias_to_type = arg_type->alias_to();
+		if (other_alias_to_type)
+		{
+			return can_accept_arg_type(other_alias_to_type);
+		}
+		
+		auto pointer_type = point_to();
+		if (pointer_type)
+		{
+			auto other_pointer_type = arg_type->point_to();
+			if (!other_pointer_type)
+			{
+				return false;
+			}
+			return pointer_type->can_accept_arg_type(other_pointer_type);
+		}
+		auto other_refer_type = arg_type->refer_to();
+		if (other_refer_type)
+		{
+			return can_accept_arg_type(other_refer_type);
+		}
+		auto ref_type = refer_to();
+		if (ref_type)
+		{
+			
+			return ref_type->can_accept_arg_type(arg_type);
+		}
+		if (_related_class)
+		{
+			std::vector<const type_info*> _arg_vec;
+			_arg_vec.push_back(arg_type);
+			return _related_class->has_constructor_for(_arg_vec);
+		}
 		return false;
+
 	}
 	bool type_info::set_related_class(class_node* _in_class)
 	{

@@ -46,6 +46,10 @@ namespace A
         B _s;
 		int d = -1;
 		std::string s_d = "hehe";
+		bool take(T a)
+		{
+			return false;
+		}
     };
 	using s_4_int = s_4<int>;
 }

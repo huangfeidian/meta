@@ -246,11 +246,24 @@ namespace meta::language
 	}
 	const callable_node* class_node::has_constructor_for(const std::vector<const type_info*>& _args) const
 	{
+
 		for (const auto& one_item : _constructors)
 		{
 			if (one_item->can_accept(_args))
 			{
 				return one_item;
+			}
+		}
+		for (const auto & one_item : _bases)
+		{
+			auto _related_class = one_item->related_class();
+			if (_related_class)
+			{
+				auto temp_result = _related_class->has_constructor_for(_args);
+				if (temp_result)
+				{
+					return temp_result;
+				}
 			}
 		}
 		return nullptr;
