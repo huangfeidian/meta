@@ -135,6 +135,12 @@ namespace meta::language
 				_template_args.push_back(utils::to_string(i));
 				break;
 			}
+			case CXCursor_ClassDecl:
+			case CXCursor_ClassTemplate:
+			{
+				the_logger.debug("{} has subclass {}", name(), utils::to_string(i));
+				break;
+			}
 			default:
 				the_logger.debug("visit unknown cursor {} with kind {} in class {}", utils::to_string(i), utils::to_string(cur_kind), name());
 				break;
@@ -294,7 +300,7 @@ namespace meta::language
 		}
 		result["constructors"] = constructor_json;
 		result["template_args"] = _template_args;
-		result["location"] = get_node()->get_position();
+		// result["location"] = get_node()->get_position();
 		return result;
 	}
 }

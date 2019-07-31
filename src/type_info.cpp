@@ -441,17 +441,12 @@ namespace meta::language
 			return nullptr;
 		}
 		auto cur_type = clang_getCursorType(_in_cursor);
-		auto full_name = utils::to_string(cur_type);
-		if (full_name.empty())
-		{
-			the_logger.warn("get_alias_typedef for empty cursor {} with empty full name", utils::to_string(_in_cursor));
-			return nullptr;
-		}
+		auto cursor_name = utils::full_name(_in_cursor);
 		auto alias_type = clang_getTypedefDeclUnderlyingType(_in_cursor);
 		auto alias_type_info = get_type(alias_type);
-		the_logger.debug("get_alias_typedef from type {} to type {}", utils::to_string(cur_type), utils::to_string(alias_type));
-		auto result_type = new type_info(full_name, cur_type, alias_type_info);
-		_type_data[full_name] = result_type;
+		the_logger.debug("get_alias_typedef cursor {} from type {} to type {}", cursor_name, utils::to_string(cur_type), utils::to_string(alias_type));
+		auto result_type = new type_info(cursor_name, cur_type, alias_type_info);
+		_type_data[cursor_name] = result_type;
 		return result_type;
 
 	}

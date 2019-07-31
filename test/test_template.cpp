@@ -10,7 +10,7 @@ namespace A
 {
     struct s_1
     {
-        optional<int> a;
+        optional<int> a = 0;
         pair<int, optional<float>> b;
         tuple<int, float, string> c;
     };
@@ -44,7 +44,10 @@ namespace A
     {
         vector<T> _v;
         B _s;
+		int d = -1;
+		std::string s_d = "hehe";
     };
+	using s_4_int = s_4<int>;
 }
 int main()
 {

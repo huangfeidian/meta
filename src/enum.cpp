@@ -103,7 +103,7 @@ namespace meta::language
 		result["qualified_name"] = qualified_name();
 		result["node_type"] = "enum";
 		json values;
-		for (int i = 0; i < _keys.size(); i++)
+		for (std::size_t i = 0; i < _keys.size(); i++)
 		{
 			values[_keys[i]] = _values[i];
 		}

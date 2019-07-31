@@ -19,7 +19,7 @@ namespace meta::language
 		auto argument_childrens = utils::cursor_get_children(_in_node->get_cursor());
 		for (const auto& i : argument_childrens)
 		{
-			if (i.kind >= static_cast<std::uint32_t>(CXCursor_BlockExpr) && i.kind <= static_cast<std::uint32_t>(CXCursor_ParenExpr))
+			if (i.kind >= static_cast<std::uint32_t>(CXCursor_UnexposedExpr) && i.kind <= static_cast<std::uint32_t>(CXCursor_UnaryOperator))
 			{
 				_has_default_value = true;
 				break;
@@ -42,7 +42,8 @@ namespace meta::language
 		result["qualified_name"] = qualified_name();
 		result["node_type"] = "variable";
 		result["var_type"] = _decl_type->name();
-		result["location"] = get_node()->get_position();
+		result["with_default"] = _has_default_value;
+		// result["location"] = get_node()->get_position();
 
 		return result;
 	}
