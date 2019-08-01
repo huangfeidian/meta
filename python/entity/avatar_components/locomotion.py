@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from common.utils.interface import Interface, Int, List, Dict
+
 
 class locomotion(object):
 
@@ -12,3 +14,7 @@ class locomotion(object):
 
 	def get_position(self):
 		return self.position
+
+	@Interface(List())
+	def post_position(self, new_pos):
+		self.position = new_pos
