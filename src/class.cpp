@@ -141,6 +141,11 @@ namespace meta::language
 				the_logger.debug("{} has subclass {}", name(), utils::to_string(i));
 				break;
 			}
+			case CXCursor_AnnotateAttr:
+			{
+				_annotation = utils::parse_annotation(utils::to_string(i));
+				break;
+			}
 			default:
 				the_logger.debug("visit unknown cursor {} with kind {} in class {}", utils::to_string(i), utils::to_string(cur_kind), name());
 				break;
@@ -314,6 +319,10 @@ namespace meta::language
 		result["constructors"] = constructor_json;
 		result["template_args"] = _template_args;
 		// result["location"] = get_node()->get_position();
+		if (!_annotation.empty())
+		{
+			result["annotation"] = _annotation;
+		}
 		return result;
 	}
 }

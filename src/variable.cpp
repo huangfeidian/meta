@@ -22,7 +22,10 @@ namespace meta::language
 			if (i.kind >= static_cast<std::uint32_t>(CXCursor_UnexposedExpr) && i.kind <= static_cast<std::uint32_t>(CXCursor_UnaryOperator))
 			{
 				_has_default_value = true;
-				break;
+			}
+			if (i.kind == CXCursor_AnnotateAttr)
+			{
+				_annotation = utils::parse_annotation(utils::to_string(i));
 			}
 		}
 		
@@ -49,7 +52,10 @@ namespace meta::language
 		result["var_type"] = _decl_type->name();
 		result["with_default"] = _has_default_value;
 		// result["location"] = get_node()->get_position();
-
+		if (!_annotation.empty())
+		{
+			result["annotation"] = _annotation;
+		}
 		return result;
 	}
 	

@@ -9,7 +9,7 @@ namespace meta::language
     {
     public:
         class_node(const node* _in_node);
-        bool is_template() const;
+		bool is_template() const;
         const std::vector<std::string>& template_args() const;
 		const type_info* decl_type() const;
 		const std::vector<const type_info*> bases() const;

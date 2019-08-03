@@ -6,6 +6,13 @@
 #include <string>
 #include <vector>
 using namespace std;
+
+#if defined(__clang__)
+    #define Meta(...) __attribute__((annotate(#__VA_ARGS__)))
+#else
+    #define Meta(...) 
+#endif
+
 namespace A
 {
     struct s_1
@@ -18,7 +25,8 @@ namespace A
     {
         variant<int, float, string> d;
     };
-    class MyString: private string
+    
+    class MyString: private string 
     {
         public:
         MyString(string s = ""):string(s)
@@ -30,7 +38,7 @@ namespace A
         {
             return "";
         }
-    };
+    }Meta(xxx,bb(ccc));
     class s_3;
     class s_3:public variant<bool, uint32_t, double, string, std::vector<s_3>>
     {
@@ -39,18 +47,20 @@ namespace A
         using base::base;
         using base::operator=;
     };
+    
     template <typename T, typename B = std::vector<T>>
     struct s_4
     {
-        vector<T> _v;
-        B _s;
-		int d = -1;
-		std::string s_d = "hehe";
-		bool take(T a)
+        Meta(xxx,bb(ccc)) vector<T> _v ;
+        Meta(xxx,bb(ccc)) B _s ;
+		Meta(xxx,bb(ccc)) int d = -1 ;
+		Meta(xxx,bb(ccc)) std::string s_d = "hehe" ;
+		Meta(xxx,bb(ccc)) bool take(T a)
+        
 		{
 			return false;
 		}
-    };
+    }Meta(xxx,bb(ccc));
 	using s_4_int = s_4<int>;
 }
 int main()

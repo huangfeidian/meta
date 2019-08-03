@@ -9,6 +9,7 @@
 #include "nodes/class.h"
 #include "nodes/enum.h"
 #include <cstdint>
+
 using namespace std;
 using namespace meta;
 using json = nlohmann::json;

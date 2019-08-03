@@ -102,8 +102,7 @@ namespace meta::language
 	}
 	bool type_info::is_template_arg() const
 	{
-		auto& all_template_names = utils::template_types::instance();
-		auto cur_iter = all_template_names.find(_name);
+		return !utils::template_types::instance().get_type(_type).empty();
 	}
 	bool type_info::is_callable() const
 	{

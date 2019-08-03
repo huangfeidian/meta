@@ -11,6 +11,7 @@ using json = nlohmann::json;
 
 namespace meta::language
 {
+	using annotation_map = std::unordered_map<std::string, std::vector<std::string>>;
     class node_base
     {
     public:
@@ -40,10 +41,17 @@ namespace meta::language
 			json result;
 			result["name"] = _node->get_qualified_name();
 			result["location"] = _node->get_position();
+			if (!_annotation.empty())
+			{
+				result["annotation"] = _annotation;
+			}
 			return result;
 		}
+
     private:
         const node* _node;
+	protected:
+		annotation_map _annotation;
 
 	};
 }

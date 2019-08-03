@@ -85,6 +85,13 @@ namespace meta::language
 				}
 			}
 		}
+		for (auto i : children)
+		{
+			if (i.kind == CXCursor_AnnotateAttr)
+			{
+				_annotation = utils::parse_annotation(utils::to_string(i));
+			}
+		}
 	}
 	json callable_node::to_json() const
 	{
@@ -104,6 +111,10 @@ namespace meta::language
 		if (_result_type)
 		{
 			result["result_type"] = _result_type->to_json();
+		}
+		if (!_annotation.empty())
+		{
+			result["annotation"] = _annotation;
 		}
 		// result["location"] = get_node()->get_position();
 		return result;

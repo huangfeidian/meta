@@ -32,6 +32,7 @@ link_directories(${LLVM_LIBRARY_DIR})
 set(META_SOURCE_DIR ${CMAKE_SOURCE_DIR}/src)
 set(META_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/include)
 set(META_TEST_DIR ${CMAKE_SOURCE_DIR}/test)
+set(META_EXAMPLE_DIR ${CMAKE_SOURCE_DIR}/example)
 
 include_directories(${META_INCLUDE_DIR})
 
