@@ -38,10 +38,12 @@ include_directories(${META_INCLUDE_DIR})
 
 FILE(GLOB_RECURSE META_SRC_LISTS ${META_SOURCE_DIR}/*.cpp)
 
+add_library(meta ${META_SRC_LISTS})
+target_link_libraries(meta PUBLIC ${LIBCLANG_LIBRARY})
+target_link_libraries(meta PRIVATE nlohmann_json::nlohmann_json)
 
+add_executable(type_print ${META_TEST_DIR}/type_print.cpp)
+target_link_libraries(type_print meta)
 
-add_executable(type_print ${META_TEST_DIR}/type_print.cpp ${META_SRC_LISTS})
-target_link_libraries(type_print PUBLIC ${LIBCLANG_LIBRARY})
-target_link_libraries(type_print PRIVATE nlohmann_json::nlohmann_json)
 
 
