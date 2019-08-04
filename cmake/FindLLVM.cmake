@@ -51,6 +51,8 @@ if (NOT LLVM_INCLUDE_DIRS OR
         "Unable to find LLVM installation. "
         "Make sure that \"LLVM_ROOT\" is set with the installation directory in either an environment variable or through the CMake GUI."
     )
+else()
+    message(STATUS "use llvm at " ${LLVM_SEARCH_PATHS})
 endif ()
 
 set(LIBCLANG_SHARED_LIBRARY

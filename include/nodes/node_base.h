@@ -28,6 +28,10 @@ namespace meta::language
 		{
 			return _node->get_qualified_name();
 		}
+		const std::string& unqualified_name() const
+		{
+			return _node->get_brief_name();
+		}
 		const node* get_node() const
 		{
 			return _node;
@@ -35,6 +39,14 @@ namespace meta::language
 		const name_space* get_resident_ns() const
 		{
 			return nullptr;
+		}
+		const annotation_map& annotations() const
+		{
+			return _annotation;
+		}
+		std::string file() const
+		{
+			return std::get<0>(_node->get_position());
 		}
 		virtual json to_json() const
 		{

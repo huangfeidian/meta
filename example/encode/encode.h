@@ -1,4 +1,5 @@
-﻿#include <vector>
+﻿#pragma once
+#include <vector>
 #include <unordered_map>
 #include <unordered_set>
 #include <map>
@@ -148,7 +149,7 @@ encode(const T& data)
 {
 	return data;
 }
-float encode(const float& data)
+double encode(const float& data)
 {
     return double(data);
 }
@@ -164,7 +165,8 @@ std::string encode(const std::string& data)
 template <typename T1, typename T2>
 json encode(const std::pair<T1, T2>& data)
 {
-	json::array cur_array = { encode(data.first), encode(data.second) };
+
+	json cur_array = json::array({ encode(data.first), encode(data.second) });
 	return cur_array;
 }
 template <typename T1, std::size_t T2>
@@ -191,49 +193,121 @@ json encode(const std::tuple<args...>& data)
 template <typename T1, typename T2>
 json encode(const std::map<T1, T2>& data)
 {
-	json::arrag cur_array = data;
+	json cur_array = json::array(); 
+	for (const auto& i : data)
+	{
+		cur_array.push_back(std::make_pair<json, json>(encode(i.first), encode(i.second)));
+	}
 	return cur_array;
 }
 template <typename T1, typename T2>
 json encode(const std::unordered_map<T1, T2>& data)
 {
-	json::arrag cur_array = data;
+	json cur_array = json::array();
+	for (const auto& i : data)
+	{
+		cur_array.push_back(std::make_pair<json, json>(encode(i.first), encode(i.second)));
+	}
 	return cur_array;
 }
 template <typename T1, typename T2>
 json encode(const std::multimap<T1, T2>& data)
 {
-	json::arrag cur_array = data;
+	json cur_array = json::array();
+	for (const auto& i : data)
+	{
+		cur_array.push_back(std::make_pair<json, json>(encode(i.first), encode(i.second)));
+	}
 	return cur_array;
 }
 template <typename T1, typename T2>
 json encode(const std::unordered_multimap<T1, T2>& data)
 {
-	json::arrag cur_array = data;
+	json cur_array = json::array();
+	for (const auto& i : data)
+	{
+		cur_array.push_back(std::make_pair<json, json>(encode(i.first), encode(i.second)));
+	}
 	return cur_array;
 }
 
 template <typename T1>
 json encode(const std::set<T1>& data)
 {
-	json::arrag cur_array = data;
+	json cur_array = json::array();
+	for (const auto& i : data)
+	{
+		cur_array.push_back(encode(i));
+	}
 	return cur_array;
 }
 template <typename T1>
 json encode(const std::unordered_set<T1>& data)
 {
-	json::arrag cur_array = data;
+	json cur_array = json::array();
+	for (const auto& i : data)
+	{
+		cur_array.push_back(encode(i));
+	}
 	return cur_array;
 }
 template <typename T1>
 json encode(const std::multiset<T1>& data)
 {
-	json::arrag cur_array = data;
+	json cur_array = json::array();
+	for (const auto& i : data)
+	{
+		cur_array.push_back(encode(i));
+	}
 	return cur_array;
 }
 template <typename T1>
 json encode(const std::unordered_multiset<T1>& data)
 {
-	json::arrag cur_array = data;
+	json cur_array = json::array();
+	for (const auto& i : data)
+	{
+		cur_array.push_back(encode(i));
+	}
+	return cur_array;
+}
+template <typename T1, std::size_t T2>
+json encode(const T1(&data)[T2])
+{
+	json cur_array = json::array();
+	for (std::size_t i = 0; i< T2; i++)
+	{
+		cur_array.push_back(encode(data[i]));
+	}
+	return cur_array;
+}
+template <typename T>
+json encode(const std::list<T>& data)
+{
+	json cur_array = json::array();
+	for (const auto& i : data)
+	{
+		cur_array.push_back(encode(i));
+	}
+	return cur_array;
+}
+template <typename T>
+json encode(const std::forward_list<T>& data)
+{
+	json cur_array = json::array();
+	for (const auto& i : data)
+	{
+		cur_array.push_back(encode(i));
+	}
+	return cur_array;
+}
+template <typename T>
+json encode(const std::vector<T>& data)
+{
+	json cur_array = json::array();
+	for (const auto& i : data)
+	{
+		cur_array.push_back(encode(i));
+	}
 	return cur_array;
 }

@@ -18,6 +18,8 @@ namespace meta::language
 		const variable_node* has_field(const std::string& _field_name) const;
 		const variable_node* has_static_field(const std::string& _field_name) const;
 		const callable_node* has_constructor_for(const std::vector<const type_info*>& _args) const;
+		template <typename T>
+		std::vector<const variable_node*> query_fields_with_pred(T _pred) const;
 		json to_json() const;
 	private:
 		std::vector<std::string> _template_args;
@@ -33,4 +35,21 @@ namespace meta::language
 
 
 	};
+	template <typename T>
+	std::vector<const variable_node*> class_node::query_fields_with_pred(T _pred) const
+	{
+		std::vector<const variable_node*> result;
+		for (const auto& i : _fields)
+		{
+			if (!i.second)
+			{
+				continue;
+			}
+			if (_pred(*i.second))
+			{
+				result.push_back(i.second);
+			}
+		}
+		return result;
+	}
 }

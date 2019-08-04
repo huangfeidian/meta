@@ -65,6 +65,8 @@ namespace meta::language
         }
         void clear_all_type_info();
 		json to_json() const;
+		template <typename T>
+		std::vector<const class_node*> get_class_with_pred(T _pred) const;
     private:
 		type_info* get_type_for_const(CXType _in_type);
 		type_info* get_type_for_pointee(CXType _in_type);
@@ -78,4 +80,21 @@ namespace meta::language
         type_db();
 
 	};
+	template <typename T>
+	std::vector<const class_node*> type_db::get_class_with_pred(T _pred) const
+	{
+		std::vector<const class_node*> result;
+		for (const auto& i : _class_data)
+		{
+			if (!i.second)
+			{
+				continue;
+			}
+			if (_pred(*i.second))
+			{
+				result.push_back(i.second);
+			}
+		}
+		return result;
+	}
 }
