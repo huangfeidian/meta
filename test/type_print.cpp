@@ -355,7 +355,8 @@ int main(int argc, char* argv[])
 	arguments.push_back("-x");
 	arguments.push_back("c++");
 	arguments.push_back("-std=c++17");
-	arguments.push_back("__meta_parse__");
+	arguments.push_back("-D__meta_parse__");
+	arguments.push_back("-ID:/usr/include/");
 
 	std::vector<const char *> cstr_arguments;
 

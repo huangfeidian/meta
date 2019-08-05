@@ -16,12 +16,15 @@
 
 using json = nlohmann::json;
 template <typename T, typename T2 = void>
-struct has_encode_func : false_type
+struct has_encode_func : std::false_type
 {
 
 };
 
-template <typename... args> struct all_encode_able;
+template <typename... args> struct all_encode_able: std::false_type
+{
+
+};
 
 template <>
 struct all_encode_able<> : std::true_type

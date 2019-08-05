@@ -8,8 +8,8 @@
 
 #include <vector>
 #include <unordered_map>
-//#include "encode.h"
-
+#include "encode.h"
+using namespace std;
 namespace test
 {
 	
@@ -20,7 +20,7 @@ namespace test
 		Meta(encode) std::unordered_map<int, int> b;
 		Meta(encode) int c;
 	public:
-#include "test_class_generate.h"
+#include "test_class_generated.h"
 
 	}Meta(encode);
 }

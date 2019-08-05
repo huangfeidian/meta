@@ -160,11 +160,11 @@ void generate_encode()
 	for (auto one_class : all_encode_classes)
 	{
 		auto cur_file_path_str = one_class->file();
-		the_logger.info("get class {} with annotation prop encode location {}", one_class->name(), cur_file_path_str);
+		the_logger.info("get class {} with annotation prop encode location {}", one_class->unqualified_name(), cur_file_path_str);
 		std::filesystem::path file_path(cur_file_path_str);
 		auto _cur_parent_path = file_path.parent_path();
-		auto generated_h_file_name = one_class->name() + "_generated.h";
-		auto generated_cpp_file_name = one_class->name() + "_generated.cpp";
+		auto generated_h_file_name = one_class->unqualified_name() + "_generated.h";
+		auto generated_cpp_file_name = one_class->unqualified_name() + "_generated.cpp";
 		auto new_h_file_path = _cur_parent_path / generated_h_file_name;
 		auto new_cpp_file_path = _cur_parent_path / generated_cpp_file_name;
 		if (!std::filesystem::exists(new_h_file_path))
@@ -177,7 +177,7 @@ void generate_encode()
 			the_logger.error("generated file {} not exist", new_cpp_file_path.string());
 			continue;
 		}
-		the_logger.info("generate h file {} cpp file {} for class {}", new_h_file_path.string(), new_cpp_file_path.string(), one_class->name());
+		the_logger.info("generate h file {} cpp file {} for class {}", new_h_file_path.string(), new_cpp_file_path.string(), one_class->unqualified_name());
 		std::ofstream h_file_stream(new_h_file_path);
 		h_file_stream << "json encode() const;" << std::endl;
 		h_file_stream.close();
@@ -194,7 +194,7 @@ void generate_encode()
 					return false;
 				}
 			});
-		cpp_file_stream << "#include \"" << file_path.filename() << "\"\n";
+		cpp_file_stream << "#include " << file_path.filename() << "\n";
 		cpp_file_stream << "json " << one_class->name() << "::encode() const\n{\n\t json result = json::array();\n";
 		for (auto one_field : encode_fields)
 		{
@@ -214,7 +214,8 @@ int main()
 	arguments.push_back("-x");
 	arguments.push_back("c++");
 	arguments.push_back("-std=c++17");
-	arguments.push_back("meta_parse");
+	arguments.push_back("-D__meta_parse__");
+	arguments.push_back("-ID:/usr/include/");
 	the_logger.info("arguments is {}", utils::join(arguments, ","));
 	std::vector<const char *> cstr_arguments;
 
@@ -225,8 +226,8 @@ int main()
 	
 	bool display_diag = true;
 	m_index = clang_createIndex(true, display_diag);
-	//std::string file_path = "../example/encode/test_class.cpp";
-	std::string file_path = "../test/test_template.cpp";
+	std::string file_path = "../example/encode/test_class.cpp";
+	//std::string file_path = "sima.cpp";
 	m_translationUnit = clang_createTranslationUnitFromSourceFile(m_index, file_path.c_str(), static_cast<int>(cstr_arguments.size()), cstr_arguments.data(), 0, nullptr);
 	auto cursor = clang_getTranslationUnitCursor(m_translationUnit);
 	the_logger.info("the root cursor is {}", utils::to_string(cursor));
@@ -251,7 +252,9 @@ int main()
 	json result = language::type_db::instance().to_json();
 	ofstream json_out("type_info.json");
 	json_out << setw(4) << result << endl;
+	generate_encode();
 	clang_disposeTranslationUnit(m_translationUnit);
+
 	return 0;
     
 }
