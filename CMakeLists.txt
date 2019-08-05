@@ -12,13 +12,10 @@ if(MSVC)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /std:c++latest")
 endif(MSVC)
 
-message(STATUS "cmake module path is" ${CMAKE_MODULE_PATH})
 find_package(LLVM REQUIRED)
 
 # add LLVM includes
 include_directories(${LLVM_INCLUDE_DIRS})
-message(STATUS "llvm root is " ${LLVM_INCLUDE_DIRS})
-message(STATUS "llvm root is " ${LLVM_ROOT})
 # add json support
 find_package(nlohmann_json CONFIG REQUIRED)
 
