@@ -15,8 +15,8 @@
 #include <set>
 
 using json = nlohmann::json;
-template <typename T, typename T2 = void>
-struct has_encode_func : std::false_type
+template <typename T1, typename T2 = void>
+struct encodable : std::false_type
 {
 
 };
@@ -33,119 +33,137 @@ struct all_encode_able<> : std::true_type
 };
 
 template <typename T1, typename... args>
-struct all_encode_able<T1, args...>: std::integral_constant<bool, has_encode_func<T1>::value && all_encode_able<args...>::value>
+struct all_encode_able<T1, args...>: std::integral_constant<bool, encodable<T1, void>::value && all_encode_able<args...>::value>
 {
 
 };
+
 
 template <typename T>
-struct has_encode_func<T, std::void_t<std::enable_if<std::is_same<decltype(std::declval<T>().encode()), json>::value>>> : std::true_type
-{
-
-};
-template <typename T>
-struct has_encode_func<T, std::void_t<typename std::enable_if<std::is_integral<T>::value>::type>> : std::true_type
+struct encodable<T, std::void_t<typename std::enable_if<std::is_integral<T>::value>::type>> : std::true_type
 {
 
 };
 template <>
-struct has_encode_func<float, void> : std::true_type
+struct encodable<json, void> : std::true_type
 {
 
 };
 template <>
-struct has_encode_func<double, void> : std::true_type
+struct encodable<float, void> : std::true_type
 {
 
 };
 template <>
-struct has_encode_func<std::string, void> : std::true_type
+struct encodable<double, void> : std::true_type
+{
+
+};
+template <>
+struct encodable<std::string, void> : std::true_type
 {
 
 };
 
 
 template<typename T1, typename T2>
-struct has_encode_func<std::pair<T1, T2>, std::void_t<typename std::enable_if<has_encode_func<T1>::value && has_encode_func<T2>::value>::type>> : std::true_type
+struct encodable<std::pair<T1, T2>, std::void_t<typename std::enable_if<encodable<T1>::value && encodable<T2>::value>::type>> : std::true_type
 {
 
 };
 template<typename... args>
-struct has_encode_func<std::tuple<args...>, std::void_t<typename std::enable_if<all_encode_able<args...>::value>::type>> :std::true_type
+struct encodable<std::tuple<args...>, std::void_t<typename std::enable_if<all_encode_able<args...>::value>::type>> :std::true_type
 {
 
 };
 template<typename T>
-struct has_encode_func < std::vector<T>, std::void_t<typename std::enable_if<has_encode_func<T>::value>::type>> : std::true_type
+struct encodable < std::vector<T>, std::void_t<typename std::enable_if<encodable<T>::value>::type>> : std::true_type
 {
 
 };
 template<typename T>
-struct has_encode_func < std::list<T>, std::void_t<typename std::enable_if<has_encode_func<T>::value>::type>> : std::true_type
+struct encodable < std::list<T>, std::void_t<typename std::enable_if<encodable<T>::value>::type>> : std::true_type
 {
 
 };
 template<typename T>
-struct has_encode_func < std::deque<T>, std::void_t<typename std::enable_if<has_encode_func<T>::value>::type>> : std::true_type
+struct encodable < std::deque<T>, std::void_t<typename std::enable_if<encodable<T>::value>::type>> : std::true_type
 {
 
 };
 template<typename T>
-struct has_encode_func < std::forward_list<T>, std::void_t<typename std::enable_if<has_encode_func<T>::value>::type>> : std::true_type
+struct encodable < std::forward_list<T>, std::void_t<typename std::enable_if<encodable<T>::value>::type>> : std::true_type
 {
 
 };
 template <typename T1, std::size_t T2>
-struct has_encode_func<std::array<T1, T2>, std::void_t<typename std::enable_if<has_encode_func<T1>::value>::type>>: std::true_type
+struct encodable<std::array<T1, T2>, std::void_t<typename std::enable_if<encodable<T1>::value>::type>>: std::true_type
 {
 
 };
 template <typename T1, typename T2>
-struct has_encode_func<std::map<T1, T2>, std::void_t<typename std::enable_if<has_encode_func<T1>::value && has_encode_func<T2>::value>::type>>: std::true_type
+struct encodable<std::map<T1, T2>, std::void_t<typename std::enable_if<encodable<T1>::value && encodable<T2>::value>::type>>: std::true_type
 {
 
 };
 template <typename T1, typename T2>
-struct has_encode_func<std::unordered_map<T1, T2>, std::void_t<typename std::enable_if<has_encode_func<T1>::value && has_encode_func<T2>::value>::type>>: std::true_type
+struct encodable<std::unordered_map<T1, T2>, std::void_t<typename std::enable_if<encodable<T1>::value && encodable<T2>::value>::type>>: std::true_type
 {
 
 };
 template <typename T1>
-struct has_encode_func<std::set<T1>, std::void_t<typename std::enable_if<has_encode_func<T1>::value>::type>>: std::true_type
+struct encodable<std::set<T1>, std::void_t<typename std::enable_if<encodable<T1>::value>::type>>: std::true_type
 {
 
 };
 template <typename T1>
-struct has_encode_func<std::unordered_set<T1>, std::void_t<typename std::enable_if<has_encode_func<T1>::value>::type>>: std::true_type
+struct encodable<std::unordered_set<T1>, std::void_t<typename std::enable_if<encodable<T1>::value>::type>>: std::true_type
 {
 
 };
 template <typename T1, typename T2>
-struct has_encode_func<std::multimap<T1, T2>, std::void_t<typename std::enable_if<has_encode_func<T1>::value && has_encode_func<T2>::value>::type>>: std::true_type
+struct encodable<std::multimap<T1, T2>, std::void_t<typename std::enable_if<encodable<T1>::value && encodable<T2>::value>::type>>: std::true_type
 {
 
 };
 template <typename T1, typename T2>
-struct has_encode_func<std::unordered_multimap<T1, T2>, std::void_t<typename std::enable_if<has_encode_func<T1>::value && has_encode_func<T2>::value>::type>>: std::true_type
+struct encodable<std::unordered_multimap<T1, T2>, std::void_t<typename std::enable_if<encodable<T1>::value && encodable<T2>::value>::type>>: std::true_type
 {
 
 };
 template <typename T1>
-struct has_encode_func<std::multiset<T1>, std::void_t<typename std::enable_if<has_encode_func<T1>::value>::type>>: std::true_type
+struct encodable<std::multiset<T1>, std::void_t<typename std::enable_if<encodable<T1>::value>::type>>: std::true_type
 {
 
 };
 template <typename T1>
-struct has_encode_func<std::unordered_multiset<T1>, std::void_t<typename std::enable_if<has_encode_func<T1>::value>::type>>: std::true_type
+struct encodable<std::unordered_multiset<T1>, std::void_t<typename std::enable_if<encodable<T1>::value>::type>>: std::true_type
 {
 
 };
+template <typename T, typename B = void>
+struct has_encode_func
+{
+	using result_type = void;
 
+};
 template <typename T>
-inline typename std::enable_if<std::is_same<decltype(std::declval<T>.encode()), json>::value, json>::type encode(const T& data)
+struct has_encode_func<T, std::void_t<decltype(std::declval<T>().encode())>>
 {
-    return data.encode();
-}
+	using result_type = decltype(std::declval<T>().encode());
+};
+template <typename T>
+struct encodable<T, 
+	std::void_t<typename 
+	std::enable_if<
+	encodable<decltype(std::declval<T>().encode())>::value
+	>::type
+	>
+> : std::true_type
+{
+
+};
+
 template <typename T>
 inline typename std::enable_if<std::is_integral<T>::value, T>::type
 encode(const T& data)
@@ -313,4 +331,9 @@ json encode(const std::vector<T>& data)
 		cur_array.push_back(encode(i));
 	}
 	return cur_array;
+}
+template <typename T>
+inline typename std::enable_if<encodable<decltype(std::declval<T>().encode())>::value, decltype(std::declval<T>().encode())>::type encode(const T& data)
+{
+	return data.encode();
 }

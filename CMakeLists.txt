@@ -43,8 +43,10 @@ target_link_libraries(meta PUBLIC nlohmann_json::nlohmann_json)
 add_executable(type_print ${META_TEST_DIR}/type_print.cpp)
 target_link_libraries(type_print meta)
 
+add_executable(generate_encode ${META_EXAMPLE_DIR}/encode/generate_encode.cpp)
+target_link_libraries(generate_encode PRIVATE meta)
+
 add_executable(encode_test ${META_EXAMPLE_DIR}/encode/encode_test.cpp)
-target_link_libraries(encode_test PRIVATE meta)
 
 
 
