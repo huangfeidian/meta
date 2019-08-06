@@ -48,5 +48,7 @@ target_link_libraries(generate_encode PRIVATE meta)
 
 add_executable(encode_test ${META_EXAMPLE_DIR}/encode/encode_test.cpp)
 
+add_executable(decode_test ${META_EXAMPLE_DIR}/decode/decode_test.cpp)
+
 
 
