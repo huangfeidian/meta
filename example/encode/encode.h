@@ -5,7 +5,6 @@
 #include <map>
 #include <array>
 #include <string>
-#include <nlohmann/json.hpp>
 #include <list>
 #include <stack>
 #include <deque>
@@ -13,8 +12,11 @@
 #include <utility>
 #include <type_traits>
 #include <set>
+
 #include <optional>
 #include <variant>
+
+#include <nlohmann/json.hpp>
 
 using json = nlohmann::json;
 template <typename T1, typename T2 = void>
