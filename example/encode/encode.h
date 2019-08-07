@@ -182,9 +182,9 @@ encode(const T& data)
 {
 	return data;
 }
-std::uint8_t encode(bool data)
+bool encode(bool data)
 {
-	return static_cast<std::uint8_t>(data);
+	return data;
 }
 double encode(const float& data)
 {
