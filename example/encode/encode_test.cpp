@@ -25,6 +25,12 @@ void print_encode_result(const T& data)
 	json result = encode(data);
 	cout << setw(4) << result << endl;
 }
+template <typename... Args>
+void print_encode_multi_result(const Args&... args)
+{
+	json result = encode_multi(args...);
+	cout << setw(4) << result << endl;
+}
 void encode_unit_test_data()
 {
 	print_encode_result(5);
@@ -65,6 +71,17 @@ void encode_unit_test_data()
 	std::pair<int, int> data_12 = std::make_pair(a, b);
 	print_encode_result(data_12);
 
+	std::optional<int> data_13;
+	print_encode_result(data_13);
+
+	std::optional<int> data_14 = 5;
+	print_encode_result(data_14);
+
+	std::variant<int, std::string, bool> data_15;
+	print_encode_result(data_15);
+
+	std::variant<int, std::string, bool> data_16 = "hehhe";
+	print_encode_result(data_16);
 
 }
 struct c_1
@@ -93,6 +110,22 @@ void encode_object_test()
 	unordered_map<int, c_1> data_6 = {{1, data_1}, {2, data_2}};
 	print_encode_result(data_6);
 
+}
+
+void encode_multi_test()
+{
+	c_1 data_1;
+	print_encode_multi_result(data_1);
+	c_1 data_2;
+	print_encode_multi_result(data_1, data_2);
+	print_encode_multi_result(3);
+	print_encode_multi_result("hehe");
+	print_encode_multi_result(false);
+	std::vector<int> data_3 = { 1, 2, 3 };
+	std::vector<c_1> data_4 = { data_1, data_2};
+	print_encode_multi_result(data_3);
+	print_encode_multi_result(data_4);
+	print_encode_multi_result(data_3, data_4);
 }
 
 int main()

@@ -13,6 +13,8 @@
 #include <utility>
 #include <type_traits>
 #include <set>
+#include <optional>
+#include <variant>
 
 using json = nlohmann::json;
 template <typename T1, typename T2 = void>
@@ -65,6 +67,11 @@ struct encodable<std::string, void> : std::true_type
 
 };
 
+template<typename T>
+struct encodable<std::optional<T>, std::void_t<typename std::enable_if<encodable<T>::value>::type>>: std::true_type
+{
+
+};
 
 template<typename T1, typename T2>
 struct encodable<std::pair<T1, T2>, std::void_t<typename std::enable_if<encodable<T1>::value && encodable<T2>::value>::type>> : std::true_type
@@ -73,6 +80,11 @@ struct encodable<std::pair<T1, T2>, std::void_t<typename std::enable_if<encodabl
 };
 template<typename... args>
 struct encodable<std::tuple<args...>, std::void_t<typename std::enable_if<all_encode_able<args...>::value>::type>> :std::true_type
+{
+
+};
+template<typename... args>
+struct encodable<std::variant<args...>, std::void_t<typename std::enable_if<all_encode_able<args...>::value>::type>> :std::true_type
 {
 
 };
@@ -170,6 +182,10 @@ encode(const T& data)
 {
 	return data;
 }
+std::uint8_t encode(bool data)
+{
+	return static_cast<std::uint8_t>(data);
+}
 double encode(const float& data)
 {
     return double(data);
@@ -183,6 +199,18 @@ std::string encode(const std::string& data)
     return data;
 }
 
+template <typename T>
+json encode(const std::optional<T>& data)
+{
+	if (data)
+	{
+		return encode(data.value());
+	}
+	else
+	{
+		return nullptr;
+	}
+}
 template <typename T1, typename T2>
 json encode(const std::pair<T1, T2>& data)
 {
@@ -200,16 +228,34 @@ json encode(const std::array<T1, T2>& data)
 	}
 	return cur_array;
 }
+
 template <typename tuple_type, std::size_t... index>
 json encode_tuple(const tuple_type& data, std::index_sequence<index...>)
 {
 	json cur_array = json::array({ encode(std::get<index>(data))... });
 	return cur_array;
 }
+
 template <typename... args>
 json encode(const std::tuple<args...>& data)
 {
 	return encode_tuple(data, std::index_sequence_for<args...>{});
+}
+template <typename... Args>
+json encode(const std::variant<Args...>& data)
+{
+	if (data.index() == std::variant_npos)
+	{
+		return nullptr;
+	}
+	else
+	{
+		auto visitor = [](auto&& value) -> json
+		{
+			return encode(value);
+		};
+		return std::visit(visitor, data);
+	}
 }
 template <typename T1, typename T2>
 json encode(const std::map<T1, T2>& data)
@@ -336,4 +382,12 @@ template <typename T>
 inline typename std::enable_if<encodable<decltype(std::declval<T>().encode())>::value, decltype(std::declval<T>().encode())>::type encode(const T& data)
 {
 	return data.encode();
+}
+template <typename... Args>
+json encode_multi(const Args&... args)
+{
+	json cur_array = json::array();
+	(cur_array.push_back(encode(args)), ...);
+	return cur_array;
+
 }
