@@ -9,7 +9,8 @@ void decode_test_print(const T& data)
 	T dst;
 	json encode_data = encode(data);
 	std::cout << std::setw(4) << "encode result " << encode_data << std::endl;
-	std::cout<<"decode result " << decode(encode_data, dst) << " with encode result "<<encode(dst)<< std::endl;
+	bool decode_result = decode(encode_data, dst);
+	std::cout<<"decode result " <<  decode_result << " with encode result "<<encode(dst)<< std::endl;
 }
 void decode_test_primitive()
 {
@@ -54,7 +55,7 @@ void decode_test_std_container()
 
 	std::optional<std::string> data_11 = "hehe";
 	decode_test_print(data_11);
-	std::variant<std::string, bool, int> data_12 = "fail";
+	std::variant<std::string, bool, int> data_12 = std::string("fail");
 	decode_test_print(data_12);
 	std::optional<std::string> data_13;
 	decode_test_print(data_13);

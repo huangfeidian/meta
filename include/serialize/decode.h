@@ -322,11 +322,33 @@ bool decode(const json& data, MAP_TYPE<T1, T2>& dst)				\
 		}
 
 	}
+	template <std::size_t N, typename... Args>
+	bool decode_for_variant_2(const json& data, std::variant<Args...>& dst, std::true_type& tag)
+	{
+		std::tuple_element_t<N, std::tuple<Args...>> temp;
+		if (decode(data, temp))
+		{
+			dst = temp;
+			return true;
+		}
+		else
+		{
+			//constexpr auto next_value = std::integral_constant<bool, N + 1 == std::tuple_size_v<std::tuple<Args...>>>{};
+			return decode_for_variant_2<N + 1, Args...>(data, dst, std::conditional<N + 1 == std::tuple_size_v<std::tuple<Args...>>, std::true_type, std::false_type>::type());
+		}
+	}
+	template <std::size_t N, typename... Args>
+	bool decode_for_variant_2(const json& data, std::variant<Args...>& dst, std::false_type& tag)
+	{
+		return false;
+	}
 	template <typename... Args>
 	bool decode(const json& data, std::variant<Args...>& dst)
 	{
-		return decode_for_variant<0, Args...>(data, dst);
+		return decode_for_variant_2<0, Args...>(data, dst, std::true_type{});
+		//return decode_for_variant<0, Args...>(data, dst);
 	}
+
 	template <typename T1, typename T2>
 	typename std::enable_if<
 		std::is_same<
