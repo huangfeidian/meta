@@ -1,4 +1,4 @@
-
+﻿
 #include <iostream>
 #include <iomanip>
 
@@ -15,7 +15,7 @@
 #include "nodes/class.h"
 #include "nodes/enum.h"
 #include "nodes/variable.h"
-#include "encode.h"
+#include <serialize/encode.h>
 
 using namespace std;
 using namespace meta;
