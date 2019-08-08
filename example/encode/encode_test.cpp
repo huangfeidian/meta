@@ -19,6 +19,7 @@
 
 using namespace std;
 using namespace meta;
+using namespace meta::serialize;
 template <typename T>
 void print_encode_result(const T& data)
 {
