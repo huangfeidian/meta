@@ -95,56 +95,45 @@ void recursive_build_class_node_under_namespace(const std::string& ns_name)
 	}
 
 }
+template <typename T>
+bool filter_with_annotation_value(const std::string& _annotation_name, const std::vector<std::string>& _annotation_value, const T* _cur_node)
+{
 
+	auto& _cur_annotations = _cur_node.annotations();
+	auto cur_iter = _cur_annotations.find(_annotation_name);
+	if (cur_iter == _cur_annotations.end())
+	{
+		return false;
+	}
+	if (cur_iter.second != _annotation_value)
+	{
+		return false;
+	}
+	return true;
+}
+template <typename T>
+bool filter_with_annotation(const std::string& _annotation_name, const T* _cur_node)
+{
+
+	auto& _cur_annotations = _cur_node.annotations();
+	auto cur_iter = _cur_annotations.find(_annotation_name);
+	if (cur_iter == _cur_annotations.end())
+	{
+		return false;
+	}
+	return true;
+
+}
 void generate_decode()
 {
 	// 遍历所有的class 对于里面表明了需要生成decode的类进行处理
 	auto& the_logger = utils::get_logger();
-	auto _class_with_decode_prop = [&the_logger](const language::class_node& _cur_node)
-	{
-		auto& _cur_annotations = _cur_node.annotations();
-		auto cur_iter = _cur_annotations.find("decode");
-		if (cur_iter == _cur_annotations.end())
+	std::vector<std::string> _annotation_value = { "auto" };
+	auto& all_decode_classes = language::type_db::instance().get_class_with_pred([&_annotation_value](const language::class_node* _cur_node)
 		{
-			return false;
-		}
-		else
-		{
-			switch (cur_iter->second.size())
-			{
-			case 0:
-				the_logger.error("class {} has decode annotation but without args", _cur_node.name());
-				return false;
-				break;
-			case 1:
-				if (cur_iter->second[0] == "auto")
-				{
-					return true;
-				}
-				else
-				{
-					return false;
-				}
-			default:
-				return false;
-				break;
-			}
-		}
-	};
-	auto _field_with_decode_prop = [&the_logger](const language::variable_node& _cur_node)
-	{
-		auto& _cur_annotations = _cur_node.annotations();
-		auto cur_iter = _cur_annotations.find("decode");
-		if (cur_iter == _cur_annotations.end())
-		{
-			return false;
-		}
-		else
-		{
-			return true;
-		}
-	};
-	auto& all_decode_classes = language::type_db::instance().get_class_with_pred(_class_with_decode_prop);
+			return filter_with_annotation_value<language::class_node>("decode", _annotation_value, _cur_node);
+		});
+
 	for (auto one_class : all_decode_classes)
 	{
 		auto cur_file_path_str = one_class->file();
@@ -167,10 +156,42 @@ void generate_decode()
 		}
 		the_logger.info("generate h file {} cpp file {} for class {}", new_h_file_path.string(), new_cpp_file_path.string(), one_class->unqualified_name());
 		std::ofstream h_file_stream(new_h_file_path);
-		h_file_stream << "json decode() const;" << std::endl;
+		h_file_stream << "bool decode(const json& data)" << std::endl;
 		h_file_stream.close();
 		std::ofstream cpp_file_stream(new_cpp_file_path);
-		auto decode_fields = one_class->query_fields_with_pred(_field_with_decode_prop);
+
+		cpp_file_stream << "#include " << file_path.filename() << "\n";
+		cpp_file_stream << "bool " << one_class->name() << "::decode(const json& data) \n{\n\tjson result = json::array();\n";
+		// 首先decode父类 按照父类的名称排序
+		auto pre_bases = one_class->bases();
+		std::vector<const language::type_info*> _bases;
+		std::copy_if(pre_bases.begin(), pre_bases.end(), std::back_inserter(_bases), [](const language::type_info* _cur_node)
+			{
+				if (_cur_node->name()._Starts_with("std::"))
+				{
+					return true;
+				}
+				if (filter_with_annotation<language::type_info>("encode", _cur_node))
+				{
+					return true;
+				}
+				return false;
+			});
+		std::sort(_bases.begin(), _bases.end(), [](const language::type_info* a, const language::type_info* b)
+			{
+				if (a->name() < b->name())
+				{
+					return true;
+				}
+				else
+				{
+					return false;
+				}
+			});
+		auto decode_fields = one_class->query_fields_with_pred([&_annotation_value](const language::variable_node* _cur_node)
+			{
+				return filter_with_annotation_value<language::variable_node>("decode", _annotation_value, _cur_node);
+			});
 		std::sort(decode_fields.begin(), decode_fields.end(), [](const language::variable_node* a, const language::variable_node* b)
 			{
 				if (a->unqualified_name() < b->unqualified_name())
@@ -181,14 +202,42 @@ void generate_decode()
 				{
 					return false;
 				}
+		
 			});
-		cpp_file_stream << "#include " << file_path.filename() << "\n";
-		cpp_file_stream << "json " << one_class->name() << "::decode() const\n{\n\tjson result = json::array();\n";
+
+		// check array size match
+		cpp_file_stream << "\tif(!data.is_array())\n\t{\n\t\treturn false;\n\t}\n";
+		cpp_file_stream<< "\tif(data.size() !="<<_bases.size() + decode_fields.size()<<")\n\t{\n\t\treturn false;\n\t}\n";
+		cpp_file_stream << "\t//begin base decode\n";
+		std::size_t decode_idx = 0;
+		for (auto one_base : _bases)
+		{
+			auto _one_class = one_base->related_class();
+			
+			if (filter_with_annotation<language::class_node>("decode", _one_class))
+			{
+				
+				// 默认encode 与decode 的需求格式统一
+				
+				cpp_file_stream << "\tif(!decode(data[" << decode_idx << "], static_cast<" << _one_class->name() << "&>(*this))\n";
+				cpp_file_stream << "\t\t return false;\n\t}\n";
+			}
+			
+			decode_idx += 1;
+		}
+		// 然后decode自己的变量
+		cpp_file_stream << "\t//begin variable decode\n";
+
 		for (auto one_field : decode_fields)
 		{
-			cpp_file_stream << "\tresult.push_back(decode(" << one_field->unqualified_name() << ");\n";
+			if (filter_with_annotation<language::variable_node>("decode", one_field))
+			{
+				cpp_file_stream << "\tif(!decode(data[" << decode_idx << "], static_cast<" << one_field->name() << "&>(*this))\n";
+				cpp_file_stream << "\t\t return false;\n\t}\n";
+			}
+			decode_idx += 1;
 		}
-		cpp_file_stream << "\treturn result;\n}" << std::endl;
+		cpp_file_stream << "\treturn true;\n}" << std::endl;
 		cpp_file_stream.close();
 	}
 
@@ -204,7 +253,7 @@ int main()
 	arguments.push_back("-std=c++17");
 	arguments.push_back("-D__meta_parse__");
 	arguments.push_back("-ID:/usr/include/");
-	the_logger.info("arguments is {}", utils::join(arguments, ","));
+	arguments.push_back("-I../include/");
 	std::vector<const char *> cstr_arguments;
 
 	for (const auto& i : arguments)
@@ -214,7 +263,7 @@ int main()
 
 	bool display_diag = true;
 	m_index = clang_createIndex(true, display_diag);
-	std::string file_path = "../example/decode/test_class.cpp";
+	std::string file_path = "../example/generate_decode/test_class.cpp";
 	//std::string file_path = "sima.cpp";
 	m_translationUnit = clang_createTranslationUnitFromSourceFile(m_index, file_path.c_str(), static_cast<int>(cstr_arguments.size()), cstr_arguments.data(), 0, nullptr);
 	auto cursor = clang_getTranslationUnitCursor(m_translationUnit);
