@@ -8,7 +8,7 @@
 
 #include <vector>
 #include <unordered_map>
-#include "encode.h"
+#include <serialize/encode.h>
 using namespace std;
 namespace test
 {
@@ -22,5 +22,12 @@ namespace test
 	public:
 #include "test_class_generated.h"
 
-	}Meta(encode);
+	}Meta(encode(auto));
+	class test_class_B: public test_class
+	{
+		private:
+		Meta(encode) std::vector<std::string> d;
+	public:
+#include "test_class_B_generated.h"
+	}Meta(encode(auto));
 }

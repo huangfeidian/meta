@@ -100,7 +100,7 @@ void generate_encode()
 {
 	// 遍历所有的class 对于里面表明了需要生成encode的类进行处理
 	auto& the_logger = utils::get_logger();
-	auto _class_with_encode_prop = [](const language::class_node& _cur_node)
+	auto _class_with_encode_prop = [&the_logger](const language::class_node& _cur_node)
 	{
 		auto& _cur_annotations = _cur_node.annotations();
 		auto cur_iter = _cur_annotations.find("encode");
@@ -110,10 +110,28 @@ void generate_encode()
 		}
 		else
 		{
-			return true;
+			switch (cur_iter->second.size())
+			{
+			case 0:
+				the_logger.error("class {} has encode annotation but without args", _cur_node.name());
+				return false;
+				break;
+			case 1:
+				if (cur_iter->second[0] == "auto")
+				{
+					return true;
+				}
+				else
+				{
+					return false;
+				}
+			default:
+				return false;
+				break;
+			}
 		}
 	};
-	auto _field_with_encode_prop = [](const language::variable_node& _cur_node)
+	auto _field_with_encode_prop = [&the_logger](const language::variable_node& _cur_node)
 	{
 		auto& _cur_annotations = _cur_node.annotations();
 		auto cur_iter = _cur_annotations.find("encode");
@@ -152,6 +170,28 @@ void generate_encode()
 		h_file_stream << "json encode() const;" << std::endl;
 		h_file_stream.close();
 		std::ofstream cpp_file_stream(new_cpp_file_path);
+		
+		cpp_file_stream << "#include " << file_path.filename() << "\n";
+		cpp_file_stream << "json " << one_class->name() << "::encode() const\n{\n\tjson result = json::array();\n";
+		// 首先encode父类 按照父类的名称排序
+		auto _bases = one_class->bases();
+		std::sort(_bases.begin(), _bases.end(), [](const language::type_info* a, const language::type_info* b)
+			{
+				if (a->name() < b->name())
+				{
+					return true;
+				}
+				else
+				{
+					return false;
+				}
+			});
+		cpp_file_stream << "\t//begin base encode\n";
+		for (auto one_base : _bases)
+		{
+			cpp_file_stream << "\tresult.push_back(encode(static_cast<const "<<one_base->name()<<"&>(*this))\n";
+		}
+		// 然后encode自己的变量
 		auto encode_fields = one_class->query_fields_with_pred(_field_with_encode_prop);
 		std::sort(encode_fields.begin(), encode_fields.end(), [](const language::variable_node* a, const language::variable_node* b)
 			{
@@ -164,11 +204,9 @@ void generate_encode()
 					return false;
 				}
 			});
-		cpp_file_stream << "#include " << file_path.filename() << "\n";
-		cpp_file_stream << "json " << one_class->name() << "::encode() const\n{\n\t json result = json::array();\n";
 		for (auto one_field : encode_fields)
 		{
-			cpp_file_stream << "\t result.push_back(encode(" << one_field->unqualified_name() << ");\n";
+			cpp_file_stream << "\tresult.push_back(encode(" << one_field->unqualified_name() << ");\n";
 		}
 		cpp_file_stream << "\treturn result;\n}" << std::endl;
 		cpp_file_stream.close();
@@ -186,6 +224,7 @@ int main()
 	arguments.push_back("-std=c++17");
 	arguments.push_back("-D__meta_parse__");
 	arguments.push_back("-ID:/usr/include/");
+	arguments.push_back("-I../include/");
 	the_logger.info("arguments is {}", utils::join(arguments, ","));
 	std::vector<const char *> cstr_arguments;
 
