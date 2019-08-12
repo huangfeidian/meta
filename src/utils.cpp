@@ -524,16 +524,24 @@ namespace meta::utils
 				case ',':
 					if (!wait_for_right_paren)
 					{
-						if (cur_key.empty())
+						if (!cur_key.empty())
 						{
-							the_logger.error("fail to parse annotation from {}", cur_annotation);
-							return {};
+							result[cur_key] = {};
+							cur_key.clear();
 						}
-						result[cur_key] = {};
-						cur_key.clear();
+						
 					}
 					break;
-
+				default:
+					if (wait_for_right_paren)
+					{
+						cur_values.push_back(std::string(token));
+					}
+					else
+					{
+						cur_key = std::string(token);
+					}
+					break;
 				}
 				break;
 			default:

@@ -10,7 +10,7 @@ void decode_test_print(const T& data)
 	json encode_data = encode(data);
 	std::cout << std::setw(4) << "encode result " << encode_data << std::endl;
 	bool decode_result = decode(encode_data, dst);
-	std::cout<<"decode result " <<  decode_result << " with encode result "<<encode(dst)<< std::endl;
+	std::cout<<"decode result " <<  decode_result << " with encode result "<<json(encode(dst))<< std::endl;
 }
 void decode_test_primitive()
 {
@@ -111,10 +111,26 @@ struct c_1
 	}
 
 };
+struct c_2
+{
+	std::unordered_map<int, int> b;
+	std::unordered_map<int, int> encode() const
+	{
+		return b;
+	}
+	bool decode(const std::unordered_map<int, int>& data)
+	{
+		b = data;
+		return true;
+	}
+};
 void decode_test_custom()
 {
 	c_1 data_1;
 	decode_test_print(data_1);
+	c_2 data_2;
+	data_2.b[2] = 4;
+	decode_test_print(data_2);
 }
 int main()
 {

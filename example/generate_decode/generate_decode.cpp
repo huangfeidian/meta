@@ -96,7 +96,7 @@ void recursive_build_class_node_under_namespace(const std::string& ns_name)
 
 }
 template <typename T>
-bool filter_with_annotation_value(const std::string& _annotation_name, const std::vector<std::string>& _annotation_value, const T* _cur_node)
+bool filter_with_annotation_value(const std::string& _annotation_name, const std::vector<std::string>& _annotation_value, const T& _cur_node)
 {
 
 	auto& _cur_annotations = _cur_node.annotations();
@@ -105,14 +105,14 @@ bool filter_with_annotation_value(const std::string& _annotation_name, const std
 	{
 		return false;
 	}
-	if (cur_iter.second != _annotation_value)
+	if (cur_iter->second != _annotation_value)
 	{
 		return false;
 	}
 	return true;
 }
 template <typename T>
-bool filter_with_annotation(const std::string& _annotation_name, const T* _cur_node)
+bool filter_with_annotation(const std::string& _annotation_name, const T& _cur_node)
 {
 
 	auto& _cur_annotations = _cur_node.annotations();
@@ -129,7 +129,7 @@ void generate_decode()
 	// 遍历所有的class 对于里面表明了需要生成decode的类进行处理
 	auto& the_logger = utils::get_logger();
 	std::vector<std::string> _annotation_value = { "auto" };
-	auto& all_decode_classes = language::type_db::instance().get_class_with_pred([&_annotation_value](const language::class_node* _cur_node)
+	auto& all_decode_classes = language::type_db::instance().get_class_with_pred([&_annotation_value](const language::class_node& _cur_node)
 		{
 			return filter_with_annotation_value<language::class_node>("decode", _annotation_value, _cur_node);
 		});
@@ -156,12 +156,12 @@ void generate_decode()
 		}
 		the_logger.info("generate h file {} cpp file {} for class {}", new_h_file_path.string(), new_cpp_file_path.string(), one_class->unqualified_name());
 		std::ofstream h_file_stream(new_h_file_path);
-		h_file_stream << "bool decode(const json& data)" << std::endl;
+		h_file_stream << "bool decode(const json& data);" << std::endl;
 		h_file_stream.close();
 		std::ofstream cpp_file_stream(new_cpp_file_path);
 
 		cpp_file_stream << "#include " << file_path.filename() << "\n";
-		cpp_file_stream << "bool " << one_class->name() << "::decode(const json& data) \n{\n\tjson result = json::array();\n";
+		cpp_file_stream << "bool " << one_class->name() << "::decode(const json& data) \n{\n";
 		// 首先decode父类 按照父类的名称排序
 		auto pre_bases = one_class->bases();
 		std::vector<const language::type_info*> _bases;
@@ -171,7 +171,12 @@ void generate_decode()
 				{
 					return true;
 				}
-				if (filter_with_annotation<language::type_info>("encode", _cur_node))
+				auto cur_related_class = _cur_node->related_class();
+				if (!cur_related_class)
+				{
+					return false;
+				}
+				if (filter_with_annotation<language::class_node>("encode", *cur_related_class))
 				{
 					return true;
 				}
@@ -188,9 +193,10 @@ void generate_decode()
 					return false;
 				}
 			});
-		auto decode_fields = one_class->query_fields_with_pred([&_annotation_value](const language::variable_node* _cur_node)
+		std::vector<std::string> field_decode_value = {};
+		auto decode_fields = one_class->query_fields_with_pred([&field_decode_value](const language::variable_node& _cur_node)
 			{
-				return filter_with_annotation_value<language::variable_node>("decode", _annotation_value, _cur_node);
+				return filter_with_annotation_value<language::variable_node>("decode", field_decode_value, _cur_node);
 			});
 		std::sort(decode_fields.begin(), decode_fields.end(), [](const language::variable_node* a, const language::variable_node* b)
 			{
@@ -214,13 +220,13 @@ void generate_decode()
 		{
 			auto _one_class = one_base->related_class();
 			
-			if (filter_with_annotation<language::class_node>("decode", _one_class))
+			if (filter_with_annotation<language::class_node>("decode", *_one_class))
 			{
 				
 				// 默认encode 与decode 的需求格式统一
 				
-				cpp_file_stream << "\tif(!decode(data[" << decode_idx << "], static_cast<" << _one_class->name() << "&>(*this))\n";
-				cpp_file_stream << "\t\t return false;\n\t}\n";
+				cpp_file_stream << "\tif(!decode(data[" << decode_idx << "], static_cast<" << _one_class->name() << "&>(*this))\n\t{\n";
+				cpp_file_stream << "\t\treturn false;\n\t}\n";
 			}
 			
 			decode_idx += 1;
@@ -230,10 +236,10 @@ void generate_decode()
 
 		for (auto one_field : decode_fields)
 		{
-			if (filter_with_annotation<language::variable_node>("decode", one_field))
+			if (filter_with_annotation<language::variable_node>("decode", *one_field))
 			{
-				cpp_file_stream << "\tif(!decode(data[" << decode_idx << "], static_cast<" << one_field->name() << "&>(*this))\n";
-				cpp_file_stream << "\t\t return false;\n\t}\n";
+				cpp_file_stream << "\tif(!decode(data[" << decode_idx << "], " << one_field->unqualified_name() << ")\n\t{\n";
+				cpp_file_stream << "\t\treturn false;\n\t}\n";
 			}
 			decode_idx += 1;
 		}

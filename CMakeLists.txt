@@ -46,9 +46,12 @@ target_link_libraries(type_print meta)
 add_executable(generate_encode ${META_EXAMPLE_DIR}/generate_encode/generate_encode.cpp)
 target_link_libraries(generate_encode PRIVATE meta)
 
-add_executable(encode_test ${META_EXAMPLE_DIR}/encode/encode_test.cpp)
+add_executable(encode_test ${META_TEST_DIR}/encode/encode_test.cpp)
 
-add_executable(decode_test ${META_EXAMPLE_DIR}/decode/decode_test.cpp)
+add_executable(decode_test ${META_TEST_DIR}/decode/decode_test.cpp)
+
+add_executable(annotation_test ${META_TEST_DIR}/annotation/annotation_test.cpp)
+target_link_libraries(annotation_test PRIVATE meta)
 
 add_executable(generate_decode ${META_EXAMPLE_DIR}/generate_decode/generate_decode.cpp)
 target_link_libraries(generate_decode PRIVATE meta)
