@@ -67,6 +67,8 @@ namespace meta::language
 		json to_json() const;
 		template <typename T>
 		std::vector<const class_node*> get_class_with_pred(T _pred) const;
+		void build_class_under_namespace(const std::string& _ns_name);
+		void create_from_translate_unit(CXCursor _tu_cursor);
     private:
 		type_info* get_type_for_const(CXType _in_type);
 		type_info* get_type_for_pointee(CXType _in_type);

@@ -19,82 +19,7 @@
 
 using namespace std;
 using namespace meta;
-bool interested_kind(CXCursorKind _cur_kind)
-{
-	switch (_cur_kind)
-	{
-	case CXCursor_ClassDecl:
-	case CXCursor_StructDecl:
-	case CXCursor_EnumDecl:
-	case CXCursor_FunctionDecl:
-	case CXCursor_Namespace:
-	case CXCursor_VarDecl:
-	case CXCursor_FunctionTemplate:
-	case CXCursor_CXXMethod:
-	case CXCursor_Constructor:
-	case CXCursor_ParmDecl:
-	case CXCursor_TemplateTypeParameter:
-	case CXCursor_NonTypeTemplateParameter:
-	case CXCursor_TemplateTemplateParameter:
-	case CXCursor_ClassTemplate:
-	case CXCursor_TypeAliasDecl:
-	case CXCursor_TypedefDecl:
-		return true;
-	default:
-		return false;
-	}
-}
-void recursive_build_class_node_under_namespace(const std::string& ns_name)
-{
-	std::queue<language::node*> tasks;
-	auto& all_ns_nodes = language::name_space::get_synonymous_name_spaces(ns_name);
-	auto & the_logger = utils::get_logger();
-	auto cur_visitor = [&ns_name, &the_logger](const language::node* _node)
-	{
-		switch (_node->get_kind())
-		{
-		case CXCursor_ClassTemplate:
-		case CXCursor_ClassDecl:
-		case CXCursor_StructDecl:
-		{
-			if (clang_isCursorDefinition(_node->get_cursor()))
-			{
-				auto temp_node = new language::class_node(_node);
-				the_logger.info("new class {}", temp_node->to_json().dump(4));
-				break;
-			}
-			else
-			{
-				the_logger.info("pre decl for class {}", _node->get_name());
-				break;
-			}
 
-		}
-		case CXCursor_EnumDecl:
-		{
-			auto temp_node = new language::enum_node(_node);
-			the_logger.info("new enum {}", temp_node->to_json().dump(4));
-			break;
-		}
-		case CXCursor_TypedefDecl:
-		case CXCursor_TypeAliasDecl:
-		{
-			language::type_db::instance().get_alias_typedef(_node->get_cursor());
-			break;
-		}
-		default:
-			break;
-		}
-
-		return language::node_visit_result::visit_recurse;
-
-	};
-	for (const auto& i : all_ns_nodes)
-	{
-		language::bfs_visit_nodes(i, cur_visitor);
-	}
-
-}
 
 void generate_encode()
 {
@@ -240,22 +165,11 @@ int main()
 	m_translationUnit = clang_createTranslationUnitFromSourceFile(m_index, file_path.c_str(), static_cast<int>(cstr_arguments.size()), cstr_arguments.data(), 0, nullptr);
 	auto cursor = clang_getTranslationUnitCursor(m_translationUnit);
 	the_logger.info("the root cursor is {}", utils::to_string(cursor));
-	auto visitor = [](CXCursor cur, CXCursor parent, CXClientData data)
-	{
-		// cout << "cur_cursor kind " << cur.kind << endl;
-		if (cur.kind == CXCursor_LastPreprocessing)
-			return CXChildVisit_Break;
-		// if (clang_isCursorDefinition(cur) && interested_kind(cur.kind))
-		if (interested_kind(cur.kind))
-		{
-			language::node_db::get_instance().create_node(cur);
-		}
-		return CXChildVisit_Recurse;
-	};
-	clang_visitChildren(cursor, visitor, nullptr);
+	auto& cur_type_db = language::type_db::instance();
+	cur_type_db.create_from_translate_unit(cursor);
 	//recursive_print_decl_under_namespace("A");
-	recursive_build_class_node_under_namespace("std");
-	recursive_build_class_node_under_namespace("test");
+	cur_type_db.build_class_under_namespace("std");
+	cur_type_db.build_class_under_namespace("test");
 	//recursive_print_func_under_namespace("A");
 	//recursive_print_class_under_namespace("A");
 	json result = language::type_db::instance().to_json();

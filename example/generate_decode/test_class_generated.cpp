@@ -1,4 +1,12 @@
 #include "test_class.h"
+json test::test_class::encode() const
+{
+	json result = json::array();
+	//begin base encode
+	result.push_back(encode(a);
+	result.push_back(encode(b);
+	return result;
+}
 bool test::test_class::decode(const json& data) 
 {
 	if(!data.is_array())
