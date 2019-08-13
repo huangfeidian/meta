@@ -335,7 +335,7 @@ bool decode(const json& data, MAP_TYPE<T1, T2>& dst)				\
 		else
 		{
 			//constexpr auto next_value = std::integral_constant<bool, N + 1 == std::tuple_size_v<std::tuple<Args...>>>{};
-			return decode_for_variant_2<N + 1, Args...>(data, dst, std::conditional<N + 1 == std::tuple_size_v<std::tuple<Args...>>, std::true_type, std::false_type>::type());
+			return decode_for_variant_2<N + 1, Args...>(data, dst, std::conditional<N + 1 == std::tuple_size_v<std::tuple<Args...>>, std::false_type, std::true_type>::type());
 		}
 	}
 	template <std::size_t N, typename... Args>
