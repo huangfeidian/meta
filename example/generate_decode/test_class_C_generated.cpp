@@ -1,29 +1,24 @@
 #include "test_class.h"
-json test::test_class::encode() const
+json test::test_class_C::encode() const
 {
 	json result = json::array();
 	//begin base encode
-	result.push_back(encode(a);
-	result.push_back(encode(b);
+	result.push_back(encode(f);
 	return result;
 }
-bool test::test_class::decode(const json& data) 
+bool test::test_class_C::decode(const json& data) 
 {
 	if(!data.is_array())
 	{
 		return false;
 	}
-	if(data.size() !=2)
+	if(data.size() !=1)
 	{
 		return false;
 	}
 	//begin base decode
 	//begin variable decode
-	if(!decode(data[0], a)
-	{
-		return false;
-	}
-	if(!decode(data[1], b)
+	if(!decode(data[0], f)
 	{
 		return false;
 	}
