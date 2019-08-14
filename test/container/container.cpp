@@ -54,6 +54,38 @@ void container_encode_print()
 	decode_test_print(data_10);
 	decode_test_print(data_11);
 }
+
+class Entity
+{
+public:
+	Entity(const std::string& _in_name):
+		_name(_in_name)
+		
+	{
+
+	}
+private:
+	std::string _name;
+};
+class PropertyMap
+{
+public:
+	std::unique_ptr<PropertyMap> _parent;
+	int a;
+	std::vector<std::string> b;
+	
+	const int& a_get() const
+	{
+		return a;
+	}
+	std::vector<std::uint16_t> a_set(const int& _in_data)
+	{
+		a = _in_data;
+
+	}
+private:
+	std::vector<std::uint16_t> _indexes;
+};
 int main()
 {
 	container_size_print();
