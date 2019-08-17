@@ -58,5 +58,12 @@ target_link_libraries(annotation_test PRIVATE meta)
 add_executable(generate_decode ${META_EXAMPLE_DIR}/generate_decode/generate_decode.cpp)
 target_link_libraries(generate_decode PRIVATE meta)
 
+add_executable(generate_property ${META_EXAMPLE_DIR}/generate_property/generate_property.cpp)
+target_link_libraries(generate_property PRIVATE meta)
+
+
+add_executable(generate_component ${META_EXAMPLE_DIR}/generate_component/generate_component.cpp)
+target_link_libraries(generate_component PRIVATE meta)
+
 
 

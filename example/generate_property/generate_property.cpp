@@ -188,6 +188,101 @@ std::string generate_encode_func_for_class(const language::class_node* one_class
 	cpp_file_stream << "\treturn result;\n}" << std::endl;
 	return cpp_file_stream.str();
 }
+std::pair<std::string, std::string> generate_property_func_for_class(const language::class_node* one_class)
+{
+	// 生成一个类的所有property信息
+	std::vector<std::string> property_annotate_value;
+	auto property_fields = one_class->query_fields_with_pred([&property_annotate_value](const language::variable_node& _cur_node)
+		{
+			return filter_with_annotation_value<language::variable_node>("property", property_annotate_value, _cur_node);
+		});
+	std::sort(property_fields.begin(), property_fields.end(), [](const language::variable_node* a, const language::variable_node* b)
+		{
+			if (a->unqualified_name() < b->unqualified_name())
+			{
+				return true;
+			}
+			else
+			{
+				return false;
+			}
+		});
+
+	std::ostringstream h_stream;
+	std::ostringstream cpp_stream;
+	std::string cur_class_name = one_class->qualified_name();
+	for (auto one_field : property_fields)
+	{
+		auto cur_field_name = one_field->unqualified_name();
+		auto cur_field_type_name = one_field->decl_type()->name();
+		//ref
+		h_stream << "const decltype(" << cur_field_name << ")& " << cur_field_name << "_ref() const\n";
+		h_stream << "{\n\treturn " << cur_field_name << ";\n}\n";
+		//mut
+		h_stream << "decltype(" << cur_field_name << ")& " << cur_field_name << "_mut()\n";
+		h_stream << "{\n\treturn " << cur_field_name << ";\n}\n";
+		//set
+		h_stream << "mutate_msg " << cur_field_name << "_set(const decltype(" << cur_field_name << ")& _value)\n";
+		h_stream << "{\n\t" << cur_field_name << " = _value;\n";
+		h_stream << "\t return std::make_tuple(_cur_depth, index_for_" << cur_field_name;
+		h_stream << ", var_mutate_cmd::set, encode_multi(" << cur_field_name << "));\n}\n";
+		//replay_set
+		h_stream << "bool Z_replay_" << cur_field_name << "_set(const json& _value)\n";
+		h_stream << "{\n\t if(!_value.is_array())\n\t{\n\t\t return false;\n\t}";
+		h_stream << "\n\tif(!_value.size() != 1)\n\t{\n\t\treturn false;\n\t}";
+		h_stream << "\nreturn decode(_value[0], " << cur_field_name << "); \n}\n";
+		//clear
+		h_stream << "mutate_msg " << cur_field_name << "_clear()\n{\n";
+		if (cur_field_type_name.find('<') != std::string::npos)
+		{
+			// is a template just use clear
+			h_stream << "\t" << cur_field_name << ".clear();\n";
+		}
+		else
+		{
+			h_stream << "\t" << cur_field_name << " = 0;\n";
+		}
+		h_stream << "\t return std::make_tuple(_cur_depth, index_for_" << cur_field_name;
+		h_stream << ", var_mutate_cmd::clear, json::array());\n}\n";
+		//replay clear
+		h_stream << "bool Z_replay_" << cur_field_name << "_clear(const json& _value)\n{\n";
+		if (cur_field_type_name.find('<') != std::string::npos)
+		{
+			// is a template just use clear
+			h_stream << "\t" << cur_field_name << ".clear();\n";
+		}
+		else
+		{
+			h_stream << "\t" << cur_field_name << " = 0;\n";
+		}
+		h_stream << "\t return true;\n\}\n";
+
+
+		if (cur_field_type_name._Starts_with("std::vector<"))
+		{
+			// this is a vector has push_back pop_back delete_idx mutate_idx
+			//push back
+			h_stream << "mutate_msg " << cur_field_name << "_push_back(const decltype(" << cur_field_name << ")::value_type& _value)\n{\n";
+			h_stream << "\t" << cur_field_name << ".push_back(_value);\n";
+			h_stream << "\t return std::make_tuple(_cur_depth, index_for_" << cur_field_name;
+			h_stream << ", var_mutate_cmd::vetor_push_back, encode_multi(_value));\n}\n";
+			//replay push back
+			h_stream << "bool Z_replay_" << cur_field_name << "_push_back(const json& _value)\n{\n";
+			h_stream << "\tif(!_value.is_array())\n\t{\n\t\t return false;\n\t}\n";
+			h_stream << "\tif(!_value.size() != 1)\n\t{\n\t\treturn false;\n\t}\n";
+
+			h_stream << "mutate_msg " << cur_field_name << "_pop_back();\n";
+			h_stream << "bool Z_replay_" << cur_field_name << "_pop_back(const json& _value);\n";
+			h_stream << "mutate_msg " << cur_field_name << "_idx_mutate(std::size_t idx, const decltype(" << cur_field_name << ")::value_type& _value);\n";
+			h_stream << "bool Z_replay_" << cur_field_name << "_idx_mutate(const json& _value);\n";
+			h_stream << "mutate_msg " << cur_field_name << "_idx_delete(std::size_t idx);\n";
+			h_stream << "bool Z_replay_" << cur_field_name << "_idx_delete(const json& _value);\n";
+
+		}
+	}
+
+}
+
 std::unordered_map<std::string, std::string> generate_encode_decode()
 {
 	// 遍历所有的class 对于里面表明了需要生成decode的类进行处理
@@ -232,10 +327,33 @@ std::unordered_map<std::string, std::string> generate_encode_decode()
 
 		utils::append_output_to_stream(result, new_h_file_path.string(), h_file_stream.str());
 		utils::append_output_to_stream(result, new_cpp_file_path.string(), cpp_file_stream.str());
-		
+
 	}
 	return result;
 
+}
+std::unordered_map<std::string, std::string> generate_property()
+{
+	auto& the_logger = utils::get_logger();
+	std::vector<std::string> _annotation_value = { "auto" };
+	auto all_property_classes = language::type_db::instance().get_class_with_pred([&_annotation_value](const language::class_node& _cur_node)
+		{
+			return filter_with_annotation_value<language::class_node>("property", _annotation_value, _cur_node);
+		});
+	std::unordered_map<std::string, std::string> result;
+	for (auto one_class : all_property_classes)
+	{
+		auto cur_file_path_str = one_class->file();
+		std::filesystem::path file_path(cur_file_path_str);
+		auto _cur_parent_path = file_path.parent_path();
+		auto generated_h_file_name = one_class->unqualified_name() + "_generated.h";
+		auto generated_cpp_file_name = one_class->unqualified_name() + "_generated.cpp";
+		auto new_h_file_path = _cur_parent_path / generated_h_file_name;
+		auto new_cpp_file_path = _cur_parent_path / generated_cpp_file_name;
+		const auto&[h_content, cpp_content] = generate_property_func_for_class(one_class);
+		utils::append_output_to_stream(result, new_h_file_path.string(), h_content);
+		utils::append_output_to_stream(result, new_cpp_file_path.string(), cpp_content);
+	}
 }
 int main()
 {
@@ -258,7 +376,7 @@ int main()
 
 	bool display_diag = true;
 	m_index = clang_createIndex(true, display_diag);
-	std::string file_path = "../example/generate_decode/test_class.cpp";
+	std::string file_path = "../example/generate_property/generate_property.cpp";
 	//std::string file_path = "sima.cpp";
 	m_translationUnit = clang_createTranslationUnitFromSourceFile(m_index, file_path.c_str(), static_cast<int>(cstr_arguments.size()), cstr_arguments.data(), 0, nullptr);
 	auto cursor = clang_getTranslationUnitCursor(m_translationUnit);
@@ -275,6 +393,7 @@ int main()
 	json_out << setw(4) << result << endl;
 	std::unordered_map<std::string, std::string> file_content;
 	utils::merge_file_content(file_content, generate_encode_decode());
+	utils::merge_file_content(file_content, generate_property());
 	utils::write_content_to_file(file_content);
 	clang_disposeTranslationUnit(m_translationUnit);
 

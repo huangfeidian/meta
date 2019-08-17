@@ -49,7 +49,11 @@ public:
 	int a;
 	std::vector<std::string> b;
 	std::unordered_map<int, std::string> c;
-	const int& a_get() const
+	const decltype(a)& a_ref() const
+	{
+		return a;
+	}
+	decltype(a)& a_mut()
 	{
 		return a;
 	}
@@ -86,11 +90,15 @@ public:
 			return false;
 		}
 	}
-	const std::vector<std::string>& b_get() const
+	const decltype(b)& b_ref() const
 	{
 		return b;
 	}
-	mutate_msg b_set(const std::vector<std::string>& _in_data)
+	decltype(b)& b_mut()
+	{
+		return b;
+	}
+	mutate_msg b_set(const decltype(b)& _in_data)
 	{
 		b = _in_data;
 		return std::make_tuple(_cur_depth, index_for_b, var_mutate_cmd::set, encode_multi(b));
@@ -99,14 +107,14 @@ public:
 	{
 		return decode_multi(data, b);
 	}
-	mutate_msg b_push_back(const std::string& _in_data)
+	mutate_msg b_push_back(const decltype(b)::value_type& _in_data)
 	{
 		b.push_back(_in_data);
 		return std::make_tuple(_cur_depth, index_for_b, var_mutate_cmd::vector_push_back, encode_multi(_in_data));
 	}
 	bool z_replay_b_push_back(const json& data)
 	{
-		std::string temp;
+		decltype(b)::value_type temp;
 		if (decode_multi(data, temp))
 		{
 			b.push_back(temp);
@@ -135,7 +143,7 @@ public:
 		}
 		return true;
 	}
-	mutate_msg b_idx_mutate(std::size_t idx, const std::string& _in_data)
+	mutate_msg b_idx_mutate(std::size_t idx, const decltype(b)::value_type& _in_data)
 	{
 		if (idx < b.size())
 		{
@@ -146,7 +154,7 @@ public:
 	bool z_replay_b_idx_mutate(const json& data)
 	{
 		std::size_t idx;
-		std::string temp;
+		decltype(b)::value_type temp;
 		if (decode_multi(data, idx, temp))
 		{
 			if (idx >= b.size())
@@ -222,11 +230,15 @@ public:
 			return false;
 		}
 	}
-	const std::unordered_map<int, std::string> c_get() const
+	const decltype(c)& c_ref() const
 	{
 		return c;
 	}
-	mutate_msg c_set(const unordered_map<int, std::string>& _in_data)
+	decltype(c)& c_mut()
+	{
+		return c;
+	}
+	mutate_msg c_set(const decltype(c)& _in_data)
 	{
 		c = _in_data;
 		return std::make_tuple(_cur_depth, index_for_c, var_mutate_cmd::set, json(encode_multi(c)));
@@ -235,7 +247,7 @@ public:
 	{
 		return decode_multi(data, c);
 	}
-	mutate_msg c_insert(int key, const std::string& value)
+	mutate_msg c_insert(const decltype(c)::key_type& key, const decltype(c)::mapped_type& value)
 	{
 		c[key] = value;
 
@@ -243,8 +255,8 @@ public:
 	}
 	bool z_replay_c_insert(const json& data)
 	{
-		int key;
-		std::string value;
+		decltype(c)::key_type key;
+		decltype(c)::mapped_type value;
 		if (decode_multi(data, key, value))
 		{
 			c[key] = value;
@@ -265,7 +277,7 @@ public:
 		c.clear();
 		return true;
 	}
-	mutate_msg c_erase(int key)
+	mutate_msg c_erase(const decltype(c)::key_type& key)
 	{
 		c.erase(key);
 		return std::make_tuple(_cur_depth, index_for_c, var_mutate_cmd::map_erase, encode_multi(key));

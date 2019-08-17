@@ -7,6 +7,7 @@
 #include <iomanip>
 
 #include <iostream>
+#include <sstream>
 #include <queue>
 #include <filesystem>
 #include "nodes/type_info.h"
@@ -16,12 +17,15 @@
 #include "nodes/enum.h"
 #include "nodes/variable.h"
 #include <serialize/encode.h>
+#include <utility/generate_utils.h>
 
 using namespace std;
 using namespace meta;
 
 
-void generate_encode()
+
+
+std::unordered_map<std::string, std::string> generate_encode()
 {
 	// 遍历所有的class 对于里面表明了需要生成encode的类进行处理
 	auto& the_logger = utils::get_logger();
@@ -70,6 +74,7 @@ void generate_encode()
 		}
 	};
 	auto& all_encode_classes = language::type_db::instance().get_class_with_pred(_class_with_encode_prop);
+	std::unordered_map<std::string, std::string> result;
 	for (auto one_class : all_encode_classes)
 	{
 		auto cur_file_path_str = one_class->file();
@@ -91,10 +96,8 @@ void generate_encode()
 			continue;
 		}
 		the_logger.info("generate h file {} cpp file {} for class {}", new_h_file_path.string(), new_cpp_file_path.string(), one_class->unqualified_name());
-		std::ofstream h_file_stream(new_h_file_path);
-		h_file_stream << "json encode() const;" << std::endl;
-		h_file_stream.close();
-		std::ofstream cpp_file_stream(new_cpp_file_path);
+		utils::append_output_to_stream(result, new_h_file_path.string(), "json encode() const;\n");
+		std::ostringstream cpp_file_stream;
 		
 		cpp_file_stream << "#include " << file_path.filename() << "\n";
 		cpp_file_stream << "json " << one_class->name() << "::encode() const\n{\n\tjson result = json::array();\n";
@@ -134,9 +137,9 @@ void generate_encode()
 			cpp_file_stream << "\tresult.push_back(encode(" << one_field->unqualified_name() << ");\n";
 		}
 		cpp_file_stream << "\treturn result;\n}" << std::endl;
-		cpp_file_stream.close();
+		utils::append_output_to_stream(result, new_cpp_file_path.string(), cpp_file_stream.str());
 	}
-
+	return result;
 }
 int main()
 {
@@ -175,7 +178,9 @@ int main()
 	json result = language::type_db::instance().to_json();
 	ofstream json_out("type_info.json");
 	json_out << setw(4) << result << endl;
-	generate_encode();
+	std::unordered_map<std::string, std::string> file_content;
+	utils::merge_file_content(file_content, generate_encode());
+	utils::write_content_to_file(file_content);
 	clang_disposeTranslationUnit(m_translationUnit);
 
 	return 0;
