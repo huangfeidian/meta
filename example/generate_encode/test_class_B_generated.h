@@ -1,1 +1,1 @@
-json encode() const;
+public:jsonencode()const{jsonresult=json::array();//beginbaseencoderesult.push_back(encode(static_cast<consttest::test_class&>(*this)));//beginfieldsencoderesult.push_back(test::test_class_B::d);returnresult;}private:

@@ -10,6 +10,9 @@
 #include <sstream>
 #include <queue>
 #include <filesystem>
+
+#include <mustache.hpp>
+
 #include "nodes/type_info.h"
 #include "name_space.h"
 #include "utils.h"
@@ -21,8 +24,7 @@
 
 using namespace std;
 using namespace meta;
-
-
+namespace mustache = kainjow::mustache;
 
 
 std::unordered_map<std::string, std::string> generate_encode()
@@ -75,6 +77,9 @@ std::unordered_map<std::string, std::string> generate_encode()
 	};
 	auto& all_encode_classes = language::type_db::instance().get_class_with_pred(_class_with_encode_prop);
 	std::unordered_map<std::string, std::string> result;
+	auto encode_func_mustache_file = std::ifstream("../mustache/encode_func.mustache");
+	std::string template_str = std::string(std::istream_iterator<char>(encode_func_mustache_file), std::istream_iterator<char>());
+	mustache::mustache encode_func_mustache_tempalte(template_str);
 	for (auto one_class : all_encode_classes)
 	{
 		auto cur_file_path_str = one_class->file();
@@ -82,25 +87,7 @@ std::unordered_map<std::string, std::string> generate_encode()
 		std::filesystem::path file_path(cur_file_path_str);
 		auto _cur_parent_path = file_path.parent_path();
 		auto generated_h_file_name = one_class->unqualified_name() + "_generated.h";
-		auto generated_cpp_file_name = one_class->unqualified_name() + "_generated.cpp";
 		auto new_h_file_path = _cur_parent_path / generated_h_file_name;
-		auto new_cpp_file_path = _cur_parent_path / generated_cpp_file_name;
-		if (!std::filesystem::exists(new_h_file_path))
-		{
-			the_logger.error("generated file {} not exist", new_h_file_path.string());
-			continue;
-		}
-		if (!std::filesystem::exists(new_cpp_file_path))
-		{
-			the_logger.error("generated file {} not exist", new_cpp_file_path.string());
-			continue;
-		}
-		the_logger.info("generate h file {} cpp file {} for class {}", new_h_file_path.string(), new_cpp_file_path.string(), one_class->unqualified_name());
-		utils::append_output_to_stream(result, new_h_file_path.string(), "json encode() const;\n");
-		std::ostringstream cpp_file_stream;
-		
-		cpp_file_stream << "#include " << file_path.filename() << "\n";
-		cpp_file_stream << "json " << one_class->name() << "::encode() const\n{\n\tjson result = json::array();\n";
 		// 首先encode父类 按照父类的名称排序
 		auto _bases = one_class->bases();
 		std::sort(_bases.begin(), _bases.end(), [](const language::type_info* a, const language::type_info* b)
@@ -114,10 +101,10 @@ std::unordered_map<std::string, std::string> generate_encode()
 					return false;
 				}
 			});
-		cpp_file_stream << "\t//begin base encode\n";
+		mustache::data base_list{mustache::data::type::list};
 		for (auto one_base : _bases)
 		{
-			cpp_file_stream << "\tresult.push_back(encode(static_cast<const "<<one_base->name()<<"&>(*this))\n";
+			base_list << mustache::data{"base_type", one_base->name()};
 		}
 		// 然后encode自己的变量
 		auto encode_fields = one_class->query_fields_with_pred(_field_with_encode_prop);
@@ -132,12 +119,16 @@ std::unordered_map<std::string, std::string> generate_encode()
 					return false;
 				}
 			});
-		for (auto one_field : encode_fields)
+		mustache::data field_list{ mustache::data::type::list };
+		for (auto one_field :encode_fields)
 		{
-			cpp_file_stream << "\tresult.push_back(encode(" << one_field->unqualified_name() << ");\n";
+			field_list << mustache::data{ "field_name", one_field->name() };
 		}
-		cpp_file_stream << "\treturn result;\n}" << std::endl;
-		utils::append_output_to_stream(result, new_cpp_file_path.string(), cpp_file_stream.str());
+		mustache::data render_args;
+		render_args.set("fields", field_list);
+		render_args.set("bases", base_list);
+		auto encode_str = encode_func_mustache_tempalte.render(render_args);
+		utils::append_output_to_stream(result, new_h_file_path.string(), encode_str);
 	}
 	return result;
 }

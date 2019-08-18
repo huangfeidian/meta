@@ -1,0 +1,31 @@
+public:
+bool decode(const json& data)
+{
+    if(!data.is_array())
+    {
+        return false;
+    }
+    if(data.size() != {{total_size}})
+    {
+        return false;
+    }
+    //begin base decode
+
+    {{#bases}}
+    if(!decode(data[{{idx}}], static_cast<{{base_type}}&>(*this)))
+    {
+        return false;
+    }
+    {{/bases}}
+
+    //begin field decode
+
+    {{#fields}}
+    if(!decode(data[{{idx}}], {{field_name}}))
+    {
+        return false;
+    }
+    return true;
+
+}
+private:
