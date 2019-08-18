@@ -1,0 +1,68 @@
+json encode() const;
+bool decode(const json& data);
+public:
+const decltype(a)& a_ref() const
+{
+	return a;
+}
+meta::utils::prop_proxy<decltype(a)> a_mut()
+{
+	return meta::utils::prop_proxy(a, _cmd_buffer, index_for_a,_cur_depth);
+}
+const decltype(b)& b_ref() const
+{
+	return b;
+}
+meta::utils::prop_proxy<decltype(b)> b_mut()
+{
+	return meta::utils::prop_proxy(b, _cmd_buffer, index_for_b,_cur_depth);
+}
+const decltype(c)& c_ref() const
+{
+	return c;
+}
+meta::utils::prop_proxy<decltype(c)> c_mut()
+{
+	return meta::utils::prop_proxy(c, _cmd_buffer, index_for_c,_cur_depth);
+}
+const decltype(d)& d_ref() const
+{
+	return d;
+}
+meta::utils::prop_proxy<decltype(d)> d_mut()
+{
+	return meta::utils::prop_proxy(d, _cmd_buffer, index_for_d,_cur_depth);
+}
+bool replay_mutate_msg(std::size_t field_index, meta::utils::var_mutate_cmd cmd, const json& data)
+{
+	switch(field_index)
+	{
+	case index_for_a:
+	{
+		auto temp_proxy = a_mut();
+		return temp_proxy.replay(cmd, data);
+	}
+	case index_for_b:
+	{
+		auto temp_proxy = b_mut();
+		return temp_proxy.replay(cmd, data);
+	}
+	case index_for_c:
+	{
+		auto temp_proxy = c_mut();
+		return temp_proxy.replay(cmd, data);
+	}
+	case index_for_d:
+	{
+		auto temp_proxy = d_mut();
+		return temp_proxy.replay(cmd, data);
+	}
+	default:
+		return false;
+	}
+}
+private:
+const static var_idx_type index_for_a = 0;
+const static var_idx_type index_for_b = 1;
+const static var_idx_type index_for_c = 2;
+const static var_idx_type index_for_d = 3;

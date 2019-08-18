@@ -16,7 +16,7 @@ public:
 	{
 
 	}
-	const PropertyMap* _parent;
+	
 	int a;
 	std::vector<std::string> b;
 	std::unordered_map<int, std::string> c;
@@ -79,6 +79,7 @@ public:
 		return encode_multi(a, b, c);
 	}
 private:
+	const PropertyMap* _parent;
 	const var_prefix_idx_type _cur_depth;
 	const static var_idx_type index_for_a = 0;
 	const static var_idx_type index_for_b = 1;
