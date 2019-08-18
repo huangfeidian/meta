@@ -211,6 +211,7 @@ std::pair<std::string, std::string> generate_property_func_for_class(const langu
 	std::ostringstream h_stream;
 	std::ostringstream cpp_stream;
 	std::string cur_class_name = one_class->qualified_name();
+	
 	for (auto one_field : property_fields)
 	{
 		auto cur_field_name = one_field->unqualified_name();
@@ -225,12 +226,10 @@ std::pair<std::string, std::string> generate_property_func_for_class(const langu
 		h_stream << "mutate_msg " << cur_field_name << "_set(const decltype(" << cur_field_name << ")& _value)\n";
 		h_stream << "{\n\t" << cur_field_name << " = _value;\n";
 		h_stream << "\t return std::make_tuple(_cur_depth, index_for_" << cur_field_name;
-		h_stream << ", var_mutate_cmd::set, encode_multi(" << cur_field_name << "));\n}\n";
+		h_stream << ", var_mutate_cmd::set, encode(" << cur_field_name << "));\n}\n";
 		//replay_set
 		h_stream << "bool Z_replay_" << cur_field_name << "_set(const json& _value)\n";
-		h_stream << "{\n\t if(!_value.is_array())\n\t{\n\t\t return false;\n\t}";
-		h_stream << "\n\tif(!_value.size() != 1)\n\t{\n\t\treturn false;\n\t}";
-		h_stream << "\nreturn decode(_value[0], " << cur_field_name << "); \n}\n";
+		h_stream << "{\n\treturn decode(_value, " << cur_field_name << ");\n}\n";
 		//clear
 		h_stream << "mutate_msg " << cur_field_name << "_clear()\n{\n";
 		if (cur_field_type_name.find('<') != std::string::npos)
@@ -268,18 +267,61 @@ std::pair<std::string, std::string> generate_property_func_for_class(const langu
 			h_stream << ", var_mutate_cmd::vetor_push_back, encode_multi(_value));\n}\n";
 			//replay push back
 			h_stream << "bool Z_replay_" << cur_field_name << "_push_back(const json& _value)\n{\n";
-			h_stream << "\tif(!_value.is_array())\n\t{\n\t\t return false;\n\t}\n";
-			h_stream << "\tif(!_value.size() != 1)\n\t{\n\t\treturn false;\n\t}\n";
+			h_stream << "decltype(" << cur_field_name << ")::value_type temp;\n";
+			h_stream << "\tif(decode_multi(_value, temp)\n{\n";
+			h_stream << "\t\t" << cur_field_name << ".push_back(temp);\n\t\treturn true;\n\t}";
+			h_stream << "\telse\n{\n\t\treturn false;\n\t}\n}";
+			//pop back
+			h_stream << "mutate_msg " << cur_field_name << "_pop_back()\n{\n";
+			h_stream << "if("<<cur_field_name<<".size())\n\t\t" << cur_field_name << ".pop_back();\n\t}\n";
+			h_stream << "\treturn std::make_tuple(_cur_depth, index_for_" << cur_field_name;
+			h_stream << ", var_mutate_cmd::vector_pop_back, json::array();\n}\n";
+			//replay pop back
+			h_stream << "bool Z_replay_" << cur_field_name << "_pop_back(const json& _value)\n{\n";
+			h_stream << "if(" << cur_field_name << ".size())\n\t\t" << cur_field_name << ".pop_back();\n\t}\n";
+			h_stream << "\treturn true;\n}\n";
 
-			h_stream << "mutate_msg " << cur_field_name << "_pop_back();\n";
-			h_stream << "bool Z_replay_" << cur_field_name << "_pop_back(const json& _value);\n";
-			h_stream << "mutate_msg " << cur_field_name << "_idx_mutate(std::size_t idx, const decltype(" << cur_field_name << ")::value_type& _value);\n";
-			h_stream << "bool Z_replay_" << cur_field_name << "_idx_mutate(const json& _value);\n";
-			h_stream << "mutate_msg " << cur_field_name << "_idx_delete(std::size_t idx);\n";
-			h_stream << "bool Z_replay_" << cur_field_name << "_idx_delete(const json& _value);\n";
+			// idx_mutate
+			h_stream << "mutate_msg " << cur_field_name << "_idx_mutate(std::size_t idx, const decltype(" << cur_field_name << ")::value_type& _value)\n{\n";
+			h_stream << "if(" << cur_field_name << ".size() > idx)\n{\n";
+			h_stream << "\t\t" << cur_field_name << "[idx] = _value;\n\t}\n";
+			h_stream << "\treturn std::make_tuple(_cur_depth, index_for_" << cur_field_name;
+			h_stream << ", var_mutate_cmd::vector_idx_mutate, encode_multi(idx, _value);\n}\n";
+			//replay idx_mutate
+			h_stream << "bool Z_replay_" << cur_field_name << "_idx_mutate(const json& _value)\n{\n";
+			h_stream << "\tstd::size_t idx;\n\tdecltype(" << cur_field_name << ")::value_type temp;\n";
+			h_stream << "\tif(decode_multi(_value, idx, temp))\n\t{\n";
+			h_stream << "\t\tif(idx >= " << cur_field_name << ".size())\n\t\t{\n";
+			h_stream << "\t\t\treturn false;\n\t\t}\n";
+			h_stream << "\t\telse\n\t\t{\n\t\t\t" << cur_field_name << "[idx] = temp;\n\t\t\treturn true;\n\t\t}\n\t}\n";
+			h_stream << "\telse\n{\n\treturn false;\n\t}\n}";
+			// idx_delete
+			h_stream << "mutate_msg " << cur_field_name << "_idx_delete(std::size_t idx)\n{\n";
+			h_stream << "if(" << cur_field_name << ".size() > idx)\n{\n";
+			h_stream << "\t\t" << cur_field_name << ".erase("<<cur_field_name<<".begin() + idx);\n\t}\n";
+			h_stream << "\treturn std::make_tuple(_cur_depth, index_for_" << cur_field_name;
+			h_stream << ", var_mutate_cmd::vector_idx_delete, encode_multi(idx);\n}\n";
+			// replay idx delete
 
+			h_stream << "bool Z_replay_" << cur_field_name << "_idx_delete(const json& _value)\n{\n";
+			h_stream << "\tstd::size_t idx;\n";
+			h_stream << "\tif(decode_multi(_value, idx))\n\t{\n";
+			h_stream << "\t\tif(idx >= " << cur_field_name << ".size())\n\t\t{\n";
+			h_stream << "\t\t\treturn false;\n\t\t}\n";
+			h_stream << "\t\telse\n\t\t{\n\t\t\t" << cur_field_name << ".erase("<<cur_field_name<<".begin() + idx);\n\t\t\treturn true;\n\t\t}\n\t}\n";
+			h_stream << "\telse\n{\n\treturn false;\n\t}\n}";
 		}
 	}
+
+	// 生成每个变量在当前类里面的偏移
+	std::size_t cur_var_idx = 0;
+	h_stream << "private:";
+	for (auto one_field : property_fields)
+	{
+		h_stream << "const static var_idx_type index_for_" << one_field->unqualified_name() << " = " << cur_var_idx << ";\n";
+		cur_var_idx++;
+	}
+	return std::make_pair(h_stream.str(), cpp_stream.str());
 
 }
 
