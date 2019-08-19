@@ -1,17 +1,17 @@
 public:
 json encode() const
 {
-    json result = json::array();
+	json result = json::array();
 
-    //begin base encode
-    {{#bases}}
-    result.push_back(encode(static_cast<const {{base_type}}&>(*this)));
-    {{/bases}}
+	//begin base encode
+	{{#bases}}
+	result.push_back(encode(static_cast<const {{base_type}}&>(*this)));
+	{{/bases}}
 
-    //begin fields encode
-    {{#fields}}
-    result.push_back({{field_name}});
-    {{/fields}}
-    return result;
+	//begin fields encode
+	{{#fields}}
+	result.push_back({{field_name}});
+	{{/fields}}
+	return result;
 }
 private:

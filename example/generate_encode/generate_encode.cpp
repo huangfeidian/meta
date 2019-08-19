@@ -78,7 +78,7 @@ std::unordered_map<std::string, std::string> generate_encode()
 	auto& all_encode_classes = language::type_db::instance().get_class_with_pred(_class_with_encode_prop);
 	std::unordered_map<std::string, std::string> result;
 	auto encode_func_mustache_file = std::ifstream("../mustache/encode_func.mustache");
-	std::string template_str = std::string(std::istream_iterator<char>(encode_func_mustache_file), std::istream_iterator<char>());
+	std::string template_str = std::string(std::istreambuf_iterator<char>(encode_func_mustache_file), std::istreambuf_iterator<char>());
 	mustache::mustache encode_func_mustache_tempalte(template_str);
 	for (auto one_class : all_encode_classes)
 	{
@@ -122,7 +122,7 @@ std::unordered_map<std::string, std::string> generate_encode()
 		mustache::data field_list{ mustache::data::type::list };
 		for (auto one_field :encode_fields)
 		{
-			field_list << mustache::data{ "field_name", one_field->name() };
+			field_list << mustache::data{ "field_name", one_field->unqualified_name() };
 		}
 		mustache::data render_args;
 		render_args.set("fields", field_list);
