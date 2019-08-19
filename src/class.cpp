@@ -168,6 +168,19 @@ namespace meta::language
 	{
 		return _bases;
 	}
+	const std::vector<const class_node*> class_node::base_classes() const
+	{
+		std::vector<const class_node*> result;
+		for (auto one_base : _bases)
+		{
+			auto cur_base_class = one_base->related_class();
+			if (cur_base_class)
+			{
+				result.push_back(cur_base_class);
+			}
+		}
+		return result;
+	}
 	const callable_node* class_node::has_method_for(const std::string& _func_name, const std::vector<const type_info*>& _args) const
 	{
 		auto _candidates = _methods.equal_range(_func_name);

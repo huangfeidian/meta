@@ -6,6 +6,7 @@ bool replay_mutate_msg(std::size_t field_index, meta::utils::var_mutate_cmd cmd,
     {
         return {{base_type}}::replay_mutate_msg(field_index, cmd, data);
     }
+    {{/base_class}}
     switch(field_index)
     {
     {{#fields}}

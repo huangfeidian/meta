@@ -1,12 +1,12 @@
 public:
 {{#fields}}
-const decltype({{field_name}})& {{field_name}}_ref const
+const decltype({{field_name}})& {{field_name}}_ref() const
 {
     return {{field_name}};
 }
 meta::utils::prop_proxy<decltype({{field_name}})> {{field_name}}_mut()
 {
-	return meta::utils::prop_proxy({{field_name}}, _cmd_buffer, index_for_{{field_name}},_cur_depth);
+	return meta::utils::prop_proxy({{field_name}}, _cmd_buffer, index_for_{{field_name}}, _cur_depth);
 }
 {{/fields}}
 private:
