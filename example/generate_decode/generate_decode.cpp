@@ -19,9 +19,11 @@
 #include <serialize/decode.h>
 #include <utility/generate_utils.h>
 
+#include <mustache.hpp>
+
 using namespace std;
 using namespace meta;
-
+namespace mustache = kainjow::mustache;
 
 template <typename T>
 bool filter_with_annotation_value(const std::string& _annotation_name, const std::vector<std::string>& _annotation_value, const T& _cur_node)
@@ -53,10 +55,8 @@ bool filter_with_annotation(const std::string& _annotation_name, const T& _cur_n
 
 }
 
-std::string generate_decode_func_for_class(const language::class_node* one_class)
+std::string generate_decode_func_for_class(const language::class_node* one_class, mustache::mustache& decode_template)
 {
-	std::ostringstream cpp_file_stream;
-	cpp_file_stream << "bool " << one_class->name() << "::decode(const json& data) \n{\n";
 	// 首先decode父类 按照父类的名称排序
 	auto pre_bases = one_class->bases();
 	std::vector<const language::type_info*> _bases;
@@ -106,10 +106,7 @@ std::string generate_decode_func_for_class(const language::class_node* one_class
 
 		});
 
-	// check array size match
-	cpp_file_stream << "\tif(!data.is_array())\n\t{\n\t\treturn false;\n\t}\n";
-	cpp_file_stream << "\tif(data.size() !=" << _bases.size() + decode_fields.size() << ")\n\t{\n\t\treturn false;\n\t}\n";
-	cpp_file_stream << "\t//begin base decode\n";
+	mustache::data base_list{ mustache::data::type::list };
 	std::size_t decode_idx = 0;
 	for (auto one_base : _bases)
 	{
@@ -119,33 +116,36 @@ std::string generate_decode_func_for_class(const language::class_node* one_class
 		{
 
 			// 默认encode 与decode 的需求格式统一
-
-			cpp_file_stream << "\tif(!decode(data[" << decode_idx << "], static_cast<" << _one_class->name() << "&>(*this))\n\t{\n";
-			cpp_file_stream << "\t\treturn false;\n\t}\n";
+			mustache::data base_arg;
+			base_arg.set("idx", decode_idx);
+			base_arg.set("base_type", _one_class->name());
+			base_list << base_arg;
 		}
 
 		decode_idx += 1;
 	}
-	// 然后decode自己的变量
-	cpp_file_stream << "\t//begin variable decode\n";
+	mustache::data field_list{ mustache::data::type::list };
 
 	for (auto one_field : decode_fields)
 	{
 		if (filter_with_annotation<language::variable_node>("decode", *one_field))
 		{
-			cpp_file_stream << "\tif(!decode(data[" << decode_idx << "], " << one_field->unqualified_name() << ")\n\t{\n";
-			cpp_file_stream << "\t\treturn false;\n\t}\n";
+			mustache::data field_arg;
+			field_arg.set("idx", decode_idx);
+			field_arg.set("field_name", one_field->unqualified_name());
 		}
 		decode_idx += 1;
 	}
-	cpp_file_stream << "\treturn true;\n}" << std::endl;
-	return cpp_file_stream.str();
+	mustache::data render_args;
+	render_args.set("fields", field_list);
+	render_args.set("bases", base_list);
+	render_args.set("total_size", decode_idx);
+	auto decode_str = decode_template.render(render_args);
+	return decode_str;
 }
 
-std::string generate_encode_func_for_class(const language::class_node* one_class)
+std::string generate_encode_func_for_class(const language::class_node* one_class, mustache::mustache& mustache_template)
 {
-	std::ostringstream cpp_file_stream;
-	cpp_file_stream << "json " << one_class->name() << "::encode() const\n{\n\tjson result = json::array();\n";
 	// 首先encode父类 按照父类的名称排序
 	auto _bases = one_class->bases();
 	std::sort(_bases.begin(), _bases.end(), [](const language::type_info* a, const language::type_info* b)
@@ -159,16 +159,16 @@ std::string generate_encode_func_for_class(const language::class_node* one_class
 				return false;
 			}
 		});
-	cpp_file_stream << "\t//begin base encode\n";
+	mustache::data base_list{ mustache::data::type::list };
 	for (auto one_base : _bases)
 	{
-		cpp_file_stream << "\tresult.push_back(encode(static_cast<const " << one_base->name() << "&>(*this))\n";
+		base_list << mustache::data{ "base_type", one_base->name() };
 	}
 	// 然后encode自己的变量
-	std::vector<std::string> field_decode_value = {};
-	auto encode_fields = one_class->query_fields_with_pred([&field_decode_value](const language::variable_node& _cur_node)
+	std::vector<std::string> field_encode_value = {};
+	auto encode_fields = one_class->query_fields_with_pred([&field_encode_value](const language::variable_node& _cur_node)
 		{
-			return filter_with_annotation_value<language::variable_node>("decode", field_decode_value, _cur_node);
+			return filter_with_annotation_value<language::variable_node>("ecode", field_encode_value, _cur_node);
 		});
 	std::sort(encode_fields.begin(), encode_fields.end(), [](const language::variable_node* a, const language::variable_node* b)
 		{
@@ -181,12 +181,16 @@ std::string generate_encode_func_for_class(const language::class_node* one_class
 				return false;
 			}
 		});
+	mustache::data field_list{ mustache::data::type::list };
 	for (auto one_field : encode_fields)
 	{
-		cpp_file_stream << "\tresult.push_back(encode(" << one_field->unqualified_name() << ");\n";
+		field_list << mustache::data{ "field_name", one_field->unqualified_name() };
 	}
-	cpp_file_stream << "\treturn result;\n}" << std::endl;
-	return cpp_file_stream.str();
+	mustache::data render_args;
+	render_args.set("fields", field_list);
+	render_args.set("bases", base_list);
+	auto encode_str = mustache_template.render(render_args);
+	return encode_str;
 }
 std::unordered_map<std::string, std::string> generate_encode_decode()
 {
@@ -205,6 +209,12 @@ std::unordered_map<std::string, std::string> generate_encode_decode()
 	std::copy(all_encode_classses.begin(), all_encode_classses.end(), std::inserter(all_related_classes, all_related_classes.end()));
 	std::copy(all_decode_classes.begin(), all_decode_classes.end(), std::inserter(all_related_classes, all_related_classes.end()));
 	std::unordered_map<std::string, std::string> result;
+	auto encode_func_mustache_file = std::ifstream("../mustache/encode_func.mustache");
+	std::string template_str = std::string(std::istreambuf_iterator<char>(encode_func_mustache_file), std::istreambuf_iterator<char>());
+	mustache::mustache encode_func_mustache_tempalte(template_str);
+	auto decode_func_mustache_file = std::ifstream("../mustache/decode_func.mustache");
+	template_str = std::string(std::istreambuf_iterator<char>(decode_func_mustache_file), std::istreambuf_iterator<char>());
+	mustache::mustache decode_func_mustache_tempalte(template_str);
 	for (auto one_class : all_related_classes)
 	{
 		auto cur_file_path_str = one_class->file();
@@ -221,17 +231,14 @@ std::unordered_map<std::string, std::string> generate_encode_decode()
 		cpp_file_stream << "#include " << file_path.filename() << "\n";
 		if (filter_with_annotation_value<language::class_node>("encode", _annotation_value, *one_class))
 		{
-			h_file_stream << "json encode() const;\n";
-			cpp_file_stream << generate_encode_func_for_class(one_class);
+			auto encode_func_str = generate_encode_func_for_class(one_class, encode_func_mustache_tempalte);
+			utils::append_output_to_stream(result, new_h_file_path.string(), encode_func_str);
 		}
 		if (filter_with_annotation_value<language::class_node>("decode", _annotation_value, *one_class))
 		{
-			h_file_stream << "bool decode(const json& data);\n";
-			cpp_file_stream << generate_decode_func_for_class(one_class);
+			auto decode_func_str = generate_decode_func_for_class(one_class, decode_func_mustache_tempalte);
+			utils::append_output_to_stream(result, new_cpp_file_path.string(), decode_func_str);
 		}
-
-		utils::append_output_to_stream(result, new_h_file_path.string(), h_file_stream.str());
-		utils::append_output_to_stream(result, new_cpp_file_path.string(), cpp_file_stream.str());
 		
 	}
 	return result;
