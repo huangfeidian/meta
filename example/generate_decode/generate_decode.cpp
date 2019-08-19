@@ -117,7 +117,7 @@ std::string generate_decode_func_for_class(const language::class_node* one_class
 
 			// 默认encode 与decode 的需求格式统一
 			mustache::data base_arg;
-			base_arg.set("idx", decode_idx);
+			base_arg.set("idx", std::to_string(decode_idx));
 			base_arg.set("base_type", _one_class->name());
 			base_list << base_arg;
 		}
@@ -131,15 +131,16 @@ std::string generate_decode_func_for_class(const language::class_node* one_class
 		if (filter_with_annotation<language::variable_node>("decode", *one_field))
 		{
 			mustache::data field_arg;
-			field_arg.set("idx", decode_idx);
+			field_arg.set("idx", std::to_string(decode_idx));
 			field_arg.set("field_name", one_field->unqualified_name());
+			field_list << field_arg;
 		}
 		decode_idx += 1;
 	}
 	mustache::data render_args;
 	render_args.set("fields", field_list);
 	render_args.set("bases", base_list);
-	render_args.set("total_size", decode_idx);
+	render_args.set("total_size", std::to_string(decode_idx));
 	auto decode_str = decode_template.render(render_args);
 	return decode_str;
 }
@@ -168,7 +169,7 @@ std::string generate_encode_func_for_class(const language::class_node* one_class
 	std::vector<std::string> field_encode_value = {};
 	auto encode_fields = one_class->query_fields_with_pred([&field_encode_value](const language::variable_node& _cur_node)
 		{
-			return filter_with_annotation_value<language::variable_node>("ecode", field_encode_value, _cur_node);
+			return filter_with_annotation_value<language::variable_node>("encode", field_encode_value, _cur_node);
 		});
 	std::sort(encode_fields.begin(), encode_fields.end(), [](const language::variable_node* a, const language::variable_node* b)
 		{
@@ -222,10 +223,8 @@ std::unordered_map<std::string, std::string> generate_encode_decode()
 		std::filesystem::path file_path(cur_file_path_str);
 		auto _cur_parent_path = file_path.parent_path();
 		auto generated_h_file_name = one_class->unqualified_name() + "_generated.h";
-		auto generated_cpp_file_name = one_class->unqualified_name() + "_generated.cpp";
 		auto new_h_file_path = _cur_parent_path / generated_h_file_name;
-		auto new_cpp_file_path = _cur_parent_path / generated_cpp_file_name;
-		the_logger.info("generate h file {} cpp file {} for class {}", new_h_file_path.string(), new_cpp_file_path.string(), one_class->unqualified_name());
+
 		std::ostringstream h_file_stream;
 		std::ostringstream cpp_file_stream;
 		cpp_file_stream << "#include " << file_path.filename() << "\n";
@@ -237,7 +236,7 @@ std::unordered_map<std::string, std::string> generate_encode_decode()
 		if (filter_with_annotation_value<language::class_node>("decode", _annotation_value, *one_class))
 		{
 			auto decode_func_str = generate_decode_func_for_class(one_class, decode_func_mustache_tempalte);
-			utils::append_output_to_stream(result, new_cpp_file_path.string(), decode_func_str);
+			utils::append_output_to_stream(result, new_h_file_path.string(), decode_func_str);
 		}
 		
 	}

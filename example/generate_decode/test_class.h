@@ -24,13 +24,9 @@ namespace test
 #include "test_class_generated.h"
 
 	}Meta(encode(auto), decode(auto));
-	class test_class_C
+	class test_class_B: public test_class
 	{
-		Meta(encode, decode) std::variant<int, float> f;
-	}Meta(encode(auto), decode(auto));
-	class test_class_B: public test_class, public test_class_C
-	{
-	private:
+		private:
 		Meta(encode, decode) std::vector<std::string> d;
 	public:
 #include "test_class_B_generated.h"
