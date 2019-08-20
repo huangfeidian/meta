@@ -65,5 +65,7 @@ target_link_libraries(generate_property PRIVATE meta)
 add_executable(generate_component ${META_EXAMPLE_DIR}/generate_component/generate_component.cpp)
 target_link_libraries(generate_component PRIVATE meta)
 
+add_executable(generate_rpc ${META_EXAMPLE_DIR}/generate_rpc/generate_rpc.cpp)
+target_link_libraries(generate_rpc PRIVATE meta)
 
 
