@@ -7,6 +7,8 @@
 #include <sstream>
 #include <mustache.hpp>
 
+#include <nodes/callable.h>
+
 #include "../utils.h"
 namespace mustache = kainjow::mustache;
 namespace meta::utils
@@ -267,6 +269,65 @@ namespace meta::utils
 		render_args.set("fields", field_list);
 		return property_proxy_template.render(render_args) + property_sequence_template.render(render_args);
 
+	}
+	std::string generate_rpc_call_for_class(const language::class_node* one_class, mustache::mustache& rpc_call_tempalte)
+	{
+		
+		std::vector<std::string> rpc_call_annotate_value = {};
+		auto rpc_methods = one_class->query_method_with_pred_recursive([&rpc_call_annotate_value](const language::callable_node& _cur_node)
+			{
+				return filter_with_annotation_value<language::callable_node>("rpc", rpc_call_annotate_value, _cur_node);
+			});
+		std::sort(rpc_methods.begin(), rpc_methods.end(), [](const language::callable_node* a, const language::callable_node* b)
+			{
+				if (a->unqualified_name() < b->unqualified_name())
+				{
+					return true;
+				}
+				else
+				{
+					return false;
+				}
+
+			});
+		std::uint16_t rpc_method_idx = 0;
+		std::size_t total_rpc_method_size = rpc_methods.size();
+		mustache::data method_list{ mustache::data::type::list };
+		for (auto one_method : rpc_methods)
+		{
+			mustache::data cur_method_data;
+			cur_method_data.set("rpc_index", std::to_string(rpc_method_idx));
+			cur_method_data.set("rpc_name", one_method->func_name());
+			if (rpc_method_idx + 1 == total_rpc_method_size)
+			{
+				cur_method_data.set("last_rpc", true);
+			}
+			const auto& method_args = one_method->args_type();
+			std::size_t arg_size = method_args.size();
+			mustache::data arg_list{ mustache::data::type::list };
+			std::size_t arg_idx = 0;
+			for (auto one_arg : method_args)
+			{
+				mustache::data cur_arg_data;
+				cur_arg_data.set("arg_idx", std::to_string(arg_idx));
+				cur_arg_data.set("arg_type", one_arg->decl_type()->name());
+				if (arg_idx + 1 == arg_size)
+				{
+					cur_arg_data.set("last_idx", true);
+				}
+				arg_list << cur_arg_data;
+				arg_idx += 1;
+
+			}
+			cur_method_data.set("rpc_args", arg_list);
+			rpc_method_idx += 1;
+			method_list << cur_method_data;
+		}
+		mustache::data render_args;
+		render_args.set("rpc_methods", method_list);
+
+
+		return rpc_call_tempalte.render(render_args);
 	}
 
 }

@@ -1,4 +1,46 @@
-bool rpc_call(const std::string& rpc_name, const json& data)
+public:
+bool rpc_call(std::uint16_t rpc_index, const std::string& args)
 {
+    json json_arg;
+    auto& the_logger = meta::utils::get_logger();
+    if(args.size())
+    {
+        json_arg = json::parse(args);
+    }
+    switch(rpc_index)
+    {
+        {{#rpc_methods}}
+        case {{rpc_index}}:
+        {
+            {{#rpc_args}}
+            {{{arg_type}}} temp_{{arg_idx}};
+            {{/rpc_args}}
+            bool decode_result = decode_multi(json_arg{{#rpc_args}}, temp_{{arg_idx}}{{/rpc_args}});
+            if(decode_result)
+            {
+                {{rpc_name}}({{#rpc_args}}temp_{{arg_idx}}{{^last_idx}}, {{/last_idx}}{{/rpc_args}});
+            }
+            else
+            {
+                the_logger.warn("fail to decode args {} for rpc {{rpc_name}} index {}", args,  cur_rpc_index);
+            }
+            return decode_result;
+        }
+        {{/rpc_methods}}
+        default:
+            the_logger.warn("cant find rpc_name with rpc_index {} args {}", rpc_index, args);
+            return false;
+    }
 	
 }
+
+static const std::unordered_map<std::string, std::uint16_t>& rpc_indexes()
+{
+    static std::unordered_map<std::string, std:uint16_t> rpc_index_map = {
+        {{#rpc_methods}}
+        { "{{rpc_name}}", {{rpc_index}} }{{^last_rpc}},{{/last_rpc}}
+        {{/rpc_methods}}
+    }
+    retrurn rpc_index_map;
+}
+private:

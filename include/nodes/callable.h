@@ -14,6 +14,7 @@ namespace meta::language
 		bool is_public_method() const;
 		bool can_accept(const std::vector<const type_info*>& _in_args) const;
 		bool can_accept(const std::vector<std::string> _in_arg_names) const;
+		std::string func_name() const;
 		json to_json() const;
 	private:
 		type_info* _result_type = nullptr;

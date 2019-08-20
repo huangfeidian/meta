@@ -36,6 +36,12 @@ namespace meta::language
 	{
 		return clang_getCXXAccessSpecifier(get_node()->get_cursor()) == CX_CXXPublic;
 	}
+	std::string callable_node::func_name() const
+	{
+		auto cur_name = unqualified_name();
+		auto paren_iter = cur_name.find('(');
+		return cur_name.substr(0, paren_iter);
+	}
 	bool callable_node::can_accept(const std::vector<const type_info*>& _in_args) const
 	{
 		auto in_arg_sz = _in_args.size();

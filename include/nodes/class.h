@@ -19,11 +19,16 @@ namespace meta::language
 		const variable_node* has_field(const std::string& _field_name) const;
 		const variable_node* has_static_field(const std::string& _field_name) const;
 		const callable_node* has_constructor_for(const std::vector<const type_info*>& _args) const;
+		json to_json() const;
+	public:
 		template <typename T>
 		std::vector<const variable_node*> query_fields_with_pred(T _pred) const;
 		template <typename T>
 		std::vector<const variable_node*> query_fields_with_pred_recursive(T _pred) const;
-		json to_json() const;
+		template <typename T>
+		std::vector<const callable_node*> query_method_with_pred(T _pred) const;
+		template <typename T>
+		std::vector<const callable_node*> query_method_with_pred_recursive(T _pred) const;
 	private:
 		std::vector<std::string> _template_args;
 		std::unordered_map<std::string, const variable_node*> _fields;
@@ -71,5 +76,39 @@ namespace meta::language
 		}
 		return result;
 		
+	}
+	template <typename T>
+	std::vector<const callable_node*> class_node::query_method_with_pred(T _pred) const
+	{
+		std::vector<const callable_node*> result;
+		for (const auto& i : _methods)
+		{
+			if (!i.second)
+			{
+				continue;
+			}
+			if (_pred(*i.second))
+			{
+				result.push_back(i.second);
+			}
+		}
+		return result;
+	}
+	template <typename T>
+	std::vector<const callable_node*> class_node::query_method_with_pred_recursive(T _pred) const
+	{
+		std::vector<const callable_node*> result = query_method_with_pred(_pred);
+		for (auto one_base : _bases)
+		{
+			auto one_class = one_base->related_class();
+			if (one_class)
+			{
+				const auto& temp_result = one_class->query_method_with_pred_recursive(_pred);
+				std::copy(temp_result.begin(), temp_result.end(), std::back_inserter(result));
+			}
+
+		}
+		return result;
+
 	}
 }

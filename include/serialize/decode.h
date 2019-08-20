@@ -393,4 +393,8 @@ bool decode(const json& data, MAP_TYPE<T1, T2>& dst)				\
 	{
 		return decode_multi_impl<Args...>(data, std::index_sequence_for<Args...>{}, dsts...);
 	}
+	bool decode_multi(const json& data)
+	{
+		return true;
+	}
 }
