@@ -24,63 +24,25 @@
 
 using namespace std;
 using namespace meta;
-namespace mustache = kainjow::mustache;
+
 
 
 std::unordered_map<std::string, std::string> generate_encode()
 {
 	// 遍历所有的class 对于里面表明了需要生成encode的类进行处理
 	auto& the_logger = utils::get_logger();
-	auto _class_with_encode_prop = [&the_logger](const language::class_node& _cur_node)
-	{
-		auto& _cur_annotations = _cur_node.annotations();
-		auto cur_iter = _cur_annotations.find("encode");
-		if (cur_iter == _cur_annotations.end())
+	std::vector<std::string> _annotation_value = { "auto" };
+
+	auto all_encode_classses = language::type_db::instance().get_class_with_pred([&_annotation_value](const language::class_node& _cur_node)
 		{
-			return false;
-		}
-		else
-		{
-			switch (cur_iter->second.size())
-			{
-			case 0:
-				the_logger.error("class {} has encode annotation but without args", _cur_node.name());
-				return false;
-				break;
-			case 1:
-				if (cur_iter->second[0] == "auto")
-				{
-					return true;
-				}
-				else
-				{
-					return false;
-				}
-			default:
-				return false;
-				break;
-			}
-		}
-	};
-	auto _field_with_encode_prop = [&the_logger](const language::variable_node& _cur_node)
-	{
-		auto& _cur_annotations = _cur_node.annotations();
-		auto cur_iter = _cur_annotations.find("encode");
-		if (cur_iter == _cur_annotations.end())
-		{
-			return false;
-		}
-		else
-		{
-			return true;
-		}
-	};
-	auto& all_encode_classes = language::type_db::instance().get_class_with_pred(_class_with_encode_prop);
+			return utils::filter_with_annotation_value<language::class_node>("encode", _annotation_value, _cur_node);
+		});
+
 	std::unordered_map<std::string, std::string> result;
 	auto encode_func_mustache_file = std::ifstream("../mustache/encode_func.mustache");
 	std::string template_str = std::string(std::istreambuf_iterator<char>(encode_func_mustache_file), std::istreambuf_iterator<char>());
 	mustache::mustache encode_func_mustache_tempalte(template_str);
-	for (auto one_class : all_encode_classes)
+	for (auto one_class : all_encode_classses)
 	{
 		auto cur_file_path_str = one_class->file();
 		the_logger.info("get class {} with annotation prop encode location {}", one_class->unqualified_name(), cur_file_path_str);
@@ -88,46 +50,7 @@ std::unordered_map<std::string, std::string> generate_encode()
 		auto _cur_parent_path = file_path.parent_path();
 		auto generated_h_file_name = one_class->unqualified_name() + "_generated.h";
 		auto new_h_file_path = _cur_parent_path / generated_h_file_name;
-		// 首先encode父类 按照父类的名称排序
-		auto _bases = one_class->bases();
-		std::sort(_bases.begin(), _bases.end(), [](const language::type_info* a, const language::type_info* b)
-			{
-				if (a->name() < b->name())
-				{
-					return true;
-				}
-				else
-				{
-					return false;
-				}
-			});
-		mustache::data base_list{mustache::data::type::list};
-		for (auto one_base : _bases)
-		{
-			base_list << mustache::data{"base_type", one_base->name()};
-		}
-		// 然后encode自己的变量
-		auto encode_fields = one_class->query_fields_with_pred(_field_with_encode_prop);
-		std::sort(encode_fields.begin(), encode_fields.end(), [](const language::variable_node* a, const language::variable_node* b)
-			{
-				if (a->unqualified_name() < b->unqualified_name())
-				{
-					return true;
-				}
-				else
-				{
-					return false;
-				}
-			});
-		mustache::data field_list{ mustache::data::type::list };
-		for (auto one_field :encode_fields)
-		{
-			field_list << mustache::data{ "field_name", one_field->unqualified_name() };
-		}
-		mustache::data render_args;
-		render_args.set("fields", field_list);
-		render_args.set("bases", base_list);
-		auto encode_str = encode_func_mustache_tempalte.render(render_args);
+		auto encode_str = utils::generate_encode_func_for_class(one_class, encode_func_mustache_tempalte);
 		utils::append_output_to_stream(result, new_h_file_path.string(), encode_str);
 	}
 	return result;
