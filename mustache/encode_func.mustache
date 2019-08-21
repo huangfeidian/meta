@@ -10,7 +10,7 @@ json encode() const
 
 	//begin fields encode
 	{{#fields}}
-	result.push_back({{field_name}});
+	result.push_back(encode({{field_name}}));
 	{{/fields}}
 	return result;
 }
