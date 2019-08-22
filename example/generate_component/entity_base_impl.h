@@ -1,9 +1,10 @@
+#include "component_base.h"
 namespace test
 {
 	template <typename T>
 	std::optional<std::reference_wrapper<T>> entity_base::get_component()
 	{
-		auto cur_iter = _component_address.find(T::static_name());
+		auto cur_iter = _component_address.find(T::static_type());
 		if(cur_iter == _component_address.end())
 		{
 			return std::nullopt;
@@ -16,7 +17,7 @@ namespace test
 	template <typename T>
 	bool entity_base::has_component() const
 	{
-		auto cur_iter = _component_address.find(T::static_name());
+		auto cur_iter = _component_address.find(T::static_type());
 		if(cur_iter == _component_address.end())
 		{
 			return false;
@@ -26,10 +27,11 @@ namespace test
 			return true;
 		}
 	}
-	static const std::string & static_name()
+
+	void entity_base::add_component(component_base* cur_component)
 	{
-		static std::string cur_class_name = "invalid";
-		return cur_class_name;
+		auto cur_component_type = cur_component->type();
+		_component_address[cur_component_type] = cur_component;
+
 	}
 }
-#include "component_base.h"

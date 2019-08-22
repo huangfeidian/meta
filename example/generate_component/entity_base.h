@@ -9,12 +9,7 @@
 
 namespace test
 {
-	enum class entity_type: std::uint32_t
-	{
-		invalid = 0,
-		player = 1,
 
-	};
 	class entity_base
 	{
 	public:
@@ -22,14 +17,22 @@ namespace test
 		{
 			return _type;
 		}
+		static entity_type static_type()
+		{
+			return entity_type::invalid;
+		}
 	template <typename T>
 	std::optional<std::reference_wrapper<T>> get_component();
 	template <typename T>
 	bool has_component()const;
 	private:
+		entity_base(entity_type cur_type):
+		_type(cur_type)
+		{
+
+		}
 		const entity_type _type;
-		const std::string& _name;
-		std::unordered_map<std::string, component_base*> _component_address;
+		std::unordered_map<component_type, component_base*> _component_address;
 		void add_component(component_base* _cur_component);
 	};
 }
