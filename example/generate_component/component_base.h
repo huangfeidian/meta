@@ -5,7 +5,7 @@
 #include <cstdint>
 #include <optional>
 #include <functional>
-
+#include <iostream>
 namespace test
 {
 	class entity_base;

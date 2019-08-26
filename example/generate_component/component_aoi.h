@@ -3,13 +3,31 @@ namespace test
 {
     class aoi:public component_base
     {
+    public:
         static component_type static_type()
         {
             return component_type::aoi;
         }
-        void on_created();
-        void on_enter_space();
-        void on_leave_space();
-        void on_destroy();
+        aoi(entity_base* _in_owner):
+        component_base(_in_owner, component_type::aoi)
+        {
+            
+        }
+        Meta(stub_func) void on_created()
+        {
+            std::cout<<"on_create called from test"<<std::endl;
+        }
+        Meta(stub_func) void on_enter_space()
+        {
+            std::cout<<"on_enter_space called from test"<<std::endl;
+        }
+        Meta(stub_func) void on_leave_space()
+        {
+            std::cout<<"on_leave_space called from test"<<std::endl;
+        }
+        Meta(stub_func) void on_destroy()
+        {
+            std::cout<<"on_destroy called from test"<<std::endl;
+        }
     };
 }

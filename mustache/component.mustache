@@ -1,0 +1,10 @@
+public:
+void register_components()
+{
+    {{#components}}
+    add_component({{name}}, {{name}}->type());
+    {{/components}}
+}
+private:
+
+

@@ -329,5 +329,91 @@ namespace meta::utils
 
 		return rpc_call_tempalte.render(render_args);
 	}
+	std::string generate_components_for_class(const language::class_node* one_class, mustache::mustache& component_tempalte, mustache::mustache& stub_interface_template)
+	{
+		std::vector<std::string> components_value = {};
+		auto component_fields = one_class->query_fields_with_pred_recursive([&components_value](const language::callable_node& _cur_node)
+			{
+				return filter_with_annotation_value<language::callable_node>("component", components_value, _cur_node);
+			});
+		std::sort(component_fields.begin(), component_fields.end(), [](const language::variable_node* a, const language::variable_node* b)
+			{
+				if (a->unqualified_name() < b->unqualified_name())
+				{
+					return true;
+				}
+				else
+				{
+					return false;
+				}
 
+			});
+
+		mustache::data components{ mustache::data::type::list };
+		for (auto one_field : component_fields)
+		{
+			mustache::data cur_component;
+			cur_component.set("name", one_field->unqualified_name());
+		}
+
+		auto component_func = component_tempalte.render(components);
+		auto stub_funcs = one_class->query_method_with_pred_recursive([&components_value](const language::callable_node& _cur_node)
+			{
+				return filter_with_annotation_value<language::callable_node>("stub_func", components_value, _cur_node);
+			});
+
+		mustache::data stub_func_render_args{ mustache::data::type::list };
+		std::unordered_map<std::string, std::set<std::string>> component_stub_funcs;
+		for (auto one_field : component_fields)
+		{
+			auto field_type = one_field->decl_type();
+			auto pointer_type = field_type->point_to();
+			if (!pointer_type)
+			{
+				continue;
+			}
+			auto class_type = pointer_type->related_class();
+			if (!class_type)
+			{
+				continue;
+			}
+			auto cur_class_stub_funcs = class_type->query_method_with_pred_recursive([&components_value](const language::callable_node& _cur_node)
+				{
+					return filter_with_annotation_value<language::callable_node>("stub_func", components_value, _cur_node);
+				});
+			if (cur_class_stub_funcs.empty())
+			{
+				continue;
+			}
+			std::set<std::string> cur_stub_funcs;
+			for (auto one_func : cur_class_stub_funcs)
+			{
+				cur_stub_funcs.insert(one_func->unqualified_name());
+			}
+			component_stub_funcs[one_field->unqualified_name()] = cur_stub_funcs;
+
+		}
+		for (auto one_func : stub_funcs)
+		{
+			mustache::data cur_stub_funcs{ mustache::data::type::list };
+			const auto& cur_func_name = one_func->unqualified_name();
+			for (const auto& one_component : component_stub_funcs)
+			{
+				if (one_component.second.find(one_func->unqualified_name()) != one_component.second.end())
+				{
+					mustache::data temp;
+					temp.set("name", one_component.first);
+					cur_stub_funcs << temp;
+				}
+			}
+			mustache::data temp2;
+			temp2.set("stub_interface_name", cur_func_name);
+			temp2.set("components", cur_stub_funcs);
+			stub_func_render_args << temp2;
+		}
+		mustache::data temp3;
+		temp3.set("stub_interface", stub_func_render_args);
+		auto stub_strs = stub_interface_template.render(temp3);
+		return component_func + stub_strs;
+	}
 }
