@@ -8,15 +8,16 @@ namespace test
     class avatar: public entity_base
     {
     public:
-        Meta(stub_func) void on_enter();
+        Meta(stub_func) void on_enter_space();
         Meta(stub_func) void on_created();
-        Meta(stub_func) void on_leave();
+        Meta(stub_func) void on_leave_space();
         Meta(stub_func) void on_destroy();
     private:
         Meta(component) aoi _aoi;
         Meta(component) transform _transform;
     public:
-        avatar():
+        avatar(const std::string& _in_id, const json& args):
+        entity_base(_in_id, args),
         _aoi(this),
         _transform(this)
         {

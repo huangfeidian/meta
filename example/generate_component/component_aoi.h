@@ -11,17 +11,17 @@ namespace test
         aoi(entity_base* _in_owner):
         component_base(_in_owner, component_type::aoi)
         {
-            
+
         }
-        Meta(stub_func) void on_created()
+        Meta(stub_func(20)) void on_created()
         {
             std::cout<<"on_create called from test"<<std::endl;
         }
-        Meta(stub_func) void on_enter_space()
+        Meta(stub_func(75)) void on_enter_space()
         {
             std::cout<<"on_enter_space called from test"<<std::endl;
         }
-        Meta(stub_func) void on_leave_space()
+        Meta(stub_func(71)) void on_leave_space()
         {
             std::cout<<"on_leave_space called from test"<<std::endl;
         }

@@ -3,7 +3,7 @@ public:
 void {{stub_interface_name}}()
 {
     {{#components}}
-    {{name}}->{{stub_interface_name}}();
+    {{name}}->{{stub_interface_name}}(); // priority({{priority}})
     {{/components}}
 }
 {{/stub_interface}}

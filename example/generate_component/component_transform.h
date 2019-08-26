@@ -8,7 +8,7 @@ namespace test
         transform(entity_base* _in_owner):
         component_base(_in_owner, component_type::transform)
         {
-            
+
         }
         static component_type static_type()
         {
@@ -18,15 +18,15 @@ namespace test
         {
             std::cout<<"on_create called from transform"<<std::endl;
         }
-        Meta(stub_func) void on_enter_space()
+        Meta(stub_func(11)) void on_enter_space()
         {
             std::cout<<"on_enter_space called from transform"<<std::endl;
         }
-        Meta(stub_func) void on_leave_space()
+        Meta(stub_func(5)) void on_leave_space()
         {
             std::cout<<"on_leave_space called from transform"<<std::endl;
         }
-        Meta(stub_func) void on_destroy()
+        Meta(stub_func(10)) void on_destroy()
         {
             std::cout<<"on_destroy called from transform"<<std::endl;
         }

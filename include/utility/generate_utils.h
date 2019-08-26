@@ -332,9 +332,9 @@ namespace meta::utils
 	std::string generate_components_for_class(const language::class_node* one_class, mustache::mustache& component_tempalte, mustache::mustache& stub_interface_template)
 	{
 		std::vector<std::string> components_value = {};
-		auto component_fields = one_class->query_fields_with_pred_recursive([&components_value](const language::callable_node& _cur_node)
+		auto component_fields = one_class->query_fields_with_pred_recursive([&components_value](const language::variable_node& _cur_node)
 			{
-				return filter_with_annotation_value<language::callable_node>("component", components_value, _cur_node);
+				return filter_with_annotation_value<language::variable_node>("component", components_value, _cur_node);
 			});
 		std::sort(component_fields.begin(), component_fields.end(), [](const language::variable_node* a, const language::variable_node* b)
 			{
@@ -354,41 +354,47 @@ namespace meta::utils
 		{
 			mustache::data cur_component;
 			cur_component.set("name", one_field->unqualified_name());
+			components << cur_component;
 		}
-
-		auto component_func = component_tempalte.render(components);
+		mustache::data component_args;
+		component_args.set("components", components);
+		auto component_func = component_tempalte.render(component_args);
 		auto stub_funcs = one_class->query_method_with_pred_recursive([&components_value](const language::callable_node& _cur_node)
 			{
 				return filter_with_annotation_value<language::callable_node>("stub_func", components_value, _cur_node);
 			});
 
 		mustache::data stub_func_render_args{ mustache::data::type::list };
-		std::unordered_map<std::string, std::set<std::string>> component_stub_funcs;
+		std::unordered_map<std::string, std::unordered_map<std::string, int>> component_stub_funcs;
 		for (auto one_field : component_fields)
 		{
 			auto field_type = one_field->decl_type();
-			auto pointer_type = field_type->point_to();
-			if (!pointer_type)
-			{
-				continue;
-			}
-			auto class_type = pointer_type->related_class();
+			auto class_type = field_type->related_class();
 			if (!class_type)
 			{
 				continue;
 			}
-			auto cur_class_stub_funcs = class_type->query_method_with_pred_recursive([&components_value](const language::callable_node& _cur_node)
+			auto cur_class_stub_funcs = class_type->query_method_with_pred_recursive([](const language::callable_node& _cur_node)
 				{
-					return filter_with_annotation_value<language::callable_node>("stub_func", components_value, _cur_node);
+					return filter_with_annotation<language::callable_node>("stub_func", _cur_node);
 				});
 			if (cur_class_stub_funcs.empty())
 			{
 				continue;
 			}
-			std::set<std::string> cur_stub_funcs;
+			std::unordered_map<std::string, int> cur_stub_funcs;
 			for (auto one_func : cur_class_stub_funcs)
 			{
-				cur_stub_funcs.insert(one_func->unqualified_name());
+				int cur_priority = 0;
+				auto _cur_anno_iter = one_func->annotations().find("stub_func");
+				if (_cur_anno_iter != one_func->annotations().end())
+				{
+					if (_cur_anno_iter->second.size() > 0)
+					{
+						cur_priority = std::stoi(_cur_anno_iter->second[0]);
+					}
+				}
+				cur_stub_funcs[one_func->func_name()] = cur_priority;
 			}
 			component_stub_funcs[one_field->unqualified_name()] = cur_stub_funcs;
 
@@ -396,15 +402,25 @@ namespace meta::utils
 		for (auto one_func : stub_funcs)
 		{
 			mustache::data cur_stub_funcs{ mustache::data::type::list };
-			const auto& cur_func_name = one_func->unqualified_name();
+			const auto& cur_func_name = one_func->func_name();
+			std::vector<std::pair<int, std::string>> _fields_with_priority;
 			for (const auto& one_component : component_stub_funcs)
 			{
-				if (one_component.second.find(one_func->unqualified_name()) != one_component.second.end())
+				auto cur_iter = one_component.second.find(cur_func_name);
+				if (cur_iter != one_component.second.end())
 				{
-					mustache::data temp;
-					temp.set("name", one_component.first);
-					cur_stub_funcs << temp;
+					_fields_with_priority.emplace_back(cur_iter->second, one_component.first);
 				}
+			}
+			
+			std::sort(_fields_with_priority.begin(), _fields_with_priority.end());
+			std::reverse(_fields_with_priority.begin(), _fields_with_priority.end());
+			for (const auto& one_component : _fields_with_priority)
+			{
+				mustache::data temp1;
+				temp1.set("priority", std::to_string(one_component.first));
+				temp1.set("name", one_component.second);
+				cur_stub_funcs << temp1;
 			}
 			mustache::data temp2;
 			temp2.set("stub_interface_name", cur_func_name);
