@@ -12,6 +12,8 @@ namespace test
         Meta(stub_func) void on_created();
         Meta(stub_func) void on_leave_space();
         Meta(stub_func) void on_destroy();
+        Meta(rpc) void test_1(const std::vector<int>& a);
+        Meta(rpc) void test_2(std::unordered_map<std::string, int> a, std::string b);
     private:
         Meta(component) aoi _aoi;
         Meta(component) transform _transform;
@@ -24,5 +26,5 @@ namespace test
 
         }
     #include "avatar_generated.h"
-    }Meta(component_owner, stub_func, rpc_interface);
+    }Meta(component_owner, stub_func, rpc);
 }

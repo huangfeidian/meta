@@ -29,5 +29,9 @@ namespace test
         {
             std::cout<<"on_destroy called from test"<<std::endl;
         }
+        Meta(rpc) void add_attention(const std::string& id);
+        Meta(rpc) void remove_attention(const std::string& id);
+        Meta(rpc) void clear_attention();
+        Meta(rpc) void entities_in_range(float radius);
     };
 }

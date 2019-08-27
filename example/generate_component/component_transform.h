@@ -30,5 +30,9 @@ namespace test
         {
             std::cout<<"on_destroy called from transform"<<std::endl;
         }
+        Meta(rpc) void teleport_to(std::array<float, 3> dest);
+        Meta(rpc) void jump();
+        Meta(rpc) void walk_to(std::array<float, 3> dest);
+        Meta(rpc) void follow_entity(const std::string& entity_id);
     };
 }
