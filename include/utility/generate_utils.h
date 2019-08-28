@@ -439,12 +439,12 @@ namespace meta::utils
 	}
 	std::vector<std::pair<std::string, const language::callable_node*>> parse_rpc_func_for_class(const language::class_node* one_class)
 	{
-		std::vector<std::string> components_value = {};
+		std::unordered_map<std::string, std::string> components_value = {};
 		auto component_fields = one_class->query_fields_with_pred_recursive([&components_value](const language::variable_node& _cur_node)
 			{
 				return filter_with_annotation_value<language::variable_node>("component", components_value, _cur_node);
 			});
-		std::vector<std::string> rpc_call_annotate_value = {};
+		std::unordered_map<std::string, std::string> rpc_call_annotate_value = {};
 		std::vector<std::pair<std::string, const language::callable_node*>> all_rpc_info;
 		auto rpc_methods = one_class->query_method_with_pred_recursive([&rpc_call_annotate_value](const language::callable_node& _cur_node)
 			{
