@@ -474,6 +474,44 @@ namespace meta::utils
 		std::sort(all_rpc_info.begin(), all_rpc_info.end());
 		return all_rpc_info;
 	}
+
+	std::vector<std::pair<std::string, const language::callable_node*>> parse_interface_func_for_class(const language::class_node* one_class)
+	{
+		std::unordered_map<std::string, std::string> components_value = {};
+		auto component_fields = one_class->query_fields_with_pred_recursive([&components_value](const language::variable_node& _cur_node)
+			{
+				return filter_with_annotation_value<language::variable_node>("component", components_value, _cur_node);
+			});
+		std::unordered_map<std::string, std::string> interface_annotate_value = {};
+		std::vector<std::pair<std::string, const language::callable_node*>> all_rpc_info;
+		auto rpc_methods = one_class->query_method_with_pred_recursive([&interface_annotate_value](const language::callable_node& _cur_node)
+			{
+				return filter_with_annotation_value<language::callable_node>("interface", interface_annotate_value, _cur_node);
+			});
+		for (const auto one_func : rpc_methods)
+		{
+			all_rpc_info.emplace_back(one_func->unqualified_name(), one_func);
+		}
+		for (auto one_field : component_fields)
+		{
+			auto field_type = one_field->decl_type();
+			auto class_type = field_type->related_class();
+			if (!class_type)
+			{
+				continue;
+			}
+			auto temp_rpc_methods = class_type->query_method_with_pred_recursive([&interface_annotate_value](const language::callable_node& _cur_node)
+				{
+					return filter_with_annotation_value<language::callable_node>("rpc", interface_annotate_value, _cur_node);
+				});
+			for (const auto one_func : temp_rpc_methods)
+			{
+				all_rpc_info.emplace_back(one_field->unqualified_name() + "." + one_func->unqualified_name(), one_func);
+			}
+		}
+		std::sort(all_rpc_info.begin(), all_rpc_info.end());
+		return all_rpc_info;
+	}
 	std::string generate_rpc_interface_for_component_class(const std::vector<std::pair<std::string, const language::callable_node*>>& all_rpc_info, mustache::mustache rpc_template)
 	{
 		std::uint16_t rpc_method_idx = 0;

@@ -61,11 +61,13 @@ target_link_libraries(generate_decode PRIVATE meta)
 add_executable(generate_property ${META_EXAMPLE_DIR}/generate_property/generate_property.cpp)
 target_link_libraries(generate_property PRIVATE meta)
 
+add_executable(generate_rpc ${META_EXAMPLE_DIR}/generate_rpc/generate_rpc.cpp)
+target_link_libraries(generate_rpc PRIVATE meta)
+
+add_executable(generate_interface ${META_EXAMPLE_DIR}/generate_interface/generate_interface.cpp)
+target_link_libraries(generate_interface PRIVATE meta)
 
 add_executable(generate_component ${META_EXAMPLE_DIR}/generate_component/generate_component.cpp)
 target_link_libraries(generate_component PRIVATE meta)
-
-add_executable(generate_rpc ${META_EXAMPLE_DIR}/generate_rpc/generate_rpc.cpp)
-target_link_libraries(generate_rpc PRIVATE meta)
 
 

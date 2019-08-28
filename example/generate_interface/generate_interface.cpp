@@ -25,7 +25,7 @@ using namespace meta;
 
 
 
-std::unordered_map<std::string, std::string> generate_rpc()
+std::unordered_map<std::string, std::string> generate_interface()
 {
 	auto& the_logger = utils::get_logger();
 	std::unordered_map<std::string, std::string> _annotation_value = { };
@@ -34,9 +34,9 @@ std::unordered_map<std::string, std::string> generate_rpc()
 			return utils::filter_with_annotation_value<language::class_node>("rpc", _annotation_value, _cur_node);
 		});
 	std::unordered_map<std::string, std::string> result;
-	auto rpc_call_mustache_file = std::ifstream("../mustache/rpc_call.mustache");
-	std::string rpc_call_template_str = std::string(std::istreambuf_iterator<char>(rpc_call_mustache_file), std::istreambuf_iterator<char>());
-	mustache::mustache rpc_call_mustache_tempalte(rpc_call_template_str);
+	auto interface_mustache_file = std::ifstream("../mustache/interface.mustache");
+	std::string interface_template_str = std::string(std::istreambuf_iterator<char>(interface_mustache_file), std::istreambuf_iterator<char>());
+	mustache::mustache interface_mustache_tempalte(interface_template_str);
 
 
 	for (auto one_class : all_property_classes)
@@ -46,7 +46,7 @@ std::unordered_map<std::string, std::string> generate_rpc()
 		auto _cur_parent_path = file_path.parent_path();
 		auto generated_h_file_name = one_class->unqualified_name() + "_generated.h";
 		auto new_h_file_path = _cur_parent_path / generated_h_file_name;
-		utils::append_output_to_stream(result, new_h_file_path.string(), utils::generate_rpc_call_for_class(one_class, rpc_call_mustache_tempalte));
+		utils::append_output_to_stream(result, new_h_file_path.string(), utils::generate_interface_for_class(one_class, interface_mustache_tempalte));
 	}
 	return result;
 }
@@ -88,7 +88,7 @@ int main()
 	json_out << setw(4) << result << endl;
 	std::unordered_map<std::string, std::string> file_content;
 	//utils::merge_file_content(file_content, generate_encode_decode());
-	utils::merge_file_content(file_content, generate_rpc());
+	utils::merge_file_content(file_content, generate_interface());
 	utils::write_content_to_file(file_content);
 	clang_disposeTranslationUnit(m_translationUnit);
 
