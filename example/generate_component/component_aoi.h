@@ -13,15 +13,15 @@ namespace test
         {
 
         }
-        Meta(stub_func(20)) void on_created()
+        Meta(stub_func(priority=20)) void on_created()
         {
             std::cout<<"on_create called from test"<<std::endl;
         }
-        Meta(stub_func(75)) void on_enter_space()
+        Meta(stub_func(priority=75)) void on_enter_space()
         {
             std::cout<<"on_enter_space called from test"<<std::endl;
         }
-        Meta(stub_func(71)) void on_leave_space()
+        Meta(stub_func(priority=71)) void on_leave_space()
         {
             std::cout<<"on_leave_space called from test"<<std::endl;
         }

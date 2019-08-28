@@ -51,6 +51,6 @@ namespace meta::utils
 	std::vector<CXCursor> cursor_get_children(CXCursor parent);
 	CXTypeKind expect_std_int(CXType int_type);
 
-	// the annotation should be (key1, key2, key3(value_1, value_2, value3))
-	std::unordered_map<std::string, std::vector<std::string>> parse_annotation(const std::string& cur_annotation);
+	// the annotation should be (item1, item2, item3(key_1, key_2, key_3 = value_3))
+	std::unordered_map<std::string, std::unordered_map<std::string, std::string>> parse_annotation(const std::string& cur_annotation);
 }

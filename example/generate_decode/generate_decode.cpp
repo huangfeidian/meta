@@ -30,7 +30,7 @@ std::unordered_map<std::string, std::string> generate_encode_decode()
 {
 	// 遍历所有的class 对于里面表明了需要生成decode的类进行处理
 	auto& the_logger = utils::get_logger();
-	std::vector<std::string> _annotation_value = { "auto" };
+	std::unordered_map<std::string, std::string> _annotation_value = { {"auto": ""} };
 	auto all_decode_classes = language::type_db::instance().get_class_with_pred([&_annotation_value](const language::class_node& _cur_node)
 		{
 			return utils::filter_with_annotation_value<language::class_node>("decode", _annotation_value, _cur_node);

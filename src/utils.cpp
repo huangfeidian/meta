@@ -483,15 +483,15 @@ namespace meta::utils
 		}
 		return result;
 	}
-	std::unordered_map<std::string, std::vector<std::string>> parse_annotation(const std::string& cur_annotation)
+	std::unordered_map<std::string, std::unordered_map<std::string, std::string>> parse_annotation(const std::string& cur_annotation)
 	{
 		std::vector<std::string_view>& _tokens = get_tokens(cur_annotation);
 		auto& the_logger = meta::utils::get_logger();
 		the_logger.debug("parse_annotation for {} with token_size {}", cur_annotation, _tokens.size());
-		std::unordered_map<std::string, std::vector<std::string>> result;
+		std::unordered_map<std::string, std::unordered_map<std::string, std::string>> result;
 		bool wait_for_right_paren = false;
 		std::string cur_key;
-		std::vector<std::string> cur_values;
+		std::unordered_map<std::string, std::string> cur_values;
 		for (auto token : _tokens)
 		{
 			switch (token.size())
@@ -535,7 +535,17 @@ namespace meta::utils
 				default:
 					if (wait_for_right_paren)
 					{
-						cur_values.push_back(std::string(token));
+						auto split_pos = token.find('=');
+						if(split_pos != std::string::npos)
+						{
+							auto temp_key = std::string(token.substr(0, split_pos));
+							auto temp_value = std::string(token.substr(split_pos + 1));
+							cur_values[temp_key] = temp_value;
+						}
+						else
+						{
+							cur_values[token] = "";
+						}
 					}
 					else
 					{
@@ -547,7 +557,17 @@ namespace meta::utils
 			default:
 				if (wait_for_right_paren)
 				{
-					cur_values.push_back(std::string(token));
+					auto split_pos = token.find('=');
+						if(split_pos != std::string::npos)
+						{
+							auto temp_key = std::string(token.substr(0, split_pos));
+							auto temp_value = std::string(token.substr(split_pos + 1));
+							cur_values[temp_key] = temp_value;
+						}
+						else
+						{
+							cur_values[std::string(token)] = "";
+						}
 				}
 				else
 				{

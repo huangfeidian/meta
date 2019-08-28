@@ -49,7 +49,7 @@ namespace meta::utils
 		}
 	}
 	template <typename T>
-	bool filter_with_annotation_value(const std::string& _annotation_name, const std::vector<std::string>& _annotation_value, const T& _cur_node)
+	bool filter_with_annotation_value(const std::string& _annotation_name, const std::unordered_map<std::string, std::string>& _annotation_value, const T& _cur_node)
 	{
 
 		auto& _cur_annotations = _cur_node.annotations();
@@ -98,7 +98,7 @@ namespace meta::utils
 			base_list << mustache::data{ "base_type", one_base->name() };
 		}
 		// 然后encode自己的变量
-		std::vector<std::string> field_encode_value = {};
+		std::unordered_map<std::string, std::string> field_encode_value = {};
 		auto encode_fields = one_class->query_fields_with_pred([&field_encode_value](const language::variable_node& _cur_node)
 			{
 				return filter_with_annotation_value<language::variable_node>("encode", field_encode_value, _cur_node);
@@ -158,7 +158,7 @@ namespace meta::utils
 					return false;
 				}
 			});
-		std::vector<std::string> field_decode_value = {};
+		std::unordered_map<std::string, std::string> field_decode_value = {};
 		auto decode_fields = one_class->query_fields_with_pred([&field_decode_value](const language::variable_node& _cur_node)
 			{
 				return filter_with_annotation_value<language::variable_node>("decode", field_decode_value, _cur_node);
@@ -218,7 +218,7 @@ namespace meta::utils
 	{
 		// 生成一个类的所有property信息
 		auto& the_logger = utils::get_logger();
-		std::vector<std::string> property_annotate_value;
+		std::unordered_map<std::string, std::string> property_annotate_value;
 		auto property_fields = one_class->query_fields_with_pred([&property_annotate_value](const language::variable_node& _cur_node)
 			{
 				return utils::filter_with_annotation_value<language::variable_node>("property", property_annotate_value, _cur_node);
@@ -273,7 +273,7 @@ namespace meta::utils
 	std::string generate_rpc_call_for_class(const language::class_node* one_class, mustache::mustache& rpc_call_tempalte)
 	{
 		
-		std::vector<std::string> rpc_call_annotate_value = {};
+		std::unordered_map<std::string, std::string> rpc_call_annotate_value = {};
 		auto rpc_methods = one_class->query_method_with_pred_recursive([&rpc_call_annotate_value](const language::callable_node& _cur_node)
 			{
 				return filter_with_annotation_value<language::callable_node>("rpc", rpc_call_annotate_value, _cur_node);
@@ -331,7 +331,7 @@ namespace meta::utils
 	}
 	std::string generate_components_for_class(const language::class_node* one_class, mustache::mustache& component_tempalte, mustache::mustache& stub_interface_template)
 	{
-		std::vector<std::string> components_value = {};
+		std::unordered_map<std::string, std::string> components_value = {};
 		auto component_fields = one_class->query_fields_with_pred_recursive([&components_value](const language::variable_node& _cur_node)
 			{
 				return filter_with_annotation_value<language::variable_node>("component", components_value, _cur_node);
@@ -389,9 +389,10 @@ namespace meta::utils
 				auto _cur_anno_iter = one_func->annotations().find("stub_func");
 				if (_cur_anno_iter != one_func->annotations().end())
 				{
-					if (_cur_anno_iter->second.size() > 0)
+					auto priority_iter = _cur_anno_iter->second.find("priority");
+					if (priority_iter != _cur_anno_iter->second.end())
 					{
-						cur_priority = std::stoi(_cur_anno_iter->second[0]);
+						cur_priority = std::stoi(priority_iter->second);
 					}
 				}
 				cur_stub_funcs[one_func->func_name()] = cur_priority;

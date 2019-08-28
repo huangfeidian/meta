@@ -11,7 +11,7 @@ using json = nlohmann::json;
 
 namespace meta::language
 {
-	using annotation_map = std::unordered_map<std::string, std::vector<std::string>>;
+	using annotation_map = std::unordered_map<std::string, std::unordered_map<std::string, std::string>>;
     class node_base
     {
     public:
