@@ -13,12 +13,12 @@ bool rpc_call(std::uint16_t rpc_index, const std::string& args)
         case {{rpc_index}}:
         {
             {{#rpc_args}}
-            {{{arg_type}}} temp_{{arg_idx}};
+            {{{arg_type}}} {{arg_name}};
             {{/rpc_args}}
-            bool decode_result = decode_multi(json_arg{{#rpc_args}}, temp_{{arg_idx}}{{/rpc_args}});
+            bool decode_result = decode_multi(json_arg{{#rpc_args}}, {{arg_name}}{{/rpc_args}});
             if(decode_result)
             {
-                {{rpc_name}}({{#rpc_args}}temp_{{arg_idx}}{{^last_idx}}, {{/last_idx}}{{/rpc_args}});
+                {{rpc_name}}({{#rpc_args}}{{arg_name}}{{^last_idx}}, {{/last_idx}}{{/rpc_args}});
             }
             else
             {
