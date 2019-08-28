@@ -11,6 +11,7 @@
 
 #include "../utils.h"
 namespace mustache = kainjow::mustache;
+using namespace meta::language;
 namespace meta::utils
 {
 	void append_output_to_stream(std::unordered_map<std::string, std::string>& file_buffer, const std::string& file_name, const std::string& append_content)
@@ -48,36 +49,8 @@ namespace meta::utils
 			append_output_to_stream(final_result, file_name, file_content);
 		}
 	}
-	template <typename T>
-	bool filter_with_annotation_value(const std::string& _annotation_name, const std::unordered_map<std::string, std::string>& _annotation_value, const T& _cur_node)
-	{
 
-		auto& _cur_annotations = _cur_node.annotations();
-		auto cur_iter = _cur_annotations.find(_annotation_name);
-		if (cur_iter == _cur_annotations.end())
-		{
-			return false;
-		}
-		if (cur_iter->second != _annotation_value)
-		{
-			return false;
-		}
-		return true;
-	}
-	template <typename T>
-	bool filter_with_annotation(const std::string& _annotation_name, const T& _cur_node)
-	{
-
-		auto& _cur_annotations = _cur_node.annotations();
-		auto cur_iter = _cur_annotations.find(_annotation_name);
-		if (cur_iter == _cur_annotations.end())
-		{
-			return false;
-		}
-		return true;
-
-	}
-	std::string generate_encode_func_for_class(const language::class_node* one_class, mustache::mustache& mustache_template)
+	std::string generate_encode_func_for_class(const class_node* one_class, mustache::mustache& mustache_template)
 	{
 		// 首先encode父类 按照父类的名称排序
 		auto _bases = one_class->bases();
@@ -99,11 +72,11 @@ namespace meta::utils
 		}
 		// 然后encode自己的变量
 		std::unordered_map<std::string, std::string> field_encode_value = {};
-		auto encode_fields = one_class->query_fields_with_pred([&field_encode_value](const language::variable_node& _cur_node)
+		auto encode_fields = one_class->query_fields_with_pred([&field_encode_value](const variable_node& _cur_node)
 			{
-				return filter_with_annotation_value<language::variable_node>("encode", field_encode_value, _cur_node);
+				return filter_with_annotation_value<variable_node>("encode", field_encode_value, _cur_node);
 			});
-		std::sort(encode_fields.begin(), encode_fields.end(), [](const language::variable_node* a, const language::variable_node* b)
+		std::sort(encode_fields.begin(), encode_fields.end(), [](const variable_node* a, const variable_node* b)
 			{
 				if (a->unqualified_name() < b->unqualified_name())
 				{
@@ -125,7 +98,7 @@ namespace meta::utils
 		auto encode_str = mustache_template.render(render_args);
 		return encode_str;
 	}
-	std::string generate_decode_func_for_class(const language::class_node* one_class, mustache::mustache& decode_template)
+	std::string generate_decode_func_for_class(const class_node* one_class, mustache::mustache& decode_template)
 	{
 		// 首先decode父类 按照父类的名称排序
 		auto pre_bases = one_class->bases();
@@ -141,7 +114,7 @@ namespace meta::utils
 				{
 					return false;
 				}
-				if (filter_with_annotation<language::class_node>("encode", *cur_related_class))
+				if (filter_with_annotation<class_node>("encode", *cur_related_class))
 				{
 					return true;
 				}
@@ -159,11 +132,11 @@ namespace meta::utils
 				}
 			});
 		std::unordered_map<std::string, std::string> field_decode_value = {};
-		auto decode_fields = one_class->query_fields_with_pred([&field_decode_value](const language::variable_node& _cur_node)
+		auto decode_fields = one_class->query_fields_with_pred([&field_decode_value](const variable_node& _cur_node)
 			{
-				return filter_with_annotation_value<language::variable_node>("decode", field_decode_value, _cur_node);
+				return filter_with_annotation_value<variable_node>("decode", field_decode_value, _cur_node);
 			});
-		std::sort(decode_fields.begin(), decode_fields.end(), [](const language::variable_node* a, const language::variable_node* b)
+		std::sort(decode_fields.begin(), decode_fields.end(), [](const variable_node* a, const variable_node* b)
 			{
 				if (a->unqualified_name() < b->unqualified_name())
 				{
@@ -182,7 +155,7 @@ namespace meta::utils
 		{
 			auto _one_class = one_base->related_class();
 
-			if (filter_with_annotation<language::class_node>("decode", *_one_class))
+			if (filter_with_annotation<class_node>("decode", *_one_class))
 			{
 
 				// 默认encode 与decode 的需求格式统一
@@ -198,7 +171,7 @@ namespace meta::utils
 
 		for (auto one_field : decode_fields)
 		{
-			if (filter_with_annotation<language::variable_node>("decode", *one_field))
+			if (filter_with_annotation<variable_node>("decode", *one_field))
 			{
 				mustache::data field_arg;
 				field_arg.set("idx", std::to_string(decode_idx));
@@ -214,20 +187,20 @@ namespace meta::utils
 		auto decode_str = decode_template.render(render_args);
 		return decode_str;
 	}
-	std::string generate_property_func_for_class(const language::class_node* one_class, mustache::mustache& property_proxy_template, mustache::mustache& property_sequence_template)
+	std::string generate_property_func_for_class(const class_node* one_class, mustache::mustache& property_proxy_template, mustache::mustache& property_sequence_template)
 	{
 		// 生成一个类的所有property信息
 		auto& the_logger = utils::get_logger();
 		std::unordered_map<std::string, std::string> property_annotate_value;
-		auto property_fields = one_class->query_fields_with_pred([&property_annotate_value](const language::variable_node& _cur_node)
+		auto property_fields = one_class->query_fields_with_pred([&property_annotate_value](const variable_node& _cur_node)
 			{
-				return utils::filter_with_annotation_value<language::variable_node>("property", property_annotate_value, _cur_node);
+				return filter_with_annotation_value<variable_node>("property", property_annotate_value, _cur_node);
 			});
-		auto property_fields_with_base = one_class->query_fields_with_pred_recursive([&property_annotate_value](const language::variable_node& _cur_node)
+		auto property_fields_with_base = one_class->query_fields_with_pred_recursive([&property_annotate_value](const variable_node& _cur_node)
 			{
-				return utils::filter_with_annotation_value<language::variable_node>("property", property_annotate_value, _cur_node);
+				return filter_with_annotation_value<variable_node>("property", property_annotate_value, _cur_node);
 			});
-		std::sort(property_fields.begin(), property_fields.end(), [](const language::variable_node* a, const language::variable_node* b)
+		std::sort(property_fields.begin(), property_fields.end(), [](const variable_node* a, const variable_node* b)
 			{
 				if (a->unqualified_name() < b->unqualified_name())
 				{
@@ -270,15 +243,17 @@ namespace meta::utils
 		return property_proxy_template.render(render_args) + property_sequence_template.render(render_args);
 
 	}
-	std::string generate_rpc_call_for_class(const language::class_node* one_class, mustache::mustache& rpc_call_tempalte)
+	std::string generate_rpc_call_for_class(const class_node* one_class, mustache::mustache& rpc_call_tempalte)
 	{
-		
 		std::unordered_map<std::string, std::string> rpc_call_annotate_value = {};
-		auto rpc_methods = one_class->query_method_with_pred_recursive([&rpc_call_annotate_value](const language::callable_node& _cur_node)
-			{
-				return filter_with_annotation_value<language::callable_node>("rpc", rpc_call_annotate_value, _cur_node);
-			});
-		std::sort(rpc_methods.begin(), rpc_methods.end(), [](const language::callable_node* a, const language::callable_node* b)
+		auto func_pred = [&rpc_call_annotate_value](const callable_node& _cur_node)
+		{
+			return filter_with_annotation_value<callable_node>("rpc", rpc_call_annotate_value, _cur_node);
+		};
+		
+		
+		auto rpc_methods = one_class->query_method_with_pred_recursive(func_pred);
+		std::sort(rpc_methods.begin(), rpc_methods.end(), [](const callable_node* a, const callable_node* b)
 			{
 				if (a->unqualified_name() < b->unqualified_name())
 				{
@@ -330,14 +305,15 @@ namespace meta::utils
 
 		return rpc_call_tempalte.render(render_args);
 	}
-	std::string generate_components_for_class(const language::class_node* one_class, mustache::mustache& component_tempalte, mustache::mustache& stub_interface_template)
+	std::string generate_components_add_for_class(const class_node* one_class, mustache::mustache& component_tempalte)
 	{
 		std::unordered_map<std::string, std::string> components_value = {};
-		auto component_fields = one_class->query_fields_with_pred_recursive([&components_value](const language::variable_node& _cur_node)
-			{
-				return filter_with_annotation_value<language::variable_node>("component", components_value, _cur_node);
-			});
-		std::sort(component_fields.begin(), component_fields.end(), [](const language::variable_node* a, const language::variable_node* b)
+		auto field_pred = [&components_value](const variable_node& _cur_node)
+		{
+			return filter_with_annotation_value<variable_node>("component", components_value, _cur_node);
+		};
+		auto component_fields = one_class->query_fields_with_pred_recursive(field_pred);
+		std::sort(component_fields.begin(), component_fields.end(), [](const variable_node* a, const variable_node* b)
 			{
 				if (a->unqualified_name() < b->unqualified_name())
 				{
@@ -360,48 +336,43 @@ namespace meta::utils
 		mustache::data component_args;
 		component_args.set("components", components);
 		auto component_func = component_tempalte.render(component_args);
-		auto stub_funcs = one_class->query_method_with_pred_recursive([&components_value](const language::callable_node& _cur_node)
-			{
-				return filter_with_annotation_value<language::callable_node>("stub_func", components_value, _cur_node);
-			});
-		// 生成所有的公共入口函数
+		return component_func;
+	}
+	std::string generate_stub_func_for_class(const class_node* one_class, mustache::mustache& stub_interface_template)
+	{
+		std::unordered_map<std::string, std::string> components_value = {};
+		auto field_pred = [&components_value](const variable_node& _cur_node)
+		{
+			return filter_with_annotation_value<variable_node>("component", components_value, _cur_node);
+		};
+		auto func_pred = [&components_value](const callable_node& _cur_node)
+		{
+			return filter_with_annotation_value<callable_node>("stub_func", components_value, _cur_node);
+		};
+		auto stub_funcs = one_class->query_method_recursive_with_fields(func_pred, field_pred, false);
+		auto root_stub_funcs = stub_funcs[nullptr];
+		stub_funcs.erase(nullptr);
+		// 生成所有的公共入口函数 及对应的优先级
 		mustache::data stub_func_render_args{ mustache::data::type::list };
 		std::unordered_map<std::string, std::unordered_map<std::string, int>> component_stub_funcs;
-		for (auto one_field : component_fields)
+		for (const auto& one_field_funcs: stub_funcs)
 		{
-			auto field_type = one_field->decl_type();
-			auto class_type = field_type->related_class();
-			if (!class_type)
-			{
-				continue;
-			}
-			auto cur_class_stub_funcs = class_type->query_method_with_pred_recursive([](const language::callable_node& _cur_node)
-				{
-					return filter_with_annotation<language::callable_node>("stub_func", _cur_node);
-				});
-			if (cur_class_stub_funcs.empty())
-			{
-				continue;
-			}
+			auto& cur_class_stub_funcs = one_field_funcs.second;
 			std::unordered_map<std::string, int> cur_stub_funcs;
 			for (auto one_func : cur_class_stub_funcs)
 			{
+				auto cur_priority_opt_str = one_func->get_anotation_detail_value("stub_func", "priority");
 				int cur_priority = 0;
-				auto _cur_anno_iter = one_func->annotations().find("stub_func");
-				if (_cur_anno_iter != one_func->annotations().end())
+				if (cur_priority_opt_str)
 				{
-					auto priority_iter = _cur_anno_iter->second.find("priority");
-					if (priority_iter != _cur_anno_iter->second.end())
-					{
-						cur_priority = std::stoi(priority_iter->second);
-					}
+					cur_priority = std::stoi(cur_priority_opt_str.value());
 				}
 				cur_stub_funcs[one_func->func_name()] = cur_priority;
 			}
-			component_stub_funcs[one_field->unqualified_name()] = cur_stub_funcs;
+			component_stub_funcs[one_field_funcs.first->unqualified_name()] = cur_stub_funcs;
 
 		}
-		for (auto one_func : stub_funcs)
+		for (auto one_func : root_stub_funcs)
 		{
 			mustache::data cur_stub_funcs{ mustache::data::type::list };
 			const auto& cur_func_name = one_func->func_name();
@@ -434,92 +405,66 @@ namespace meta::utils
 		auto stub_strs = stub_interface_template.render(temp3);
 		// 生成所有的rpc函数
 		
-
-		return component_func + stub_strs;
+		return stub_strs;
 	}
-	std::vector<std::pair<std::string, const language::callable_node*>> parse_rpc_func_for_class(const language::class_node* one_class)
+	using tag_func_desc = std::pair<const variable_node*, const callable_node*>;
+	std::vector<tag_func_desc> parse_tag_func_for_class_with_components(const class_node* one_class, const std::string& tag)
 	{
 		std::unordered_map<std::string, std::string> components_value = {};
-		auto component_fields = one_class->query_fields_with_pred_recursive([&components_value](const language::variable_node& _cur_node)
-			{
-				return filter_with_annotation_value<language::variable_node>("component", components_value, _cur_node);
-			});
-		std::unordered_map<std::string, std::string> rpc_call_annotate_value = {};
-		std::vector<std::pair<std::string, const language::callable_node*>> all_rpc_info;
-		auto rpc_methods = one_class->query_method_with_pred_recursive([&rpc_call_annotate_value](const language::callable_node& _cur_node)
-			{
-				return filter_with_annotation_value<language::callable_node>("rpc", rpc_call_annotate_value, _cur_node);
-			});
-		for (const auto one_func : rpc_methods)
+		std::unordered_map<std::string, std::string> func_call_annotate_value = {};
+		auto field_pred = [&components_value](const variable_node& _cur_node)
 		{
-			all_rpc_info.emplace_back(one_func->unqualified_name(), one_func);
-		}
-		for (auto one_field : component_fields)
+			return filter_with_annotation<variable_node>("component", _cur_node);
+		};
+		auto func_pred = [&func_call_annotate_value, &tag](const callable_node& _cur_node)
 		{
-			auto field_type = one_field->decl_type();
-			auto class_type = field_type->related_class();
-			if (!class_type)
+			return filter_with_annotation<callable_node>(tag, _cur_node);
+		};
+		std::vector<std::pair<const variable_node*, const callable_node*>> result;
+		for (const auto& one_field_funcs : one_class->query_method_recursive_with_fields(func_pred, field_pred, false))
+		{
+			for (const auto& one_func : one_field_funcs.second)
 			{
-				continue;
+				result.emplace_back(one_field_funcs.first, one_func);
 			}
-			auto temp_rpc_methods = class_type->query_method_with_pred_recursive([&rpc_call_annotate_value](const language::callable_node& _cur_node)
+		}
+		
+		std::sort(result.begin(), result.end(), [](const tag_func_desc& a, const tag_func_desc& b)
+			{
+				if (a.first->unqualified_name() < b.first->unqualified_name())
 				{
-					return filter_with_annotation_value<language::callable_node>("rpc", rpc_call_annotate_value, _cur_node);
-				});
-			for (const auto one_func : temp_rpc_methods)
-			{
-				all_rpc_info.emplace_back(one_field->unqualified_name() + "." + one_func->unqualified_name(), one_func);
-			}
-		}
-		std::sort(all_rpc_info.begin(), all_rpc_info.end());
-		return all_rpc_info;
+					return true;
+				}
+				else
+				{
+					return a.second->unqualified_name() < b.second->unqualified_name();
+				}
+			});
+		return result;
+	}
+	std::vector<std::pair<const variable_node*, const callable_node*>> parse_rpc_func_for_class(const class_node* one_class)
+	{
+		return parse_tag_func_for_class_with_components(one_class, "rpc");
+	}
+	std::vector<std::pair<const variable_node*, const callable_node*>> parse_interface_func_for_class(const class_node* one_class)
+	{
+		return parse_tag_func_for_class_with_components(one_class, "interface");
 	}
 
-	std::vector<std::pair<std::string, const language::callable_node*>> parse_interface_func_for_class(const language::class_node* one_class)
-	{
-		std::unordered_map<std::string, std::string> components_value = {};
-		auto component_fields = one_class->query_fields_with_pred_recursive([&components_value](const language::variable_node& _cur_node)
-			{
-				return filter_with_annotation_value<language::variable_node>("component", components_value, _cur_node);
-			});
-		std::unordered_map<std::string, std::string> interface_annotate_value = {};
-		std::vector<std::pair<std::string, const language::callable_node*>> all_rpc_info;
-		auto rpc_methods = one_class->query_method_with_pred_recursive([&interface_annotate_value](const language::callable_node& _cur_node)
-			{
-				return filter_with_annotation_value<language::callable_node>("interface", interface_annotate_value, _cur_node);
-			});
-		for (const auto one_func : rpc_methods)
-		{
-			all_rpc_info.emplace_back(one_func->unqualified_name(), one_func);
-		}
-		for (auto one_field : component_fields)
-		{
-			auto field_type = one_field->decl_type();
-			auto class_type = field_type->related_class();
-			if (!class_type)
-			{
-				continue;
-			}
-			auto temp_rpc_methods = class_type->query_method_with_pred_recursive([&interface_annotate_value](const language::callable_node& _cur_node)
-				{
-					return filter_with_annotation_value<language::callable_node>("rpc", interface_annotate_value, _cur_node);
-				});
-			for (const auto one_func : temp_rpc_methods)
-			{
-				all_rpc_info.emplace_back(one_field->unqualified_name() + "." + one_func->unqualified_name(), one_func);
-			}
-		}
-		std::sort(all_rpc_info.begin(), all_rpc_info.end());
-		return all_rpc_info;
-	}
-	std::string generate_rpc_interface_for_component_class(const std::vector<std::pair<std::string, const language::callable_node*>>& all_rpc_info, mustache::mustache rpc_template)
+
+	std::string generate_rpc_interface_for_component_class(const std::vector<tag_func_desc>& field_rpc_info, mustache::mustache rpc_template)
 	{
 		std::uint16_t rpc_method_idx = 0;
-		std::size_t total_rpc_method_size = all_rpc_info.size();
+		std::size_t total_rpc_method_size = field_rpc_info.size();
 		mustache::data method_list{ mustache::data::type::list };
-		for (auto [method_full_name, one_method] : all_rpc_info)
+		for (auto [field, one_method] : field_rpc_info)
 		{
 			mustache::data cur_method_data;
+			std::string method_full_name;
+			if (field)
+			{
+				method_full_name = field;
+			}
 			cur_method_data.set("rpc_index", std::to_string(rpc_method_idx));
 			cur_method_data.set("rpc_name", method_full_name);
 			if (rpc_method_idx + 1 == total_rpc_method_size)
@@ -552,7 +497,7 @@ namespace meta::utils
 		render_args.set("rpc_methods", method_list);
 		return rpc_template.render(render_args);
 	}
-	std::string generate_rpc_proxy_for_component_class(const std::string& class_name, const std::vector<std::pair<std::string, const language::callable_node*>>& all_rpc_info, mustache::mustache rpc_proxy_template)
+	std::string generate_rpc_proxy_for_component_class(const std::string& class_name, const std::vector<std::pair<std::string, const callable_node*>>& all_rpc_info, mustache::mustache rpc_proxy_template)
 	{
 		std::uint16_t rpc_method_idx = 0;
 		std::size_t total_rpc_method_size = all_rpc_info.size();

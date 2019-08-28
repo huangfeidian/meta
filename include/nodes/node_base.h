@@ -4,6 +4,7 @@
 #include <unordered_set>
 #include <vector>
 #include <nlohmann/json.hpp>
+#include <optional>
 #include "../node.h"
 #include "../name_space.h"
 
@@ -44,10 +45,25 @@ namespace meta::language
 		{
 			return _annotation;
 		}
+		std::optional<std::string> get_anotation_detail_value(const std::string& item, const std::string& key) const
+		{
+			auto item_iter = _annotation.find(item);
+			if (item_iter == _annotation.end())
+			{
+				return std::nullopt;
+			}
+			auto key_iter = item_iter->second.find(key);
+			if (key_iter == item_iter->second.end())
+			{
+				return std::nullopt;
+			}
+			return key_iter->second;
+		}
 		std::string file() const
 		{
 			return std::get<0>(_node->get_position());
 		}
+
 		virtual json to_json() const
 		{
 			json result;
@@ -66,4 +82,33 @@ namespace meta::language
 		annotation_map _annotation;
 
 	};
+	template <typename T>
+	bool filter_with_annotation_value(const std::string& _annotation_name, const std::unordered_map<std::string, std::string>& _annotation_value, const T& _cur_node)
+	{
+
+		auto& _cur_annotations = _cur_node.annotations();
+		auto cur_iter = _cur_annotations.find(_annotation_name);
+		if (cur_iter == _cur_annotations.end())
+		{
+			return false;
+		}
+		if (cur_iter->second != _annotation_value)
+		{
+			return false;
+		}
+		return true;
+	}
+	template <typename T>
+	bool filter_with_annotation(const std::string& _annotation_name, const T& _cur_node)
+	{
+
+		auto& _cur_annotations = _cur_node.annotations();
+		auto cur_iter = _cur_annotations.find(_annotation_name);
+		if (cur_iter == _cur_annotations.end())
+		{
+			return false;
+		}
+		return true;
+
+	}
 }

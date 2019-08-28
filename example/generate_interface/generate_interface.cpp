@@ -31,7 +31,7 @@ std::unordered_map<std::string, std::string> generate_interface()
 	std::unordered_map<std::string, std::string> _annotation_value = { };
 	auto all_property_classes = language::type_db::instance().get_class_with_pred([&_annotation_value](const language::class_node& _cur_node)
 		{
-			return utils::filter_with_annotation_value<language::class_node>("rpc", _annotation_value, _cur_node);
+			return language::filter_with_annotation_value<language::class_node>("rpc", _annotation_value, _cur_node);
 		});
 	std::unordered_map<std::string, std::string> result;
 	auto interface_mustache_file = std::ifstream("../mustache/interface.mustache");
