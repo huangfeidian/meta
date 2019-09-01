@@ -51,6 +51,7 @@ add_executable(encode_test ${META_TEST_DIR}/encode/encode_test.cpp)
 add_executable(decode_test ${META_TEST_DIR}/decode/decode_test.cpp)
 add_executable(container_test ${META_TEST_DIR}/container/container.cpp)
 add_executable(property_test ${META_TEST_DIR}/property/property_test.cpp)
+add_executable(interface_test ${META_TEST_DIR}/interface/interface_test.cpp)
 
 add_executable(annotation_test ${META_TEST_DIR}/annotation/annotation_test.cpp)
 target_link_libraries(annotation_test PRIVATE meta)

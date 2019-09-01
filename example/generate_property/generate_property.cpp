@@ -28,10 +28,10 @@ using namespace meta;
 std::unordered_map<std::string, std::string> generate_property()
 {
 	auto& the_logger = utils::get_logger();
-	std::vector<std::string> _annotation_value = { "auto" };
+	std::unordered_map<std::string, std::string> _annotation_value = { {"auto", ""} };
 	auto all_property_classes = language::type_db::instance().get_class_with_pred([&_annotation_value](const language::class_node& _cur_node)
 		{
-			return utils::filter_with_annotation_value<language::class_node>("property", _annotation_value, _cur_node);
+			return language::filter_with_annotation_value<language::class_node>("property", _annotation_value, _cur_node);
 		});
 	std::unordered_map<std::string, std::string> result;
 	auto property_proxy_mustache_file = std::ifstream("../mustache/property_proxy.mustache");
@@ -49,7 +49,8 @@ std::unordered_map<std::string, std::string> generate_property()
 		auto _cur_parent_path = file_path.parent_path();
 		auto generated_h_file_name = one_class->unqualified_name() + "_generated.h";
 		auto new_h_file_path = _cur_parent_path / generated_h_file_name;
-		utils::append_output_to_stream(result, new_h_file_path.string(), utils::generate_property_func_for_class(one_class, property_proxy_mustache_tempalte, property_sequence_mustache_tempalte));
+		auto property_func_args = utils::generate_property_func_for_class(one_class);
+		utils::append_output_to_stream(result, new_h_file_path.string(),  property_proxy_mustache_tempalte.render(property_func_args) + property_sequence_mustache_tempalte.render(property_func_args));
 	}
 	return result;
 }

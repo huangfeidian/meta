@@ -14,6 +14,11 @@ namespace mustache = kainjow::mustache;
 using namespace meta::language;
 namespace meta::utils
 {
+	template<typename T>
+	bool sort_by_unqualified_name(const T* a, const T* b)
+	{
+		return a->unqualified_name() < b->unqualified_name();
+	}
 	void append_output_to_stream(std::unordered_map<std::string, std::string>& file_buffer, const std::string& file_name, const std::string& append_content)
 	{
 		auto cur_iter = file_buffer.find(file_name);
@@ -50,21 +55,11 @@ namespace meta::utils
 		}
 	}
 
-	std::string generate_encode_func_for_class(const class_node* one_class, mustache::mustache& mustache_template)
+	mustache::data generate_encode_func_for_class(const class_node* one_class)
 	{
 		// 首先encode父类 按照父类的名称排序
 		auto _bases = one_class->bases();
-		std::sort(_bases.begin(), _bases.end(), [](const language::type_info* a, const language::type_info* b)
-			{
-				if (a->name() < b->name())
-				{
-					return true;
-				}
-				else
-				{
-					return false;
-				}
-			});
+		std::sort(_bases.begin(), _bases.end(), sort_by_unqualified_name <language::type_info>);
 		mustache::data base_list{ mustache::data::type::list };
 		for (auto one_base : _bases)
 		{
@@ -76,17 +71,7 @@ namespace meta::utils
 			{
 				return filter_with_annotation_value<variable_node>("encode", field_encode_value, _cur_node);
 			});
-		std::sort(encode_fields.begin(), encode_fields.end(), [](const variable_node* a, const variable_node* b)
-			{
-				if (a->unqualified_name() < b->unqualified_name())
-				{
-					return true;
-				}
-				else
-				{
-					return false;
-				}
-			});
+		std::sort(encode_fields.begin(), encode_fields.end(), sort_by_unqualified_name<language::variable_node>);
 		mustache::data field_list{ mustache::data::type::list };
 		for (auto one_field : encode_fields)
 		{
@@ -95,10 +80,9 @@ namespace meta::utils
 		mustache::data render_args;
 		render_args.set("fields", field_list);
 		render_args.set("bases", base_list);
-		auto encode_str = mustache_template.render(render_args);
-		return encode_str;
+		return render_args;
 	}
-	std::string generate_decode_func_for_class(const class_node* one_class, mustache::mustache& decode_template)
+	mustache::data generate_decode_func_for_class(const class_node* one_class)
 	{
 		// 首先decode父类 按照父类的名称排序
 		auto pre_bases = one_class->bases();
@@ -120,34 +104,13 @@ namespace meta::utils
 				}
 				return false;
 			});
-		std::sort(_bases.begin(), _bases.end(), [](const language::type_info* a, const language::type_info* b)
-			{
-				if (a->name() < b->name())
-				{
-					return true;
-				}
-				else
-				{
-					return false;
-				}
-			});
+		std::sort(_bases.begin(), _bases.end(), sort_by_unqualified_name<language::type_info>);
 		std::unordered_map<std::string, std::string> field_decode_value = {};
 		auto decode_fields = one_class->query_fields_with_pred([&field_decode_value](const variable_node& _cur_node)
 			{
 				return filter_with_annotation_value<variable_node>("decode", field_decode_value, _cur_node);
 			});
-		std::sort(decode_fields.begin(), decode_fields.end(), [](const variable_node* a, const variable_node* b)
-			{
-				if (a->unqualified_name() < b->unqualified_name())
-				{
-					return true;
-				}
-				else
-				{
-					return false;
-				}
-
-			});
+		std::sort(decode_fields.begin(), decode_fields.end(), sort_by_unqualified_name<language::variable_node>);
 
 		mustache::data base_list{ mustache::data::type::list };
 		std::size_t decode_idx = 0;
@@ -184,10 +147,9 @@ namespace meta::utils
 		render_args.set("fields", field_list);
 		render_args.set("bases", base_list);
 		render_args.set("total_size", std::to_string(decode_idx));
-		auto decode_str = decode_template.render(render_args);
-		return decode_str;
+		return render_args;
 	}
-	std::string generate_property_func_for_class(const class_node* one_class, mustache::mustache& property_proxy_template, mustache::mustache& property_sequence_template)
+	mustache::data generate_property_func_for_class(const class_node* one_class)
 	{
 		// 生成一个类的所有property信息
 		auto& the_logger = utils::get_logger();
@@ -200,17 +162,7 @@ namespace meta::utils
 			{
 				return filter_with_annotation_value<variable_node>("property", property_annotate_value, _cur_node);
 			});
-		std::sort(property_fields.begin(), property_fields.end(), [](const variable_node* a, const variable_node* b)
-			{
-				if (a->unqualified_name() < b->unqualified_name())
-				{
-					return true;
-				}
-				else
-				{
-					return false;
-				}
-			});
+		std::sort(property_fields.begin(), property_fields.end(), sort_by_unqualified_name<language::variable_node>);
 		std::size_t field_begin_index = property_fields_with_base.size() - property_fields.size();
 		std::ostringstream h_stream;
 		std::ostringstream cpp_stream;
@@ -240,10 +192,10 @@ namespace meta::utils
 			field_begin_index++;
 		}
 		render_args.set("fields", field_list);
-		return property_proxy_template.render(render_args) + property_sequence_template.render(render_args);
+		return render_args;
 
 	}
-	std::string generate_rpc_call_for_class(const class_node* one_class, mustache::mustache& rpc_call_tempalte)
+	mustache::data generate_rpc_call_for_class(const class_node* one_class)
 	{
 		std::unordered_map<std::string, std::string> rpc_call_annotate_value = {};
 		auto func_pred = [&rpc_call_annotate_value](const callable_node& _cur_node)
@@ -253,18 +205,7 @@ namespace meta::utils
 		
 		
 		auto rpc_methods = one_class->query_method_with_pred_recursive(func_pred);
-		std::sort(rpc_methods.begin(), rpc_methods.end(), [](const callable_node* a, const callable_node* b)
-			{
-				if (a->unqualified_name() < b->unqualified_name())
-				{
-					return true;
-				}
-				else
-				{
-					return false;
-				}
-
-			});
+		std::sort(rpc_methods.begin(), rpc_methods.end(), sort_by_unqualified_name<language::callable_node>);
 		std::uint16_t rpc_method_idx = 0;
 		std::size_t total_rpc_method_size = rpc_methods.size();
 		mustache::data method_list{ mustache::data::type::list };
@@ -303,9 +244,9 @@ namespace meta::utils
 		render_args.set("rpc_methods", method_list);
 
 
-		return rpc_call_tempalte.render(render_args);
+		return render_args;
 	}
-	std::string generate_components_add_for_class(const class_node* one_class, mustache::mustache& component_tempalte)
+	mustache::data generate_components_add_for_class(const class_node* one_class)
 	{
 		std::unordered_map<std::string, std::string> components_value = {};
 		auto field_pred = [&components_value](const variable_node& _cur_node)
@@ -313,18 +254,7 @@ namespace meta::utils
 			return filter_with_annotation_value<variable_node>("component", components_value, _cur_node);
 		};
 		auto component_fields = one_class->query_fields_with_pred_recursive(field_pred);
-		std::sort(component_fields.begin(), component_fields.end(), [](const variable_node* a, const variable_node* b)
-			{
-				if (a->unqualified_name() < b->unqualified_name())
-				{
-					return true;
-				}
-				else
-				{
-					return false;
-				}
-
-			});
+		std::sort(component_fields.begin(), component_fields.end(), sort_by_unqualified_name<language::variable_node>);
 
 		mustache::data components{ mustache::data::type::list };
 		for (auto one_field : component_fields)
@@ -335,10 +265,9 @@ namespace meta::utils
 		}
 		mustache::data component_args;
 		component_args.set("components", components);
-		auto component_func = component_tempalte.render(component_args);
-		return component_func;
+		return component_args;
 	}
-	std::string generate_stub_func_for_class(const class_node* one_class, mustache::mustache& stub_interface_template)
+	mustache::data generate_stub_func_for_class(const class_node* one_class)
 	{
 		std::unordered_map<std::string, std::string> components_value = {};
 		auto field_pred = [&components_value](const variable_node& _cur_node)
@@ -402,10 +331,7 @@ namespace meta::utils
 		}
 		mustache::data temp3;
 		temp3.set("stub_interface", stub_func_render_args);
-		auto stub_strs = stub_interface_template.render(temp3);
-		// 生成所有的rpc函数
-		
-		return stub_strs;
+		return temp3;
 	}
 	using tag_func_desc = std::pair<const variable_node*, const callable_node*>;
 	std::vector<tag_func_desc> parse_tag_func_for_class_with_components(const class_node* one_class, const std::string& tag)
@@ -452,24 +378,28 @@ namespace meta::utils
 	}
 
 
-	std::string generate_rpc_interface_for_component_class(const std::vector<tag_func_desc>& field_rpc_info, mustache::mustache rpc_template)
+	mustache::data generate_func_interface_for_component_class(const std::vector<tag_func_desc>& filed_func_info)
 	{
-		std::uint16_t rpc_method_idx = 0;
-		std::size_t total_rpc_method_size = field_rpc_info.size();
+		std::uint16_t func_method_idx = 0;
+		std::size_t total_method_size = filed_func_info.size();
 		mustache::data method_list{ mustache::data::type::list };
-		for (auto [field, one_method] : field_rpc_info)
+		for (auto [field, one_method] : filed_func_info)
 		{
 			mustache::data cur_method_data;
 			std::string method_full_name;
 			if (field)
 			{
-				method_full_name = field;
+				method_full_name = field->unqualified_name() + "::" + one_method->unqualified_name();
 			}
-			cur_method_data.set("rpc_index", std::to_string(rpc_method_idx));
-			cur_method_data.set("rpc_name", method_full_name);
-			if (rpc_method_idx + 1 == total_rpc_method_size)
+			else
 			{
-				cur_method_data.set("last_rpc", true);
+				method_full_name = one_method->unqualified_name();
+			}
+			cur_method_data.set("func_index", std::to_string(func_method_idx));
+			cur_method_data.set("func_name", method_full_name);
+			if (func_method_idx + 1 == total_method_size)
+			{
+				cur_method_data.set("last_func", true);
 			}
 			const auto& method_args = one_method->args_type();
 			std::size_t arg_size = method_args.size();
@@ -489,54 +419,12 @@ namespace meta::utils
 				arg_idx += 1;
 
 			}
-			cur_method_data.set("rpc_args", arg_list);
-			rpc_method_idx += 1;
+			cur_method_data.set("func_args", arg_list);
+			func_method_idx += 1;
 			method_list << cur_method_data;
 		}
 		mustache::data render_args;
-		render_args.set("rpc_methods", method_list);
-		return rpc_template.render(render_args);
-	}
-	std::string generate_rpc_proxy_for_component_class(const std::string& class_name, const std::vector<std::pair<std::string, const callable_node*>>& all_rpc_info, mustache::mustache rpc_proxy_template)
-	{
-		std::uint16_t rpc_method_idx = 0;
-		std::size_t total_rpc_method_size = all_rpc_info.size();
-		mustache::data method_list{ mustache::data::type::list };
-		for (auto[method_full_name, one_method] : all_rpc_info)
-		{
-			mustache::data cur_method_data;
-			cur_method_data.set("rpc_index", std::to_string(rpc_method_idx));
-			cur_method_data.set("rpc_name", one_method->unqualified_name());
-			if (rpc_method_idx + 1 == total_rpc_method_size)
-			{
-				cur_method_data.set("last_rpc", true);
-			}
-			const auto& method_args = one_method->args_type();
-			std::size_t arg_size = method_args.size();
-			mustache::data arg_list{ mustache::data::type::list };
-			std::size_t arg_idx = 0;
-			for (auto one_arg : method_args)
-			{
-				mustache::data cur_arg_data;
-				cur_arg_data.set("arg_idx", std::to_string(arg_idx));
-				cur_arg_data.set("arg_type", one_arg->decl_type()->name());
-				cur_arg_data.set("arg_name", one_arg->unqualified_name());
-				if (arg_idx + 1 == arg_size)
-				{
-					cur_arg_data.set("last_idx", true);
-				}
-				arg_list << cur_arg_data;
-				arg_idx += 1;
-
-			}
-			cur_method_data.set("rpc_args", arg_list);
-			rpc_method_idx += 1;
-			method_list << cur_method_data;
-		}
-		mustache::data render_args;
-		render_args.set("rpc_methods", method_list);
-		render_args.set("class_name", class_name);
-		return rpc_proxy_template.render(render_args);
-
+		render_args.set("func_methods", method_list);
+		return render_args;
 	}
 }

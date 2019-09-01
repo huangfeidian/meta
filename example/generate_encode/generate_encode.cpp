@@ -31,11 +31,11 @@ std::unordered_map<std::string, std::string> generate_encode()
 {
 	// 遍历所有的class 对于里面表明了需要生成encode的类进行处理
 	auto& the_logger = utils::get_logger();
-	std::vector<std::string> _annotation_value = { "auto" };
+	std::unordered_map < std::string, std::string> _annotation_value = { {"auto", ""} };
 
 	auto all_encode_classses = language::type_db::instance().get_class_with_pred([&_annotation_value](const language::class_node& _cur_node)
 		{
-			return utils::filter_with_annotation_value<language::class_node>("encode", _annotation_value, _cur_node);
+			return language::filter_with_annotation_value<language::class_node>("encode", _annotation_value, _cur_node);
 		});
 
 	std::unordered_map<std::string, std::string> result;
@@ -50,8 +50,8 @@ std::unordered_map<std::string, std::string> generate_encode()
 		auto _cur_parent_path = file_path.parent_path();
 		auto generated_h_file_name = one_class->unqualified_name() + "_generated.h";
 		auto new_h_file_path = _cur_parent_path / generated_h_file_name;
-		auto encode_str = utils::generate_encode_func_for_class(one_class, encode_func_mustache_tempalte);
-		utils::append_output_to_stream(result, new_h_file_path.string(), encode_str);
+		auto encode_args = utils::generate_encode_func_for_class(one_class);
+		utils::append_output_to_stream(result, new_h_file_path.string(), encode_func_mustache_tempalte.render(encode_args));
 	}
 	return result;
 }

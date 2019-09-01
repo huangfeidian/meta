@@ -2,6 +2,7 @@
 #include <iomanip>
 #include <nlohmann/json.hpp>
 #include <iostream>
+#include <unordered_map>
 using namespace meta;
 using json = nlohmann::json;
 using namespace std;
@@ -20,8 +21,8 @@ void encode_test()
 	encode_test_print("a(b), c(d)");
 	encode_test_print("a(b, c)");
 	encode_test_print("a(b, c), d(e, f)");
+	encode_test_print("a(b=f, c=e), d(e=c, f=d)");
 }
-
 int main()
 {
 	encode_test();

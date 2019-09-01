@@ -31,7 +31,7 @@ std::unordered_map<std::string, std::string> generate_rpc()
 	std::unordered_map<std::string, std::string> _annotation_value = { };
 	auto all_property_classes = language::type_db::instance().get_class_with_pred([&_annotation_value](const language::class_node& _cur_node)
 		{
-			return utils::filter_with_annotation_value<language::class_node>("rpc", _annotation_value, _cur_node);
+			return language::filter_with_annotation_value<language::class_node>("rpc", _annotation_value, _cur_node);
 		});
 	std::unordered_map<std::string, std::string> result;
 	auto rpc_call_mustache_file = std::ifstream("../mustache/rpc_call.mustache");
@@ -46,7 +46,7 @@ std::unordered_map<std::string, std::string> generate_rpc()
 		auto _cur_parent_path = file_path.parent_path();
 		auto generated_h_file_name = one_class->unqualified_name() + "_generated.h";
 		auto new_h_file_path = _cur_parent_path / generated_h_file_name;
-		utils::append_output_to_stream(result, new_h_file_path.string(), utils::generate_rpc_call_for_class(one_class, rpc_call_mustache_tempalte));
+		utils::append_output_to_stream(result, new_h_file_path.string(), rpc_call_mustache_tempalte.render(utils::generate_rpc_call_for_class(one_class)));
 	}
 	return result;
 }

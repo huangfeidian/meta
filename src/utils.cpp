@@ -544,7 +544,7 @@ namespace meta::utils
 						}
 						else
 						{
-							cur_values[token] = "";
+							cur_values[std::string(token)] = "";
 						}
 					}
 					else

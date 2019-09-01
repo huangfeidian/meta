@@ -1,13 +1,14 @@
 public:
-bool rpc_call(std::uint16_t rpc_index, const std::string& args)
+template <typename... Args>
+bool interface_call(const std::string& func_name, const Args&... data)
 {
-    json json_arg;
-    auto& the_logger = meta::utils::get_logger();
-    if(args.size())
+    auto func_index_opt = get_idx_for_interface(func_name);
+    if(!func_index_opt)
     {
-        json_arg = json::parse(args);
+        return false;
     }
-    switch(rpc_index)
+    auto cur_func_index = func_index_opt.value();
+    switch(cur_func_index)
     {
         {{#func_methods}}
         case {{func_index}}:
@@ -22,7 +23,7 @@ bool rpc_call(std::uint16_t rpc_index, const std::string& args)
             }
             else
             {
-                the_logger.warn("fail to decode args {} for rpc {{func_name}} index {}", args,  cur_rpc_index);
+                the_logger.warn("fail to decode args {} for rpc {{func_name}} index {}", args,  cur_func_index);
             }
             return decode_result;
         }
@@ -34,13 +35,17 @@ bool rpc_call(std::uint16_t rpc_index, const std::string& args)
 	
 }
 
-static const std::unordered_map<std::string, std::uint16_t>& rpc_indexes()
+static std::optional<std::uint16_t> get_idx_for_interface(const std::string& func_name)
 {
-    static std::unordered_map<std::string, std:uint16_t> rpc_index_map = {
-        {{#func_methods}}
-        { "{{func_name}}", {{func_index}} }{{^last_func}},{{/last_func}}
-        {{/func_methods}}
+    auto& all_func_indexes = interface_indexes();
+    auto cur_iter = all_func_indexes.find(func_name);
+    if(cur_iter == all_func_indexes.end())
+    {
+        return std::nullopt;
     }
-    retrurn rpc_index_map;
+    else
+    {
+        return cur_iter->second;
+    }
 }
 private:

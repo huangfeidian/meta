@@ -30,14 +30,14 @@ std::unordered_map<std::string, std::string> generate_encode_decode()
 {
 	// 遍历所有的class 对于里面表明了需要生成decode的类进行处理
 	auto& the_logger = utils::get_logger();
-	std::unordered_map<std::string, std::string> _annotation_value = { {"auto": ""} };
+	std::unordered_map<std::string, std::string> _annotation_value = { {"auto", ""} };
 	auto all_decode_classes = language::type_db::instance().get_class_with_pred([&_annotation_value](const language::class_node& _cur_node)
 		{
-			return utils::filter_with_annotation_value<language::class_node>("decode", _annotation_value, _cur_node);
+			return language::filter_with_annotation_value<language::class_node>("decode", _annotation_value, _cur_node);
 		});
 	auto all_encode_classses = language::type_db::instance().get_class_with_pred([&_annotation_value](const language::class_node& _cur_node)
 		{
-			return utils::filter_with_annotation_value<language::class_node>("encode", _annotation_value, _cur_node);
+			return language::filter_with_annotation_value<language::class_node>("encode", _annotation_value, _cur_node);
 		});
 	std::unordered_set<const language::class_node*> all_related_classes;
 	std::copy(all_encode_classses.begin(), all_encode_classses.end(), std::inserter(all_related_classes, all_related_classes.end()));
@@ -61,15 +61,15 @@ std::unordered_map<std::string, std::string> generate_encode_decode()
 		std::ostringstream h_file_stream;
 		std::ostringstream cpp_file_stream;
 		cpp_file_stream << "#include " << file_path.filename() << "\n";
-		if (utils::filter_with_annotation_value<language::class_node>("encode", _annotation_value, *one_class))
+		if (language::filter_with_annotation_value<language::class_node>("encode", _annotation_value, *one_class))
 		{
-			auto encode_func_str = utils::generate_encode_func_for_class(one_class, encode_func_mustache_tempalte);
-			utils::append_output_to_stream(result, new_h_file_path.string(), encode_func_str);
+			auto encode_func_args = utils::generate_encode_func_for_class(one_class);
+			utils::append_output_to_stream(result, new_h_file_path.string(), encode_func_mustache_tempalte.render(encode_func_args));
 		}
-		if (utils::filter_with_annotation_value<language::class_node>("decode", _annotation_value, *one_class))
+		if (language::filter_with_annotation_value<language::class_node>("decode", _annotation_value, *one_class))
 		{
-			auto decode_func_str = utils::generate_decode_func_for_class(one_class, decode_func_mustache_tempalte);
-			utils::append_output_to_stream(result, new_h_file_path.string(), decode_func_str);
+			auto decode_func_args = utils::generate_decode_func_for_class(one_class);
+			utils::append_output_to_stream(result, new_h_file_path.string(), decode_func_mustache_tempalte.render(decode_func_args));
 		}
 		
 	}
