@@ -82,11 +82,61 @@ class test_a
 	}
 
 };
+template <typename T1, typename T2>
+void convert_test_case()
+{
+	auto& cur_type_map = utils::type_map<std::string>();
+	auto T1_name = cur_type_map.find<T1>();
+	auto T2_name = cur_type_map.find<T2>();
+	auto convert_result = cur_type_map.can_convert_to<T1>(cur_type_map.get_type_id<T2>());
+	std::cout << "try convert T1 " << T1_name.value() << " to T2 " << T2_name.value() << " with result " << convert_result << std::endl;
+}
+template <typename T1>
+void convert_test_multiple_cases()
+{
+	using t = T1;
+	using c_t = const T1;
+	using r_t = std::add_lvalue_reference_t<T1>;
+	using cr_t = std::add_lvalue_reference_t<std::add_const_t<T1>>;
+	convert_test_case<t, t>();
+	convert_test_case<t, c_t>();
+	convert_test_case<t, r_t>();
+	convert_test_case<t, cr_t>();
+	convert_test_case<c_t, t>();
+	convert_test_case<c_t, c_t>();
+	convert_test_case<c_t, r_t>();
+	convert_test_case<c_t, cr_t>();
+	convert_test_case<r_t, t>();
+	convert_test_case<r_t, c_t>();
+	convert_test_case<r_t, r_t>();
+	convert_test_case<r_t, cr_t>();
+	convert_test_case<cr_t, t>();
+	convert_test_case<cr_t, c_t>();
+	convert_test_case<cr_t, r_t>();
+	convert_test_case<cr_t, cr_t>();
+}
+void convert_test()
+{
+	auto& cur_type_map = utils::type_map<std::string>();
+	cur_type_map.register_type<int>("int");
+	cur_type_map.register_type<int&>("int&");
+	cur_type_map.register_type<const int&>("const int&");
+	cur_type_map.register_type<const int>("const int");
+	cur_type_map.register_type<std::string>("std::string");
+	cur_type_map.register_type<std::string&>("std::string&");
+	cur_type_map.register_type<const std::string&>("const std::string&");
+	cur_type_map.register_type<const std::string>("const std::string");
+	convert_test_multiple_cases<int>();
+	convert_test_multiple_cases<std::string>();
+	
+
+}
 int main()
 {
-    test_a aa;
-	aa.register_types();
-    aa.call_by_name<int>(std::string("func_1"), 1);
-    aa.call_by_name("func_2", 1, std::string("hehe"));
-    aa.call_by_name("func_3", 1, std::string("hehe"));
+ //   test_a aa;
+	//aa.register_types();
+ //   aa.call_by_name<int>(std::string("func_1"), 1);
+ //   aa.call_by_name("func_2", 1, std::string("hehe"));
+ //   aa.call_by_name("func_3", 1, std::string("hehe"));
+	convert_test();
 }
