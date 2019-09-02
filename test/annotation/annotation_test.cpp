@@ -3,12 +3,13 @@
 #include <nlohmann/json.hpp>
 #include <iostream>
 #include <unordered_map>
+#include <utility/string_utils.h>
 using namespace meta;
 using json = nlohmann::json;
 using namespace std;
 void encode_test_print(const std::string& data)
 {
-	json encode_result = utils::parse_annotation(data);
+	json encode_result = utils::string_utils::parse_annotation(data);
 	cout << setw(4) << "parse data " << data << " with result " << encode_result<<endl;
 }
 

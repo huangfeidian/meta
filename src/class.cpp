@@ -143,7 +143,7 @@ namespace meta::language
 			}
 			case CXCursor_AnnotateAttr:
 			{
-				_annotation = utils::parse_annotation(utils::to_string(i));
+				_annotation = utils::string_utils::parse_annotation(utils::to_string(i));
 				break;
 			}
 			default:

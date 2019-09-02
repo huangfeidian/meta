@@ -1,0 +1,85 @@
+
+using func_type = void({{class_name}}::*)(const std::vector<const void*>&);
+std::unordered_map<std::string, std::pair<func_type, std:vector<int>>> {{class_full_name}}::interface_name_map;
+{{class_full_name}}::init_static_for_{{class_name}}()
+{
+    auto& cur_type_map = meta::utils::type_map<std::string>();
+    {{#interface_funcs}}
+    auto {{func_name}}_arg_require = meta::utils::func_arg_type_ids<std::string, utils::function_arguments<decltype(&{{class_name}}::{{func_name}})>::type>::result();
+    interface_name_map["{{func_name}}] = std::make_pair(&{{class_name}}::interface_wrapper_for_{{func_name}}, {{func_name}}_arg_require);
+    {{/interface_funcs}}
+
+    {{#interface_arg_types}}
+    cur_type_map.register_type<{{base_type_name}}>("{{base_type_name}}");
+    cur_type_map.register_type<const {{base_type_name}}>("const {{base_type_name}}");
+    cur_type_map.register_type<{{base_type_name}}&>("{{base_type_name}}&");
+    cur_type_map.register_type<const {{base_type_name}}&>("const {{base_type_name}}&");
+    {{/interface_arg_types}}
+}
+{{class_full_name}}::init_static_for_{{class_name}} {{class_full_name}}::static_constructor_for_{{class_name}};
+
+{{#interface_funcs}}
+void {{class_full_name}}::interface_wrapper_for_{{func_name}}(const std::vector<const void*>& data)
+{
+    {{#func_args}}
+    {{^is_no_const_ref}}
+    auto p_{{arg_name}} = reinterpret_cast<const arg_type*>(data[{{arg_idx}}]);
+    {{/is_no_const_ref}}
+    {{is_no_const_ref}}
+    auto p_{{arg_name}} = const_cast<arg_type*>(reinterpret_cast<const arg_type*>(data[{{arg_idx}}]));
+    {{/is_no_const_ref}}
+    {{func_name}}({{#func_args}}*p_{{arg_name}}{{^last_arg}},{{/last_arg}});
+}
+{{/interface_funcs}}
+
+bool {{class_full_name}}::has_interface_by_name(const std::string& func_name)
+{
+    auto cur_iter = interface_name_map.find(func_name);
+    if(cur_iter == interface_name_map.end())
+    {
+        return false;
+    }
+    else
+    {
+        return true;
+    }
+}
+template <typename... Args>
+bool {{class_full_name}}::has_interface_by_name_and_args(const std::string& func_name)
+{
+    auto& cur_type_map = meta::utils::type_map<std::string>();
+    auto cur_iter = interface_name_map.find(func_name);
+    if(cur_iter == interface_name_map.end())
+    {
+        return false;
+    }
+    else
+    {
+        const auto& cur_func_require = cur_iter->second.second;
+        return cur_type_map.can_convert_to<Args...>(cur_func_require);
+    }
+}
+template <typename... Args>
+bool {{class_full_name}}::call_interface_by_name(const std::string& func_name, const Args&... args)
+{
+    auto& cur_type_map = meta::utils::type_map<std::string>();
+    auto cur_iter = interface_name_map.find(func_name);
+    if(cur_iter == interface_name_map.end())
+    {
+        return false;
+    }
+    else
+    {
+        const auto& cur_func_require = cur_iter->second.second;
+        auto cur_func_ptr = cur_iter->second.first;
+        if(!cur_type_map.can_convert_to<Args...>(cur_func_require))
+        {
+            return false;
+        }
+        std::vector<const void*> arg_pointers;
+        arg_pointers.push_back(reinterpret_cast<const void*>(std::addressof(args))),...);
+		(this->*cur_func_ptr)(arg_pointers);
+        return true;
+    }
+}
+

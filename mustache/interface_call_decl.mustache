@@ -1,0 +1,20 @@
+private:
+using func_type = void({{class_name}}::*)(const std::vector<const void*>&);
+static std::unordered_map<std::string, std::pair<func_type, std:vector<int>>> interface_name_map;
+struct init_static_for_{{class_name}}
+{
+    init_static_for_{{class_name}}();
+};
+static init_static_for_{{class_name}} static_constructor_for_{{class_name}};
+
+{{#interface_funcs}}
+void interface_wrapper_for_{{func_name}}(const std::vector<const void*>& data);
+{{/interface_funcs}}
+public:
+static bool has_interface_by_name(const std::string& func_name);
+template <typename... Args>
+static bool has_interface_by_name_and_args(const std::string& func_name);
+template <typename... Args>
+bool call_interface_by_name(const std::string& func_name, const Args&... args);
+private:
+

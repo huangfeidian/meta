@@ -409,7 +409,9 @@ namespace meta::utils
 			{
 				mustache::data cur_arg_data;
 				cur_arg_data.set("arg_idx", std::to_string(arg_idx));
-				cur_arg_data.set("arg_type", one_arg->decl_type()->name());
+				auto cur_arg_type = one_arg->decl_type();
+				cur_arg_data.set("is_no_const_ref", cur_arg_type->is_lvalue_refer() && !cur_arg_type->is_const());
+				cur_arg_data.set("arg_type", cur_arg_type->name());
 				cur_arg_data.set("arg_name", one_arg->unqualified_name());
 				if (arg_idx + 1 == arg_size)
 				{

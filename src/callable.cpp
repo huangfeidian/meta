@@ -95,7 +95,7 @@ namespace meta::language
 		{
 			if (i.kind == CXCursor_AnnotateAttr)
 			{
-				_annotation = utils::parse_annotation(utils::to_string(i));
+				_annotation = utils::string_utils::parse_annotation(utils::to_string(i));
 			}
 		}
 	}
