@@ -73,10 +73,22 @@ namespace meta::utils
             {
                 return true;
             }
+			if (get_type_id<std::add_const_t<std::remove_reference_t<K>>>() == dest_type_id)
+			{
+				return true;
+			}
+			if (get_type_id<std::add_const_t<K>>() == dest_type_id)
+			{
+				return true;
+			}
             if(get_type_id<std::remove_reference_t<K>>() == dest_type_id)
             {
                 return true;
             }
+			if (get_type_id<std::remove_const_t<std::remove_reference_t<K>>>() == dest_type_id)
+			{
+				return true;
+			}
             return false;
         }
         template <typename... Args, std::size_t... idx>
