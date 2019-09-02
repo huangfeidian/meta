@@ -40,29 +40,32 @@ class test_a
 		auto& cur_type_map = utils::type_map<std::string>();
 		using func_type = void(test_a::*)(const std::vector<const void*>&);
 		unordered_map<std::string, std::pair<func_type, std::vector<int>>> func_map; 
-		auto func_1_arg_require = meta::utils::func_arg_type_ids<std::string, utils::function_arguments<decltype(&test_a::wrapper_for_func1)>::type>();
-		auto func_2_arg_require = meta::utils::func_arg_type_ids<std::string, utils::function_arguments<decltype(&test_a::wrapper_for_func2)>::type>();
-		auto func_3_arg_require = meta::utils::func_arg_type_ids<std::string, utils::function_arguments<decltype(&test_a::wrapper_for_func3)>::type>();
+		auto func_1_arg_require = meta::utils::func_arg_type_ids<std::string, utils::function_arguments<decltype(&test_a::func_1)>::type>::result();
+		auto func_2_arg_require = meta::utils::func_arg_type_ids<std::string, utils::function_arguments<decltype(&test_a::func_2)>::type>::result();
+		auto func_3_arg_require = meta::utils::func_arg_type_ids<std::string, utils::function_arguments<decltype(&test_a::func_3)>::type>::result();
 		func_map["func_1"] = std::make_pair(&test_a::wrapper_for_func1, func_1_arg_require);
 		func_map["func_2"] = std::make_pair(&test_a::wrapper_for_func2, func_2_arg_require);
 		func_map["func_3"] = std::make_pair(&test_a::wrapper_for_func3, func_3_arg_require);
         auto cur_iter = func_map.find(func_name);
         if(cur_iter==func_map.end())
         {
+			std::cout << "fail 111" << std::endl;
             return false;
         }
 
 		auto cur_func_ptr = cur_iter->second.first;
 		const auto& cur_func_require = cur_iter->second.second;
+
 		if (cur_type_map.can_convert_to<Args...>(cur_func_require))
 		{
 			std::vector<const void*> arg_pointers;
 			(arg_pointers.push_back(reinterpret_cast<const void*>(std::addressof(args))),...);
-			*cur_func_ptr(arg_pointers);
+			(this->*cur_func_ptr)(arg_pointers);
 			return true;
 		}
 		else
 		{
+			std::cout << "fail 222" << std::endl;
 			return false;
 		}
         
@@ -83,7 +86,7 @@ int main()
 {
     test_a aa;
 	aa.register_types();
-    aa.call_by_name<int>("func_1", 1);
-    //aa.call_by_name("func_2", 1, "hehe");
-    //aa.call_by_name("func_3", 1, "hehe");
+    aa.call_by_name<int>(std::string("func_1"), 1);
+    aa.call_by_name("func_2", 1, std::string("hehe"));
+    aa.call_by_name("func_3", 1, std::string("hehe"));
 }

@@ -61,19 +61,19 @@ namespace meta::utils
         template <class K>
         bool can_convert_to(int dest_type_id) const
         {
-            if(get_type_id<K> == dest_type_id)
+            if(get_type_id<K>() == dest_type_id)
             {
                 return true;
             }
-            if(get_type_id<std::add_lvalue_reference_t<K>> == dest_type_id)
+            if(get_type_id<std::add_lvalue_reference_t<K>>() == dest_type_id)
             {
                 return true;
             }
-            if(get_type_id<std::add_const_t<std::add_lvalue_reference<K>>> == dest_type_id)
+            if(get_type_id<std::add_const_t<std::remove_reference_t<K>>&>() == dest_type_id)
             {
                 return true;
             }
-            if(get_type_id<std::remove_reference_t<K>> == dest_type_id)
+            if(get_type_id<std::remove_reference_t<K>>() == dest_type_id)
             {
                 return true;
             }
@@ -86,12 +86,12 @@ namespace meta::utils
             {
                 return false;
             }
-            return (can_convert_to<Args>(dest_indexes[indexes]) &&...);
+            return (can_convert_to<Args>(dest_indexes[idx]) &&...);
         }
         template <typename... Args>
         bool can_convert_to(const std::vector<int>& dest_indexes)
         {
-            return can_convert_to_vector_impl<Args...>(dest_indexes, std::index_sequence_for<Args...>{})
+			return can_convert_to_vector_impl<Args...>(dest_indexes, std::index_sequence_for<Args...>{});
         }
         public:
         template <class Key>
@@ -108,14 +108,9 @@ namespace meta::utils
     template <typename V>
     std::atomic_int type_map<V>::last_id(0);
 
-    template <typename V, typename R, typename... Args>
-    std::vector<int> func_arg_type_ids()
-    {
-        auto& cur_type_map = type_map<V>();
-        std::vector<int> result;
-        result.push_back(cur_type_map.get_type_id<Args>)...;
-        return result;
-    }
+	template <typename V>
+	std::unordered_map<int, V> type_map<V>::m_map({});
+
     template <typename V>
     std::optional<std::size_t> all_args_registered(const std::vector<int>& _indexes)
     {
@@ -146,6 +141,30 @@ namespace meta::utils
 		using type = std::tuple<Args...>;
 	};
 
+	template <typename V, typename... Args>
+	class func_arg_type_ids
+	{
+	public:
+		static std::vector<int> result()
+		{
+			auto& cur_type_map = type_map<V>();
+			std::vector<int> result;
+			(result.push_back(cur_type_map.get_type_id<Args>()), ...);
+			return result;
+		}
+		
+	};
+	template <typename V, typename... Args>
+	class func_arg_type_ids<V, std::tuple<Args...>>
+	{
+	public:
+		static std::vector<int> result()
+		{
+			auto& cur_type_map = type_map<V>();
+			std::vector<int> result;
+			(result.push_back(cur_type_map.get_type_id<Args>()), ...);
+			return result;
+		}
 
-
+	};
 }
