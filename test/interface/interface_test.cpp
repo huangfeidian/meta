@@ -12,15 +12,15 @@ class test_a
     public:
     void func_1(int a)
     {
-        std::cout<<"func_1"<<std::endl;
+        std::cout<<"func_1 with a"<<a<<std::endl;
     }
     void func_2(int a, const std::string& b)
     {
-        std::cout<<"func_2"<<std::endl;
+		std::cout << "func_2" << " a " << a << " b" << b << std::endl;
     }
-    void func_3(int a, const std::string& c)
+    void func_3(int a, std::string& c)
     {
-        std::cout<<"func_3"<<std::endl;
+        std::cout<<"func_3"<<" a "<<a<<" c" <<c<<std::endl;
     }
 	void wrapper_for_func1(const std::vector<const void*>& data)
 	{
@@ -32,7 +32,7 @@ class test_a
 	}
 	void wrapper_for_func3(const std::vector<const void*>& data)
 	{
-		func_3(*reinterpret_cast<const int*>(data[0]), *reinterpret_cast<const std::string*>(data[1]));
+		func_3(*reinterpret_cast<const int*>(data[0]), *const_cast<std::string*>(reinterpret_cast<const std::string*>(data[1])));
 	}
     template <typename... Args>
     bool call_by_name(const std::string& func_name, const Args&... args)
@@ -49,7 +49,6 @@ class test_a
         auto cur_iter = func_map.find(func_name);
         if(cur_iter==func_map.end())
         {
-			std::cout << "fail 111" << std::endl;
             return false;
         }
 
@@ -65,7 +64,6 @@ class test_a
 		}
 		else
 		{
-			std::cout << "fail 222" << std::endl;
 			return false;
 		}
         
@@ -133,10 +131,10 @@ void convert_test()
 }
 int main()
 {
- //   test_a aa;
-	//aa.register_types();
- //   aa.call_by_name<int>(std::string("func_1"), 1);
- //   aa.call_by_name("func_2", 1, std::string("hehe"));
- //   aa.call_by_name("func_3", 1, std::string("hehe"));
+    test_a aa;
+	aa.register_types();
+    aa.call_by_name<int>(std::string("func_1"), 1);
+    aa.call_by_name("func_2", 1, std::string("hehe"));
+    aa.call_by_name("func_3", 1, std::string("hehe"));
 	convert_test();
 }
