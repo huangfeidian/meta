@@ -61,36 +61,137 @@ namespace meta::utils
         template <class K>
         bool can_convert_to(int dest_type_id) const
         {
-            if(get_type_id<K>() == dest_type_id)
-            {
-                return true;
-            }
-            if(get_type_id<std::add_lvalue_reference_t<K>>() == dest_type_id)
-            {
-                return true;
-            }
-            if(get_type_id<std::add_const_t<std::remove_reference_t<K>>&>() == dest_type_id)
-            {
-                return true;
-            }
-			if (get_type_id<std::add_const_t<std::remove_reference_t<K>>>() == dest_type_id)
+			if (get_type_id<K>() == dest_type_id)
 			{
 				return true;
 			}
-			if (get_type_id<std::add_const_t<K>>() == dest_type_id)
+			using B = std::remove_const_t<std::remove_reference_t<K>>;
+			if (std::is_lvalue_reference_v<K>)
 			{
-				return true;
+				// k is B& or const B&
+				if (std::is_const_v<std::remove_reference_t<K>>)
+				{
+					// K is const B&
+					// dest should be B/constB/ const B&
+					if (get_type_id<B>() == dest_type_id)
+					{
+						return true;
+					}
+					if (get_type_id<const B> == dest_type_id)
+					{
+						return true;
+					}
+					
+					return false;
+				}
+				else
+				{
+					// K is B &
+					// dest should be B/B&/const B/ const B&
+					if (get_type_id<B>() == dest_type_id)
+					{
+						return true;
+					}
+					
+					if (get_type_id<const B> == dest_type_id)
+					{
+						return true;
+					}
+					if (get_type_id<const B &>() == dest_type_id)
+					{
+						return true;
+					}
+					return false;
+				}
 			}
-            if(get_type_id<std::remove_reference_t<K>>() == dest_type_id)
-            {
-                return true;
-            }
-			if (get_type_id<std::remove_const_t<std::remove_reference_t<K>>>() == dest_type_id)
+			else
 			{
-				return true;
+				//K is B or const B
+				// dest should be B/ /constB/ const B&
+				if (get_type_id<B>() == dest_type_id)
+				{
+					return true;
+				}
+				
+				if (get_type_id<const B> == dest_type_id)
+				{
+					return true;
+				}
+				if (get_type_id<const B&> == dest_type_id)
+				{
+					return true;
+				}
+				return false;
 			}
-            return false;
         }
+		template <class K>
+		bool can_convert_from(int dest_type_id) const
+		{
+			if (get_type_id<K>() == dest_type_id)
+			{
+				return true;
+			}
+			using B = std::remove_const_t<std::remove_reference_t<K>>;
+			if (std::is_lvalue_reference_v<K>)
+			{
+				// k is B& or const B&
+				if (std::is_const_v<std::remove_reference_t<K>>)
+				{
+					// K is const B&
+					// dest should be B/B&/constB/ const B&
+					if (get_type_id<B>() == dest_type_id)
+					{
+						return true;
+					}
+					if (get_type_id<B &>() == dest_type_id)
+					{
+						return true;
+					}
+					if (get_type_id<const B> == dest_type_id)
+					{
+						return true;
+					}
+					return false;
+				}
+				else
+				{
+					// K is B &
+					// dest should be B/B&
+					if (get_type_id<B>() == dest_type_id)
+					{
+						return true;
+					}
+					if (get_type_id<B &>() == dest_type_id)
+					{
+						return true;
+					}
+					return false;
+				}
+			}
+			else
+			{
+				//K is B or const B
+				// dest should be B/B&/constB/ const B&
+				if (get_type_id<B>() == dest_type_id)
+				{
+					return true;
+				}
+				if (get_type_id<B &>() == dest_type_id)
+				{
+					return true;
+				}
+				if (get_type_id<const B> == dest_type_id)
+				{
+					return true;
+				}
+				if (get_type_id<const B&> == dest_type_id)
+				{
+					return true;
+				}
+				return false;
+			}
+
+		}
         template <typename... Args, std::size_t... idx>
         bool can_convert_to_vector_impl(const std::vector<int>& dest_indexes, std::index_sequence<idx...> indexes)
         {

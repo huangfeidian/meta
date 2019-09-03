@@ -1,0 +1,86 @@
+
+static std::unordered_map<std::string, std::pair<attr_var_type, int>> {{class_full_name}}::attr_var_map;
+void {{class_full_name}}::init_attr_var_map()
+{
+    {{#attr_vars}}
+    {{is_const_var}}
+    auto p_{{var_name}} = const_cast<{{class_name}}::*>(reinterpret_cast<const {{class_name}}::*>(std::address_of(&{{var_name}})));
+    {{/is_const_var}}
+    {{^is_const_var}}
+    auto p_{{var_name}} = reinterpret_cast<const {{class_name}}::*>(std::address_of(&{{var_name}}));
+    {{/is_const_var}}
+    attr_var_map["{{var_name}}] = std::make_pair(p_{{var_name}}, meta::utils::type_map<std::string>::get_type_id<std::remove_reference_t<decltype({{var_name}}));
+    {{/attr_vars}}
+
+
+}
+
+public:
+static bool {{class_full_name}}::has_attr_var(const std::string& var_name)
+{
+    auto cur_iter = attr_var_map.find(var_name);
+    if(cur_iter == attr_var_map.end())
+    {
+        return false;
+    }
+    else
+    {
+        return true;
+    }
+}
+template <typename T>
+static bool has_attr_var_with_type()
+{
+    auto cur_iter = attr_var_map.find(var_name);
+    if(cur_iter == attr_var_map.end())
+    {
+        return false;
+    }
+    else
+    {
+        auto & cur_type_map = meta::utils::type_map<std::string>();
+        return cur_type_map.can_convert_from<T>(cur_iter->second.second);
+    }
+}
+template <T>
+std::optional<std::reference_wrapper<const T>> {{class_full_name}}::get_attr_var(const std::string& var_name)
+{
+    auto cur_iter = attr_var_map.find(var_name);
+    if(cur_iter == attr_var_map.end())
+    {
+        return std::nullopt;
+    }
+    else
+    {
+        auto & cur_type_map = meta::utils::type_map<std::string>();
+        if(!cur_type_map.can_convert_from<const T&>(cur_iter->second.second))
+        {
+            return std::nullopt;
+        }
+        else
+        {
+            return std::cref(this->*(reinterpret_cast<const {{class_name}}::*T>(cur_iter->second.first)));
+        }
+    }
+}
+template <T>
+std::optional<std::reference_wrapper<T>> get_attr_var_mut(const std::string& var_name)
+{
+    auto cur_iter = attr_var_map.find(var_name);
+    if(cur_iter == attr_var_map.end())
+    {
+        return std::nullopt;
+    }
+    else
+    {
+        auto & cur_type_map = meta::utils::type_map<std::string>();
+        if(!cur_type_map.can_convert_from<T&>(cur_iter->second.second))
+        {
+            return std::nullopt;
+        }
+        else
+        {
+            return std::ref(this->*(const_cast<{{class_name}}::*T>(reinterpret_cast<const {{class_name}}::*T>(cur_iter->second.first))));
+        }
+    }
+}
