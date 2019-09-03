@@ -48,7 +48,7 @@ std::unordered_map<std::string, std::string> generate_component()
 		auto cur_file_path_str = one_class->file();
 		std::filesystem::path file_path(cur_file_path_str);
 		auto _cur_parent_path = file_path.parent_path();
-		auto generated_h_file_name = one_class->unqualified_name() + "_generated.h";
+		auto generated_h_file_name = one_class->unqualified_name() + ".generated_h";
 		auto new_h_file_path = _cur_parent_path / generated_h_file_name;
 		utils::append_output_to_stream(result, new_h_file_path.string(), utils::generate_components_for_class(one_class, component_mustache_tempalte, stub_interface_mustache_tempalte));
 	}

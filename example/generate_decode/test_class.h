@@ -21,7 +21,7 @@ namespace test
 		Meta(encode, decode) std::unordered_map<int, int> b;
 		Meta(encode) int c;
 	public:
-#include "test_class_generated.h"
+#include "test_class.generated_h"
 
 	}Meta(encode(auto), decode(auto));
 	class test_class_B: public test_class
@@ -29,6 +29,6 @@ namespace test
 		private:
 		Meta(encode, decode) std::vector<std::string> d;
 	public:
-#include "test_class_B_generated.h"
+#include "test_class_B.generated_h"
 	}Meta(encode(auto), decode(auto));
 }

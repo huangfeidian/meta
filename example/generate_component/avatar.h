@@ -25,6 +25,6 @@ namespace test
         {
 
         }
-    #include "avatar_generated.h"
+    #include "avatar.generated_h"
     }Meta(component_owner, stub_func, rpc);
 }

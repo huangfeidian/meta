@@ -25,6 +25,6 @@ public:
 	const test_property* _parent;
 	std::deque<mutate_msg>& _cmd_buffer;
 	const var_prefix_idx_type _cur_depth;
-#include "test_property_generated.h"
+#include "test_property.generated_h"
 } Meta(encode(auto), decode(auto), property(auto));
 }

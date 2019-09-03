@@ -34,7 +34,7 @@ std::unordered_map<std::string, std::string> generate_interface()
 			return language::filter_with_annotation_value<language::class_node>("rpc", _annotation_value, _cur_node);
 		});
 	std::unordered_map<std::string, std::string> result;
-	auto interface_mustache_file = std::ifstream("../mustache/interface.mustache");
+	auto interface_mustache_file = std::ifstream("../mustache/attr.mustache");
 	std::string interface_template_str = std::string(std::istreambuf_iterator<char>(interface_mustache_file), std::istreambuf_iterator<char>());
 	mustache::mustache interface_mustache_tempalte(interface_template_str);
 
@@ -44,7 +44,7 @@ std::unordered_map<std::string, std::string> generate_interface()
 		auto cur_file_path_str = one_class->file();
 		std::filesystem::path file_path(cur_file_path_str);
 		auto _cur_parent_path = file_path.parent_path();
-		auto generated_h_file_name = one_class->unqualified_name() + "_generated.h";
+		auto generated_h_file_name = one_class->unqualified_name() + ".generated_h";
 		auto new_h_file_path = _cur_parent_path / generated_h_file_name;
 		utils::append_output_to_stream(result, new_h_file_path.string(), utils::generate_interface_for_class(one_class, interface_mustache_tempalte));
 	}

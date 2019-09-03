@@ -16,6 +16,6 @@ class test_class
     {
         return 1;
     }
-#include "test_class_generated.h"
+#include "test_class.generated_h"
 }Meta(rpc);
 }

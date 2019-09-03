@@ -1,0 +1,16 @@
+private:
+using func_type = void({{class_name}}::*)(const std::vector<const void*>&);
+static std::unordered_map<std::string, std::pair<func_type, std:vector<int>>> attr_func_map;
+static void init_attr_func_map(); // called in _static_constructor_
+
+{{#attr_funcs}}
+void attr_func_for_{{func_name}}(const std::vector<const void*>& data);
+{{/attr_funcs}}
+public:
+static bool has_attr_func(const std::string& func_name);
+template <typename... Args>
+static bool has_attr_func_with_args(const std::string& func_name);
+template <typename... Args>
+bool call_attr_func(const std::string& func_name, const Args&... args);
+private:
+
