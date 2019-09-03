@@ -72,6 +72,14 @@ const std::string &type_info::name() const
 {
 	return _name;
 }
+const std::string &type_info::unqualified_name() const
+{
+	return _name;
+}
+const std::string &type_info::qualified_name() const
+{
+	return _name;
+}
 CXType type_info::type() const
 {
 	return _type;

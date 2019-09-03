@@ -9,25 +9,26 @@ void {{class_full_name}}::init_attr_func_map()
     attr_func_map["{{func_name}}] = std::make_pair(&{{class_name}}::attr_func_for_{{func_name}}, {{func_name}}_arg_require);
     {{/attr_funcs}}
 
-    {{#interface_arg_types}}
+    {{#attr_func_arg_types}}
     cur_type_map.register_type<{{base_type_name}}>("{{base_type_name}}");
     cur_type_map.register_type<const {{base_type_name}}>("const {{base_type_name}}");
     cur_type_map.register_type<{{base_type_name}} &>("{{base_type_name}} &");
     cur_type_map.register_type<const {{base_type_name}} &>("const {{base_type_name}} &");
-    {{/interface_arg_types}}
+    {{/attr_func_arg_types}}
 }
 
 {{#attr_funcs}}
 void {{class_full_name}}::attr_func_for_{{func_name}}(const std::vector<const void*>& data)
 {
-    {{#func_args}}
+	{{#func_args}}
     {{^is_no_const_ref}}
-    auto p_{{arg_name}} = reinterpret_cast<const arg_type*>(data[{{arg_idx}}]);
+    auto p_{{arg_name}} = reinterpret_cast<const {{{arg_type}}}*>(data[{{arg_idx}}]);
     {{/is_no_const_ref}}
-    {{is_no_const_ref}}
-    auto p_{{arg_name}} = const_cast<arg_type*>(reinterpret_cast<const arg_type*>(data[{{arg_idx}}]));
+    {{#is_no_const_ref}}
+    auto p_{{arg_name}} = const_cast<{{{arg_type}}}*>(reinterpret_cast<const {{{arg_type}}}*>(data[{{arg_idx}}]));
     {{/is_no_const_ref}}
-    {{func_name}}({{#func_args}}*p_{{arg_name}}{{^last_arg}},{{/last_arg}});
+	{{/func_args}}
+    {{func_name}}({{#func_args}}*p_{{arg_name}}{{^last_idx}},{{/last_idx}}{{/func_args}});
 }
 {{/attr_funcs}}
 

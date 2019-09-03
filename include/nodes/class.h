@@ -119,26 +119,27 @@ namespace meta::language
 		std::unordered_map<const variable_node*, std::vector<const callable_node*>> final_result;
 		if (!exclude_self)
 		{
-			auto root_result = query_method_with_pred_recursive(_pred);
+			auto root_result = query_method_with_pred_recursive(func_pred);
 			final_result[nullptr] = root_result;
 		}
 		
 		for (const auto one_field : _fields)
 		{
-			if (!field_pred(*one_field))
+			auto cur_variable = one_field.second;
+			if (!field_pred(*cur_variable))
 			{
 				continue;
 			}
-			auto field_type = one_field->decl_type();
+			auto field_type = cur_variable->decl_type();
 			auto class_type = field_type->related_class();
 			if (!class_type)
 			{
 				continue;
 			}
-			auto temp_result = class_type->query_method_with_pred_recursive(_pred);
+			auto temp_result = class_type->query_method_with_pred_recursive(func_pred);
 			if (temp_result.size())
 			{
-				final_result[one_field] = temp_result;
+				final_result[cur_variable] = temp_result;
 			}
 		}
 		return final_result;

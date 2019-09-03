@@ -2,7 +2,7 @@ class rpc_proxy_for_{{class_name}}
 {
     public:
     {{#func_methods}}
-    void {{func_name}}({{#func_args}}{{arg_type}} {{arg_name}} {{^last_idx}},{{last_idx}}{{/func_args}})
+    void {{func_name}}({{#func_args}}{{{arg_type}}} {{arg_name}} {{^last_idx}},{{last_idx}}{{/func_args}})
     {
         json arg_json = encode_multi({{#func_args}}{{arg_name}} {{^last_idx}},{{last_idx}}{{/func_args}});
         std::string arg_str = arg_json.to_string();

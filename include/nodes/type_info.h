@@ -31,6 +31,8 @@ namespace meta::language
 		enum CXTypeKind kind() const;
 		CXType type() const;
 		const std::string& name() const;
+		const std::string& unqualified_name() const;
+		const std::string& qualified_name() const;
 		bool has_type() const;
 		const class_node* related_class() const;
 		bool set_related_class(class_node* _in_class);

@@ -1,0 +1,23 @@
+private:
+using func_type = void(test_class::*)(const std::vector<const void*>&);
+static std::unordered_map<std::string, std::pair<func_type, std:vector<int>>> attr_func_map;
+static void init_attr_func_map(); // called in _static_constructor_
+
+void attr_func_for_interface_1(const std::vector<const void*>& data);
+void attr_func_for_interface_2(const std::vector<const void*>& data);
+void attr_func_for_interface_3(const std::vector<const void*>& data);
+public:
+static bool has_attr_func(const std::string& func_name);
+template <typename... Args>
+static bool has_attr_func_with_args(const std::string& func_name);
+template <typename... Args>
+bool call_attr_func(const std::string& func_name, const Args&... args);
+private:
+
+private:
+friend class struct static_constructor_for_test_class;
+struct static_constructor_for_test_class
+{
+    static_constructor_for_test_class();
+};
+static static_constructor_for_test_class _static_constructor_;

@@ -19,6 +19,14 @@ namespace meta::utils
 	{
 		return a->unqualified_name() < b->unqualified_name();
 	}
+	mustache::mustache load_mustache_from_file(const std::string& file_path)
+	{
+		auto _mustache_file = std::ifstream(file_path);
+		std::string _template_str = std::string(std::istreambuf_iterator<char>(_mustache_file), std::istreambuf_iterator<char>());
+		mustache::mustache _mustache_tempalte(_template_str);
+		_mustache_file.close();
+		return _mustache_tempalte;
+	}
 	void append_output_to_stream(std::unordered_map<std::string, std::string>& file_buffer, const std::string& file_name, const std::string& append_content)
 	{
 		auto cur_iter = file_buffer.find(file_name);
@@ -334,13 +342,13 @@ namespace meta::utils
 		return temp3;
 	}
 	using tag_func_desc = std::pair<const variable_node*, const callable_node*>;
-	std::vector<tag_func_desc> parse_tag_func_for_class_with_components(const class_node* one_class, const std::string& tag)
+	std::vector<tag_func_desc> parse_tag_func_for_class_with_field(const class_node* one_class, const std::string& field_tag, const std::string& tag)
 	{
 		std::unordered_map<std::string, std::string> components_value = {};
 		std::unordered_map<std::string, std::string> func_call_annotate_value = {};
-		auto field_pred = [&components_value](const variable_node& _cur_node)
+		auto field_pred = [&components_value, &field_tag](const variable_node& _cur_node)
 		{
-			return filter_with_annotation<variable_node>("component", _cur_node);
+			return filter_with_annotation<variable_node>(field_tag, _cur_node);
 		};
 		auto func_pred = [&func_call_annotate_value, &tag](const callable_node& _cur_node)
 		{
@@ -357,9 +365,9 @@ namespace meta::utils
 		
 		std::sort(result.begin(), result.end(), [](const tag_func_desc& a, const tag_func_desc& b)
 			{
-				if (a.first->unqualified_name() < b.first->unqualified_name())
+				if (a.first && b.first)
 				{
-					return true;
+					return a.first->unqualified_name() < b.first->unqualified_name();
 				}
 				else
 				{
@@ -370,33 +378,31 @@ namespace meta::utils
 	}
 	std::vector<std::pair<const variable_node*, const callable_node*>> parse_rpc_func_for_class(const class_node* one_class)
 	{
-		return parse_tag_func_for_class_with_components(one_class, "rpc");
+		return parse_tag_func_for_class_with_field(one_class, "component", "rpc");
 	}
-	std::vector<std::pair<const variable_node*, const callable_node*>> parse_interface_func_for_class(const class_node* one_class)
+	std::vector<std::pair<const variable_node*, const callable_node*>> parse_attr_func_for_class(const class_node* one_class)
 	{
-		return parse_tag_func_for_class_with_components(one_class, "interface");
+		return parse_tag_func_for_class_with_field(one_class, "", "attr");
 	}
 
 
-	mustache::data generate_func_interface_for_component_class(const std::vector<tag_func_desc>& filed_func_info)
+	mustache::data generate_attr_for_class(const std::vector<tag_func_desc>& filed_func_info)
 	{
 		std::uint16_t func_method_idx = 0;
 		std::size_t total_method_size = filed_func_info.size();
 		mustache::data method_list{ mustache::data::type::list };
+		std::unordered_set<std::string> base_arg_type_names;
 		for (auto [field, one_method] : filed_func_info)
 		{
 			mustache::data cur_method_data;
-			std::string method_full_name;
 			if (field)
 			{
-				method_full_name = field->unqualified_name() + "::" + one_method->unqualified_name();
+				//method_full_name = field->unqualified_name() + "::" + one_method->unqualified_name();
+				continue;
 			}
-			else
-			{
-				method_full_name = one_method->unqualified_name();
-			}
+
 			cur_method_data.set("func_index", std::to_string(func_method_idx));
-			cur_method_data.set("func_name", method_full_name);
+			cur_method_data.set("func_name", one_method->func_name());
 			if (func_method_idx + 1 == total_method_size)
 			{
 				cur_method_data.set("last_func", true);
@@ -412,6 +418,7 @@ namespace meta::utils
 				auto cur_arg_type = one_arg->decl_type();
 				cur_arg_data.set("is_no_const_ref", cur_arg_type->is_lvalue_refer() && !cur_arg_type->is_const());
 				cur_arg_data.set("arg_type", cur_arg_type->name());
+				base_arg_type_names.insert(std::string(utils::string_utils::remove_cvr(cur_arg_type->name())));
 				cur_arg_data.set("arg_name", one_arg->unqualified_name());
 				if (arg_idx + 1 == arg_size)
 				{
@@ -425,8 +432,16 @@ namespace meta::utils
 			func_method_idx += 1;
 			method_list << cur_method_data;
 		}
+		mustache::data arg_type_list{ mustache::data::type::list };
+		for (const auto& one_type_name : base_arg_type_names)
+		{
+			mustache::data cur_arg_data;
+			cur_arg_data.set("base_type_name", one_type_name);
+			arg_type_list << cur_arg_data;
+		}
 		mustache::data render_args;
-		render_args.set("func_methods", method_list);
+		render_args.set("attr_funcs", method_list);
+		render_args.set("attr_func_arg_types", arg_type_list);
 		return render_args;
 	}
 }

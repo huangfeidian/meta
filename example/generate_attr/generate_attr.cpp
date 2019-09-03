@@ -25,18 +25,19 @@ using namespace meta;
 
 
 
-std::unordered_map<std::string, std::string> generate_interface()
+std::unordered_map<std::string, std::string> generate_attr()
 {
 	auto& the_logger = utils::get_logger();
 	std::unordered_map<std::string, std::string> _annotation_value = { };
 	auto all_property_classes = language::type_db::instance().get_class_with_pred([&_annotation_value](const language::class_node& _cur_node)
 		{
-			return language::filter_with_annotation_value<language::class_node>("rpc", _annotation_value, _cur_node);
+			return language::filter_with_annotation_value<language::class_node>("attr", _annotation_value, _cur_node);
 		});
 	std::unordered_map<std::string, std::string> result;
-	auto interface_mustache_file = std::ifstream("../mustache/attr.mustache");
-	std::string interface_template_str = std::string(std::istreambuf_iterator<char>(interface_mustache_file), std::istreambuf_iterator<char>());
-	mustache::mustache interface_mustache_tempalte(interface_template_str);
+	auto attr_call_decl_mustache = utils::load_mustache_from_file("../mustache/attr_call_decl.mustache");
+	auto attr_call_impl_mustache = utils::load_mustache_from_file("../mustache/attr_call_impl.mustache");
+	auto static_constructor_decl_mustache = utils::load_mustache_from_file("../mustache/static_constructor_decl.mustache");
+	auto static_constructor_impl_mustache = utils::load_mustache_from_file("../mustache/static_constructor_impl.mustache");
 
 
 	for (auto one_class : all_property_classes)
@@ -46,7 +47,27 @@ std::unordered_map<std::string, std::string> generate_interface()
 		auto _cur_parent_path = file_path.parent_path();
 		auto generated_h_file_name = one_class->unqualified_name() + ".generated_h";
 		auto new_h_file_path = _cur_parent_path / generated_h_file_name;
-		utils::append_output_to_stream(result, new_h_file_path.string(), utils::generate_interface_for_class(one_class, interface_mustache_tempalte));
+		auto generated_cpp_file_name = one_class->unqualified_name() + ".generated_cpp";
+		auto new_cpp_file_path = _cur_parent_path / generated_cpp_file_name;
+		auto attr_funcs = utils::parse_attr_func_for_class(one_class);
+		auto render_args = utils::generate_attr_for_class(attr_funcs);
+		render_args.set("class_name", one_class->unqualified_name());
+		render_args.set("class_full_name", one_class->qualified_name());
+		mustache::data static_construct_funcs{ mustache::data::type::list };
+		std::vector<std::string> func_names;
+		func_names.push_back("init_attr_func_map");
+		for (const auto& one_func : func_names)
+		{
+			mustache::data temp_data;
+			temp_data.set("func_name", one_func);
+			static_construct_funcs << temp_data;
+
+		}
+		render_args.set("static_construct_funcs", static_construct_funcs);
+		utils::append_output_to_stream(result, new_h_file_path.string(), attr_call_decl_mustache.render(render_args));
+		utils::append_output_to_stream(result, new_h_file_path.string(), static_constructor_decl_mustache.render(render_args));
+		utils::append_output_to_stream(result, new_cpp_file_path.string(), attr_call_impl_mustache.render(render_args));
+		utils::append_output_to_stream(result, new_cpp_file_path.string(), static_constructor_impl_mustache.render(render_args));
 	}
 	return result;
 }
@@ -71,7 +92,7 @@ int main()
 
 	bool display_diag = true;
 	m_index = clang_createIndex(true, display_diag);
-	std::string file_path = "../example/generate_rpc/test_class.cpp";
+	std::string file_path = "../example/generate_attr/test_class.cpp";
 	//std::string file_path = "sima.cpp";
 	m_translationUnit = clang_createTranslationUnitFromSourceFile(m_index, file_path.c_str(), static_cast<int>(cstr_arguments.size()), cstr_arguments.data(), 0, nullptr);
 	auto cursor = clang_getTranslationUnitCursor(m_translationUnit);
@@ -88,7 +109,7 @@ int main()
 	json_out << setw(4) << result << endl;
 	std::unordered_map<std::string, std::string> file_content;
 	//utils::merge_file_content(file_content, generate_encode_decode());
-	utils::merge_file_content(file_content, generate_interface());
+	utils::merge_file_content(file_content, generate_attr());
 	utils::write_content_to_file(file_content);
 	clang_disposeTranslationUnit(m_translationUnit);
 
