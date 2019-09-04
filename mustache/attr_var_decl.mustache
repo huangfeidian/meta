@@ -1,8 +1,7 @@
 private:
-using attr_var_type = {{class_name}}::*;
-static std::unordered_map<std::string, std::pair<attr_var_type, int>> attr_var_map;
+static std::unordered_map<std::string, std::pair<int, int>> attr_var_map;
 static void init_attr_var_map(); // called in _static_constructor_
-
+std::pair<void*, int> var_address_for_name(const std::string& var_name)
 public:
 static bool has_attr_var(const std::string& func_name);
 template <typename T>
