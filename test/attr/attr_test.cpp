@@ -18,29 +18,29 @@ class test_a
     {
 		std::cout << "func_2" << " a " << a << " b" << b << std::endl;
     }
-    void func_3(int a, std::string& c)
+    void func_3(int a, std::string& c) const
     {
         std::cout<<"func_3"<<" a "<<a<<" c" <<c<<std::endl;
     }
-	void wrapper_for_func1(const std::vector<const void*>& data)
+	void wrapper_for_func1(const std::vector<void*>& data)
 	{
 		func_1(*reinterpret_cast<const int*>(data[0]));
 	}
-	void wrapper_for_func2(const std::vector<const void*>& data)
+	void wrapper_for_func2(const std::vector<void*>& data)
 	{
 		func_2(*reinterpret_cast<const int*>(data[0]), *reinterpret_cast<const std::string*>(data[1]));
 	}
-	void wrapper_for_func3(const std::vector<const void*>& data)
+	void wrapper_for_func3(const std::vector<void*>& data) const
 	{
 		func_3(*reinterpret_cast<const int*>(data[0]), *const_cast<std::string*>(reinterpret_cast<const std::string*>(data[1])));
 	}
     template <typename... Args>
-    bool attr_call_func(const std::string& func_name, const Args&... args)
+    bool attr_call_func(const std::string& func_name, Args&... args) const
     {
 		auto& cur_type_map = utils::type_map<std::string>();
 		
-        auto cur_iter = attr_func_map.find(func_name);
-        if(cur_iter == attr_func_map.end())
+        auto cur_iter = attr_const_func_map.find(func_name);
+        if(cur_iter == attr_const_func_map.end())
         {
             return false;
         }
@@ -50,8 +50,8 @@ class test_a
 
 		if (cur_type_map.can_convert_to<Args...>(cur_func_require))
 		{
-			std::vector<const void*> arg_pointers;
-			(arg_pointers.push_back(reinterpret_cast<const void*>(std::addressof(args))),...);
+			std::vector<void*> arg_pointers;
+			(arg_pointers.push_back(const_cast<void*>(reinterpret_cast<const void*>(std::addressof(args)))), ...);
 			(this->*cur_func_ptr)(arg_pointers);
 			return true;
 		}
@@ -61,6 +61,36 @@ class test_a
 		}
         
     }
+	template <typename... Args>
+	bool attr_call_func_mut(const std::string& func_name, Args&... args)
+	{
+		auto& cur_type_map = utils::type_map<std::string>();
+		if (attr_call_func(func_name, args...))
+		{
+			return true;
+		}
+		auto cur_iter = attr_func_map.find(func_name);
+		if (cur_iter == attr_func_map.end())
+		{
+			return false;
+		}
+
+		auto cur_func_ptr = cur_iter->second.first;
+		const auto& cur_func_require = cur_iter->second.second;
+
+		if (cur_type_map.can_convert_to<Args...>(cur_func_require))
+		{
+			std::vector<void*> arg_pointers;
+			(arg_pointers.push_back(const_cast<void*>(reinterpret_cast<const void*>(std::addressof(args)))), ...);
+			(this->*cur_func_ptr)(arg_pointers);
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+
+	}
 	static void register_types()
 	{
 		auto& cur_type_map = utils::type_map<std::string>();
@@ -71,8 +101,10 @@ class test_a
 		cur_type_map.register_type<std::string&>("std::string&");
 		cur_type_map.register_type<const std::string&>("const std::string&");
 	}
-	using attr_func_type = void(test_a::*)(const std::vector<const void*>&);
+	using attr_func_type = void(test_a::*)(const std::vector<void*>&);
+	using const_attr_func_type = void(test_a::*)(const std::vector<void*>&) const;
 	static unordered_map<std::string, std::pair<attr_func_type, std::vector<int>>> attr_func_map;
+	static unordered_map<std::string, std::pair<const_attr_func_type, std::vector<int>>> attr_const_func_map;
 	static void register_attr_funcs()
 	{
 		auto func_1_arg_require = meta::utils::func_arg_type_ids<std::string, utils::function_arguments<decltype(&test_a::func_1)>::type>::result();
@@ -80,7 +112,7 @@ class test_a
 		auto func_3_arg_require = meta::utils::func_arg_type_ids<std::string, utils::function_arguments<decltype(&test_a::func_3)>::type>::result();
 		attr_func_map["func_1"] = std::make_pair(&test_a::wrapper_for_func1, func_1_arg_require);
 		attr_func_map["func_2"] = std::make_pair(&test_a::wrapper_for_func2, func_2_arg_require);
-		attr_func_map["func_3"] = std::make_pair(&test_a::wrapper_for_func3, func_3_arg_require);
+		attr_const_func_map["func_3"] = std::make_pair(&test_a::wrapper_for_func3, func_3_arg_require);
 	}
 public:
 	std::string b;
@@ -229,6 +261,7 @@ void convert_test()
 }
 decltype(test_a::attr_var_map) test_a::attr_var_map;
 decltype(test_a::attr_func_map) test_a::attr_func_map;
+decltype(test_a::attr_const_func_map) test_a::attr_const_func_map;
 int main()
 {
 	std::string hehe = "hehe";
@@ -237,9 +270,11 @@ int main()
 	aa.register_types();
 	aa.register_attr_funcs();
 	aa.register_attr_vars();
-    aa.attr_call_func<int>(std::string("func_1"), 1);
-    aa.attr_call_func("func_2", 1, haha);
-    aa.attr_call_func("func_3", 1, haha);
+	int temp_1 = 1;
+	const std::string temp_2 = "heh";
+    aa.attr_call_func_mut<int>("func_1", temp_1);
+    aa.attr_call_func_mut("func_2", temp_1, temp_2);
+    aa.attr_call_func("func_3", temp_1, haha);
 	auto a_c_ref = aa.attr_get_var<std::string>("a");
 	auto a_ref = aa.attr_get_var_mut<std::string>("a");
 	auto d_c_ref = aa.attr_get_var<std::string>("d");

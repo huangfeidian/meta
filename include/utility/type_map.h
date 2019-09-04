@@ -55,9 +55,32 @@ namespace meta::utils
         template <class K>
         void register_type(const V& type_name) 
         {
-            m_map[get_type_id<K>()] = type_name;
+			auto cur_id = get_type_id<K>();
+			auto cur_iter = m_map.find(cur_id);
+			if (cur_iter == m_map.end())
+			{
+				m_map[cur_id] = type_name;
+			}
+			else
+			{
+				if (type_name.size() < cur_iter->second.size())
+				{
+					m_map[cur_id] = type_name;
+				}
+			}
         }  
-
+		template <class K>
+		void register_base_type(const V& type_name)
+		{
+			if (!std::is_same_v<K, std::remove_const_t<std::remove_reference_t<K>>>)
+			{
+				return;
+			}
+			register_type<K>(type_name);
+			register_type<K&>(type_name + " &");
+			register_type<const K>("const " + type_name;);
+			register_type<const K &>("const " + type_name + " &");
+		}
         template <class K>
         bool can_convert_to(int dest_type_id) const
         {
@@ -267,7 +290,12 @@ namespace meta::utils
 	public:
 		using type = std::tuple<Args...>;
 	};
-
+	template <typename R, typename T, typename... Args>
+	class function_arguments<R(T::*)(Args...)const>
+	{
+	public:
+		using type = std::tuple<Args...>;
+	};
 	template <typename V, typename... Args>
 	class func_arg_type_ids
 	{

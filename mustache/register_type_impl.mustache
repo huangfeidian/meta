@@ -1,0 +1,7 @@
+void {{class_full_name}}::register_types()
+{
+    auto& cur_type_map = utils::type_map<std::string>();
+    {{#register_base_types}}
+    cur_type_map.register_base_type<{{type_name}}>("{{type_name}}");
+    {{/register_base_types}}
+}

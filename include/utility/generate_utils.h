@@ -386,20 +386,19 @@ namespace meta::utils
 	}
 
 
-	mustache::data generate_attr_for_class(const std::vector<tag_func_desc>& filed_func_info)
+	mustache::data generate_attr_funcs_for_class(const class_node* one_class)
 	{
+		auto func_pred = [](const callable_node& _cur_node)
+		{
+			return filter_with_annotation<callable_node>("attr", _cur_node);
+		};
+		const auto& filed_func_info = one_class->query_method_with_pred_recursive(func_pred);
 		std::uint16_t func_method_idx = 0;
 		std::size_t total_method_size = filed_func_info.size();
 		mustache::data method_list{ mustache::data::type::list };
-		std::unordered_set<std::string> base_arg_type_names;
-		for (auto [field, one_method] : filed_func_info)
+		for (auto  one_method : filed_func_info)
 		{
 			mustache::data cur_method_data;
-			if (field)
-			{
-				//method_full_name = field->unqualified_name() + "::" + one_method->unqualified_name();
-				continue;
-			}
 
 			cur_method_data.set("func_index", std::to_string(func_method_idx));
 			cur_method_data.set("func_name", one_method->func_name());
@@ -418,7 +417,6 @@ namespace meta::utils
 				auto cur_arg_type = one_arg->decl_type();
 				cur_arg_data.set("is_no_const_ref", cur_arg_type->is_lvalue_refer() && !cur_arg_type->is_const());
 				cur_arg_data.set("arg_type", cur_arg_type->name());
-				base_arg_type_names.insert(std::string(utils::string_utils::remove_cvr(cur_arg_type->name())));
 				cur_arg_data.set("arg_name", one_arg->unqualified_name());
 				if (arg_idx + 1 == arg_size)
 				{
@@ -432,16 +430,59 @@ namespace meta::utils
 			func_method_idx += 1;
 			method_list << cur_method_data;
 		}
-		mustache::data arg_type_list{ mustache::data::type::list };
-		for (const auto& one_type_name : base_arg_type_names)
+
+		return method_list;
+	}
+	mustache::data generate_attr_vars_for_class(const class_node* one_class)
+	{
+		auto field_pred = [](const variable_node& _cur_node)
 		{
-			mustache::data cur_arg_data;
-			cur_arg_data.set("base_type_name", one_type_name);
-			arg_type_list << cur_arg_data;
+			return filter_with_annotation<variable_node>("attr", _cur_node);
+		};
+		auto all_attr_fields = one_class->query_fields_with_pred(field_pred);
+		std::sort(all_attr_fields.begin(), all_attr_fields.end(), sort_by_unqualified_name<meta::language::variable_node>);
+		mustache::data var_list{ mustache::data::type::list };
+		for (int i = 0; i < all_attr_fields.size(); i++)
+		{
+			mustache::data temp_var;
+			temp_var.set("var_idx", i);
+			temp_var.set("var_name", all_attr_fields[i]->unqualified_name());
+			var_list << temp_var;
 		}
-		mustache::data render_args;
-		render_args.set("attr_funcs", method_list);
-		render_args.set("attr_func_arg_types", arg_type_list);
-		return render_args;
+		return var_list;
+	}
+	mustache::data generate_register_types_for_class(const class_node* one_class)
+	{
+		mustache::data var_list{ mustache::data::type::list };
+		std::unordered_set<std::string> base_type_set;
+		auto field_pred = [](const variable_node& _cur_node)
+		{
+			return filter_with_annotation<variable_node>("attr", _cur_node);
+		};
+		auto func_pred = [](const callable_node& _cur_node)
+		{
+			return filter_with_annotation<callable_node>("attr", _cur_node);
+		};
+		auto all_attr_fields = one_class->query_fields_with_pred(field_pred);
+		for (auto one_var : all_attr_fields)
+		{
+			base_type_set.insert(std::string(utils::string_utils::remove_cvr(one_var->decl_type()->name())));
+		}
+		const auto& attr_funcs_info = one_class->query_method_with_pred_recursive(func_pred);
+		for (auto one_method : attr_funcs_info)
+		{
+			const auto& method_args = one_method->args_type();
+			for (auto one_arg : method_args)
+			{
+				base_type_set.insert(std::string(utils::string_utils::remove_cvr(one_arg->decl_type()->name())));
+			}
+		}
+		for (const auto& one_type : base_type_set)
+		{
+			mustache::data temp_type;
+			temp_type.set("type_name", one_type);
+			var_list << temp_type;
+		}
+		return var_list;
 	}
 }
