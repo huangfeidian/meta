@@ -4,10 +4,10 @@ void {{class_full_name}}::init_attr_var_map()
 {
     {{#attr_vars}}
     {{is_const_var}}
-    auto p_{{var_name}} = const_cast<{{class_name}}::*>(reinterpret_cast<const {{class_name}}::*>(std::address_of(&{{var_name}})));
+    auto p_{{var_name}} = const_cast<void* {{class_name}}::*>(reinterpret_cast<const void* {{class_name}}::*>(&{{var_name}}));
     {{/is_const_var}}
     {{^is_const_var}}
-    auto p_{{var_name}} = reinterpret_cast<const {{class_name}}::*>(std::address_of(&{{var_name}}));
+    auto p_{{var_name}} = reinterpret_cast<void* {{class_name}}::*>(&{{var_name}});
     {{/is_const_var}}
     attr_var_map["{{var_name}}] = std::make_pair(p_{{var_name}}, meta::utils::type_map<std::string>::get_type_id<std::remove_reference_t<decltype({{var_name}}));
     {{/attr_vars}}

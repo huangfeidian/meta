@@ -77,7 +77,7 @@ namespace meta::utils
 					{
 						return true;
 					}
-					if (get_type_id<const B> == dest_type_id)
+					if (get_type_id<const B>() == dest_type_id)
 					{
 						return true;
 					}
@@ -93,7 +93,7 @@ namespace meta::utils
 						return true;
 					}
 					
-					if (get_type_id<const B> == dest_type_id)
+					if (get_type_id<const B>() == dest_type_id)
 					{
 						return true;
 					}
@@ -107,17 +107,31 @@ namespace meta::utils
 			else
 			{
 				//K is B or const B
-				// dest should be B/ /constB/ const B&
+				// dest should be B/B& /constB/ const B&
+				// but K is const B and dest is B& is invalid
+
 				if (get_type_id<B>() == dest_type_id)
 				{
 					return true;
 				}
+				if (get_type_id<B&>() == dest_type_id)
+				{
+					if (std::is_same_v<const B, K>)
+					{
+						return false;
+					}
+					else
+					{
+						return true;
+					}
+				}
 				
-				if (get_type_id<const B> == dest_type_id)
+				
+				if (get_type_id<const B>() == dest_type_id)
 				{
 					return true;
 				}
-				if (get_type_id<const B&> == dest_type_id)
+				if (get_type_id<const B&>() == dest_type_id)
 				{
 					return true;
 				}
@@ -147,7 +161,7 @@ namespace meta::utils
 					{
 						return true;
 					}
-					if (get_type_id<const B> == dest_type_id)
+					if (get_type_id<const B>() == dest_type_id)
 					{
 						return true;
 					}
@@ -180,11 +194,11 @@ namespace meta::utils
 				{
 					return true;
 				}
-				if (get_type_id<const B> == dest_type_id)
+				if (get_type_id<const B>() == dest_type_id)
 				{
 					return true;
 				}
-				if (get_type_id<const B&> == dest_type_id)
+				if (get_type_id<const B&>() == dest_type_id)
 				{
 					return true;
 				}
