@@ -68,17 +68,36 @@ type_info::type_info(const std::string &_in_name, CXType _in_type, const type_in
 																									_name(_in_name)
 {
 }
-const std::string &type_info::name() const
+const std::string& type_info::name() const
 {
 	return _name;
 }
-const std::string &type_info::unqualified_name() const
+const std::string& type_info::unqualified_name() const
 {
 	return _name;
 }
-const std::string &type_info::qualified_name() const
+const std::string& type_info::qualified_name() const
 {
 	return _name;
+}
+const std::string& type_info::pretty_name() const
+{
+	if (_pretty_name.empty())
+	{
+		if (_name.empty())
+		{
+			return _name;
+		}
+		else
+		{
+			_pretty_name = meta::utils::string_utils::replace(_name, "std::basic_string<char, std::char_traits<char>, std::allocator<char>>", "std::string");
+			return _pretty_name;
+		}
+	}
+	else
+	{
+		return _pretty_name;
+	}
 }
 CXType type_info::type() const
 {

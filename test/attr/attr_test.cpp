@@ -139,7 +139,7 @@ public:
 
 	}
 	template <typename T>
-	std::optional<std::reference_wrapper<const T>> attr_get_var(const std::string& var_name) const
+	std::optional<std::reference_wrapper<T>> attr_get_var(const std::string& var_name) const
 	{
 		auto& cur_type_map = utils::type_map<std::string>();
 		auto[result_p, type_idx] = var_address_for_name(var_name);
@@ -147,11 +147,11 @@ public:
 		{
 			return {};
 		}
-		if (!cur_type_map.can_convert_from<const T&>(type_idx))
+		if (!cur_type_map.can_convert_from<T&>(type_idx))
 		{
 			return {};
 		}
-		return std::cref(*reinterpret_cast<const T*>(result_p));
+		return std::ref(*reinterpret_cast<T*>(result_p));
 	}
 private:
 	std::pair<void*, int> var_address_for_name(const std::string& var_name) const
@@ -192,21 +192,6 @@ private:
 		}
 	}
 public:
-	template <typename T>
-	std::optional<std::reference_wrapper<T>> attr_get_var_mut(const std::string& var_name)
-	{
-		auto& cur_type_map = utils::type_map<std::string>();
-		auto[result_p, type_idx] = var_address_for_name(var_name);
-		if (!result_p)
-		{
-			return {};
-		}
-		if (!cur_type_map.can_convert_from<T&>(type_idx))
-		{
-			return {};
-		}
-		return std::ref(*reinterpret_cast<T*>(result_p));
-	}
 };
 template <typename T1, typename T2>
 void convert_test_case()
@@ -275,13 +260,13 @@ int main()
     aa.attr_call_func_mut<int>("func_1", temp_1);
     aa.attr_call_func_mut("func_2", temp_1, temp_2);
     aa.attr_call_func("func_3", temp_1, haha);
-	auto a_c_ref = aa.attr_get_var<std::string>("a");
-	auto a_ref = aa.attr_get_var_mut<std::string>("a");
-	auto d_c_ref = aa.attr_get_var<std::string>("d");
-	auto d_ref = aa.attr_get_var_mut<std::string>("d");
-	auto b_c_ref = aa.attr_get_var<std::string>("b");
-	auto b_ref = aa.attr_get_var_mut<std::string>("b");
-	auto c_c_ref = aa.attr_get_var<std::string>("c");
-	auto c_ref = aa.attr_get_var_mut<std::string>("c");
+	auto a_c_ref = aa.attr_get_var<const std::string>("a");
+	auto a_ref = aa.attr_get_var<std::string>("a");
+	auto d_c_ref = aa.attr_get_var<const std::string>("d");
+	auto d_ref = aa.attr_get_var<std::string>("d");
+	auto b_c_ref = aa.attr_get_var<const std::string>("b");
+	auto b_ref = aa.attr_get_var<std::string>("b");
+	auto c_c_ref = aa.attr_get_var<const std::string>("c");
+	auto c_ref = aa.attr_get_var<std::string>("c");
 	//convert_test();
 }

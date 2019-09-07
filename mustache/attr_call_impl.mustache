@@ -7,7 +7,7 @@ void {{class_full_name}}::init_attr_func_map()
     auto& cur_type_map = meta::utils::type_map<std::string>();
     {{#attr_funcs}}
     auto {{func_name}}_arg_require = meta::utils::func_arg_type_ids<std::string, meta::utils::function_arguments<decltype(&{{class_name}}::{{func_name}})>::type>::result();
-    attr_{{is_const_func}}const_{{/is_const_func}}func_map["{{func_name}}] = std::make_pair(&{{class_name}}::attr_func_for_{{func_name}}, {{func_name}}_arg_require);
+    attr_{{#is_const_func}}const_{{/is_const_func}}func_map["{{func_name}}"] = std::make_pair(&{{class_name}}::attr_func_for_{{func_name}}, {{func_name}}_arg_require);
     {{/attr_funcs}}
 
     {{#attr_func_arg_types}}
@@ -41,34 +41,8 @@ bool {{class_full_name}}::has_attr_func(const std::string& func_name)
         return true;
     }
 }
-template <typename... Args>
-bool {{class_full_name}}::has_attr_func_with_args(const std::string& func_name)
+bool {{class_full_name}}::has_attr_func_const(const std::string& func_name)
 {
-    auto& cur_type_map = meta::utils::type_map<std::string>();
-    auto cur_iter = attr_const_func_map.find(func_name);
-    if(cur_iter == attr_const_func_map.end())
-    {
-        auto cur_mut_iter = attr_func_map.find(func_name);
-        if(cur_mut_iter != attr_func_map.end())
-        {
-            const auto& cur_func_require = cur_mut_iter->second.second;
-            return cur_type_map.can_convert_to<Args...>(cur_func_require);
-        }
-        else
-        {
-            return false;
-        }
-    }
-    else
-    {
-        const auto& cur_func_require = cur_iter->second.second;
-        return cur_type_map.can_convert_to<Args...>(cur_func_require);
-    }
-}
-template <typename... Args>
-bool {{class_full_name}}::call_attr_func(const std::string& func_name, Args&... args) const
-{
-    auto& cur_type_map = meta::utils::type_map<std::string>();
     auto cur_iter = attr_const_func_map.find(func_name);
     if(cur_iter == attr_const_func_map.end())
     {
@@ -76,44 +50,8 @@ bool {{class_full_name}}::call_attr_func(const std::string& func_name, Args&... 
     }
     else
     {
-        const auto& cur_func_require = cur_iter->second.second;
-        auto cur_func_ptr = cur_iter->second.first;
-        if(!cur_type_map.can_convert_to<Args...>(cur_func_require))
-        {
-            return false;
-        }
-        std::vector<void*> arg_pointers;
-        arg_pointers.push_back(const_cast<void*>(reinterpret_cast<const void*>(std::addressof(args))),...);
-		(this->*cur_func_ptr)(arg_pointers);
         return true;
     }
 }
 
-template <typename... Args>
-bool {{class_full_name}}::call_attr_func_mut(const std::string& func_name, Args&... args)
-{
-    auto& cur_type_map = meta::utils::type_map<std::string>();
-    if(call_attr_func(func_name, args...))
-    {
-        return true;
-    }
-    auto cur_iter = attr_func_map.find(func_name);
-    if(cur_iter == attr_func_map.end())
-    {
-        return false;
-    }
-    else
-    {
-        const auto& cur_func_require = cur_iter->second.second;
-        auto cur_func_ptr = cur_iter->second.first;
-        if(!cur_type_map.can_convert_to<Args...>(cur_func_require))
-        {
-            return false;
-        }
-        std::vector<void*> arg_pointers;
-        arg_pointers.push_back(const_cast<void*>(reinterpret_cast<const void*>(std::addressof(args))),...);
-		(this->*cur_func_ptr)(arg_pointers);
-        return true;
-    }
-}
 

@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include <utility>
 #include <functional>
 #include <vector>
@@ -7,6 +7,7 @@
 #include <optional>
 #include <type_traits>
 #include <string_view>
+#include <regex>
 namespace meta::utils
 {
     class string_utils
@@ -206,11 +207,11 @@ namespace meta::utils
             {
                 return cur_type_name;
             }
-            if(cur_type_name._Starts_with("const "))
+            if(starts_with(cur_type_name, "const "))
             {
                 return remove_cvr(cur_type_name.substr(6));
             }
-            if(cur_type_name._Starts_with("volatile "))
+            if(starts_with(cur_type_name, "volatile "))
             {
                 return remove_cvr(cur_type_name.substr(9));
             }
@@ -221,5 +222,42 @@ namespace meta::utils
             }
             return cur_type_name;
         }
+        static bool starts_with(std::string_view content, std::string_view pattern)
+        {
+            if(pattern.size() > content.size())
+            {
+                return false;
+            }
+            for(std::size_t i = 0; i < pattern.size(); i++)
+            {
+                if(content[i] != pattern[i])
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+        static bool ends_with(std::string_view content, std::string_view pattern)
+        {
+            auto diff = content.size() - pattern.size();
+            if(diff < 0)
+            {
+                return false;
+            }
+            for(std::size_t i = 0; i < pattern.size(); i++)
+            {
+                if(content[i + diff] != pattern[i])
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+		static std::string replace(const std::string& content, const std::string& match_pattern, const std::string& replace_pattern)
+		{
+			auto result = std::regex_replace(content, std::regex(match_pattern), replace_pattern);
+			return result;
+		}
+
     };
 }

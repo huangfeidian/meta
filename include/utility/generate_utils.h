@@ -97,7 +97,7 @@ namespace meta::utils
 		std::vector<const language::type_info*> _bases;
 		std::copy_if(pre_bases.begin(), pre_bases.end(), std::back_inserter(_bases), [](const language::type_info* _cur_node)
 			{
-				if (_cur_node->name()._Starts_with("std::"))
+				if (meta::utils::string_utils::starts_with(_cur_node->name(), "std::"))
 				{
 					return true;
 				}
@@ -234,7 +234,7 @@ namespace meta::utils
 			{
 				mustache::data cur_arg_data;
 				cur_arg_data.set("arg_idx", std::to_string(arg_idx));
-				cur_arg_data.set("arg_type", one_arg->decl_type()->name());
+				cur_arg_data.set("arg_type", one_arg->decl_type()->pretty_name());
 				cur_arg_data.set("arg_name", one_arg->unqualified_name());
 				if (arg_idx + 1 == arg_size)
 				{
@@ -402,6 +402,7 @@ namespace meta::utils
 
 			cur_method_data.set("func_index", std::to_string(func_method_idx));
 			cur_method_data.set("func_name", one_method->func_name());
+			cur_method_data.set("is_const_func", one_method->is_const_method());
 			if (func_method_idx + 1 == total_method_size)
 			{
 				cur_method_data.set("last_func", true);
@@ -416,7 +417,7 @@ namespace meta::utils
 				cur_arg_data.set("arg_idx", std::to_string(arg_idx));
 				auto cur_arg_type = one_arg->decl_type();
 				cur_arg_data.set("is_no_const_ref", cur_arg_type->is_lvalue_refer() && !cur_arg_type->is_const());
-				cur_arg_data.set("arg_type", cur_arg_type->name());
+				cur_arg_data.set("arg_type", cur_arg_type->pretty_name());
 				cur_arg_data.set("arg_name", one_arg->unqualified_name());
 				if (arg_idx + 1 == arg_size)
 				{
@@ -445,8 +446,9 @@ namespace meta::utils
 		for (int i = 0; i < all_attr_fields.size(); i++)
 		{
 			mustache::data temp_var;
-			temp_var.set("var_idx", i);
+			temp_var.set("var_idx", std::to_string(i));
 			temp_var.set("var_name", all_attr_fields[i]->unqualified_name());
+			temp_var.set("is_const", all_attr_fields[i]->decl_type()->is_const());
 			var_list << temp_var;
 		}
 		return var_list;

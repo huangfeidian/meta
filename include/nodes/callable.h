@@ -12,6 +12,7 @@ namespace meta::language
 		bool is_class_method() const;
 		bool is_static_method() const;
 		bool is_public_method() const;
+		bool is_const_method() const;
 		bool can_accept(const std::vector<const type_info*>& _in_args) const;
 		bool can_accept(const std::vector<std::string> _in_arg_names) const;
 		std::string func_name() const;

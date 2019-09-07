@@ -1,23 +1,169 @@
 private:
-using func_type = void(test_class::*)(const std::vector<const void*>&);
-static std::unordered_map<std::string, std::pair<func_type, std:vector<int>>> attr_func_map;
-static void init_attr_func_map(); // called in _static_constructor_
-
-void attr_func_for_interface_1(const std::vector<const void*>& data);
-void attr_func_for_interface_2(const std::vector<const void*>& data);
-void attr_func_for_interface_3(const std::vector<const void*>& data);
-public:
-static bool has_attr_func(const std::string& func_name);
-template <typename... Args>
-static bool has_attr_func_with_args(const std::string& func_name);
-template <typename... Args>
-bool call_attr_func(const std::string& func_name, const Args&... args);
-private:
-
-private:
 friend class struct static_constructor_for_test_class;
 struct static_constructor_for_test_class
 {
     static_constructor_for_test_class();
 };
-static static_constructor_for_test_class _static_constructor_;
+static static_constructor_for_test_class _static_constructor_;private:
+using func_type = void(test_class::*)(const std::vector<const void*>&);
+using const_func_type = void(test_class::*)(const std::vector<const void*>&)const ;
+static std::unordered_map<std::string, std::pair<func_type, std:vector<int>>> attr_func_map;
+static std::unordered_map<std::string, std::pair<const_func_type, std:vector<int>>> attr_const_func_map;
+static void init_attr_func_map(); // called in _static_constructor_
+
+void attr_func_for_interface_1(const std::vector<const void*>& data) const;
+void attr_func_for_interface_2(const std::vector<const void*>& data) const;
+void attr_func_for_interface_3(const std::vector<const void*>& data) const;
+public:
+static bool has_attr_func(const std::string& func_name);
+static bool has_attr_func_const(const std::string& func_name);
+template <typename... Args>
+bool has_attr_func_with_args(const std::string& func_name)
+{
+    auto& cur_type_map = meta::utils::type_map<std::string>();
+    if(has_attr_func_const_with_args<Args...>(func_name))
+    {
+        return true;
+    }
+    auto cur_iter = attr_func_map.find(func_name);
+    if(cur_iter == attr_func_map.end())
+    {
+       return false;
+    }
+    else
+    {
+        const auto& cur_func_require = cur_iter->second.second;
+        return cur_type_map.can_convert_to<Args...>(cur_func_require);
+    }
+}
+template <typename... Args>
+bool has_attr_func_const_with_args(const std::string& func_name)
+{
+    auto& cur_type_map = meta::utils::type_map<std::string>();
+    auto cur_iter = attr_const_func_map.find(func_name);
+    if(cur_iter == attr_const_func_map.end())
+    {
+       return false;
+    }
+    else
+    {
+        const auto& cur_func_require = cur_iter->second.second;
+        return cur_type_map.can_convert_to<Args...>(cur_func_require);
+    }
+}
+template <typename... Args>
+bool call_attr_func(const std::string& func_name, Args&... args) const
+{
+    return call_attr_func_const_impl<Args...>(func_name, args...);
+}
+
+template <typename... Args>
+bool call_attr_func(const std::string& func_name, Args&... args)
+{
+    auto& cur_type_map = meta::utils::type_map<std::string>();
+    if(call_attr_func_const_impl<Args...>(func_name, args...))
+    {
+        return true;
+    }
+    auto cur_iter = attr_func_map.find(func_name);
+    if(cur_iter == attr_func_map.end())
+    {
+        return false;
+    }
+    else
+    {
+        const auto& cur_func_require = cur_iter->second.second;
+        auto cur_func_ptr = cur_iter->second.first;
+        if(!cur_type_map.can_convert_to<Args...>(cur_func_require))
+        {
+            return false;
+        }
+        std::vector<void*> arg_pointers;
+        arg_pointers.push_back(const_cast<void*>(reinterpret_cast<const void*>(std::addressof(args))),...);
+		(this->*cur_func_ptr)(arg_pointers);
+        return true;
+    }
+}
+private:
+
+template <typename... Args>
+bool call_attr_func_const_impl(const std::string& func_name, Args&... args) const
+{
+    auto& cur_type_map = meta::utils::type_map<std::string>();
+    auto cur_iter = attr_const_func_map.find(func_name);
+    if(cur_iter == attr_const_func_map.end())
+    {
+        return false;
+    }
+    else
+    {
+        const auto& cur_func_require = cur_iter->second.second;
+        auto cur_func_ptr = cur_iter->second.first;
+        if(!cur_type_map.can_convert_to<Args...>(cur_func_require))
+        {
+            return false;
+        }
+        std::vector<void*> arg_pointers;
+        arg_pointers.push_back(const_cast<void*>(reinterpret_cast<const void*>(std::addressof(args))),...);
+		(this->*cur_func_ptr)(arg_pointers);
+        return true;
+    }
+}
+private:
+static std::unordered_map<std::string, std::pair<int, int>> attr_var_map;
+static void init_attr_var_map(); // called in _static_constructor_
+std::pair<void*, int> var_address_for_name(const std::string& var_name) const
+public:
+static bool has_attr_var(const std::string& var_name);
+template <typename T>
+static bool has_attr_var_with_type(const std::string& var_name)
+{
+	auto cur_iter = attr_var_map.find(var_name);
+	if(cur_iter == attr_var_map.end())
+	{
+		return false;
+	}
+	else
+	{
+		auto & cur_type_map = meta::utils::type_map<std::string>();
+		return cur_type_map.can_convert_from<T>(cur_iter->second.second);
+	}
+}
+template <T>
+std::optional<std::reference_wrapper<T>> get_attr_var(const std::string& var_name)
+{
+	auto& cur_type_map = utils::type_map<std::string>();
+	auto[result_p, type_idx] = var_address_for_name(var_name);
+	if (!result_p)
+	{
+		return {};
+	}
+	if (!cur_type_map.can_convert_from<T &>(type_idx))
+	{
+		return {};
+	}
+	else
+	{
+		return std::ref(*reinterpret_cast<T*>(result_p));
+	}
+}
+template <T>
+std::optional<std::reference_wrapper<std::add_const_t<T>>> get_attr_var(const std::string& var_name) const
+{
+	auto& cur_type_map = utils::type_map<std::string>();
+	auto[result_p, type_idx] = var_address_for_name(var_name);
+	if (!result_p)
+	{
+		return {};
+	}
+	if (!cur_type_map.can_convert_from<std::add_const_t<T> &>(type_idx))
+	{
+		return {};
+	}
+	else
+	{
+		return std::cref(*reinterpret_cast<std::add_const_t<T> *>(result_p));
+	}
+}
+private:
+

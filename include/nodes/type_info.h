@@ -33,6 +33,7 @@ namespace meta::language
 		const std::string& name() const;
 		const std::string& unqualified_name() const;
 		const std::string& qualified_name() const;
+		const std::string& pretty_name() const;
 		bool has_type() const;
 		const class_node* related_class() const;
 		bool set_related_class(class_node* _in_class);
@@ -46,6 +47,7 @@ namespace meta::language
         std::vector<const type_info*> _template_args;
 		CXType _type;
 		const std::string _name;
+		mutable std::string _pretty_name;
 		enum CXTypeKind _kind;
 		const type_info* _ref_type;
 		class_node* _related_class = nullptr;

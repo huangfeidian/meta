@@ -7,6 +7,14 @@ namespace test
 {
 class test_class
 {
+    test_class(std::string& in_str):
+    a(in_str),
+    b(in_str),
+    c(in_str),
+    d(in_str)
+    {
+
+    }
     Meta(attr(type=func)) void interface_1(int a, std::string b)
     {
         return;
@@ -19,6 +27,10 @@ class test_class
 	{
 		return false;
 	}
+    Meta(attr(type=var)) std::string a;
+    Meta(attr(type=var)) const std::string b;
+    Meta(attr(type=var)) std::string& c;
+    Meta(attr(type=var)) const std::string& d;
 
 #include "test_class.generated_h"
 }Meta(attr);

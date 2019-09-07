@@ -36,6 +36,10 @@ namespace meta::language
 	{
 		return clang_getCXXAccessSpecifier(get_node()->get_cursor()) == CX_CXXPublic;
 	}
+	bool callable_node::is_const_method() const
+	{
+		return clang_CXXMethod_isConst(get_node()->get_cursor());
+	}
 	std::string callable_node::func_name() const
 	{
 		auto cur_name = unqualified_name();

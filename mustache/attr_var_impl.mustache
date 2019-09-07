@@ -22,20 +22,7 @@ static bool {{class_full_name}}::has_attr_var(const std::string& var_name)
 		return true;
 	}
 }
-template <typename T>
-static bool has_attr_var_with_type()
-{
-	auto cur_iter = attr_var_map.find(var_name);
-	if(cur_iter == attr_var_map.end())
-	{
-		return false;
-	}
-	else
-	{
-		auto & cur_type_map = meta::utils::type_map<std::string>();
-		return cur_type_map.can_convert_from<T>(cur_iter->second.second);
-	}
-}
+
 std::pair<void*, int> {{class_full_name}}::var_address_for_name(const std::string& var_name)
 {
 	auto cur_iter = attr_var_map.find(var_name);
@@ -49,7 +36,7 @@ std::pair<void*, int> {{class_full_name}}::var_address_for_name(const std::strin
 	switch (cur_var_idx)
 	{
 	{{#attr_vars}}
-	case {{attr_var_idx}}:
+	case {{var_idx}}:
 	{
 		void* p = const_cast<void*>(reinterpret_cast<const void*>(&{{var_name}}));
 		return std::make_pair(p, cur_type_idx);
@@ -58,34 +45,4 @@ std::pair<void*, int> {{class_full_name}}::var_address_for_name(const std::strin
 	default:
 		return std::make_pair(nullptr, 0);
 	}
-}
-template <T>
-std::optional<std::reference_wrapper<const T>> {{class_full_name}}::get_attr_var(const std::string& var_name)
-{
-	auto& cur_type_map = utils::type_map<std::string>();
-	auto[result_p, type_idx] = var_address_for_name(var_name);
-	if (!result_p)
-	{
-		return {};
-	}
-	if (!cur_type_map.can_convert_from<const T&>(type_idx))
-	{
-		return {};
-	}
-	return std::cref(*reinterpret_cast<const T*>(result_p));
-}
-template <T>
-std::optional<std::reference_wrapper<T>> get_attr_var_mut(const std::string& var_name)
-{
-	auto& cur_type_map = utils::type_map<std::string>();
-	auto[result_p, type_idx] = var_address_for_name(var_name);
-	if (!result_p)
-	{
-		return {};
-	}
-	if (!cur_type_map.can_convert_from<T&>(type_idx))
-	{
-		return {};
-	}
-	return std::ref(*reinterpret_cast<T*>(result_p));
 }
