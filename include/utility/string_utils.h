@@ -253,9 +253,57 @@ namespace meta::utils
             }
             return true;
         }
+		static std::string join(const std::vector<std::string_view>& tokens, std::string_view glue)
+		{
+			std::size_t total_size = 0;
+			if (tokens.empty())
+			{
+				return std::string();
+			}
+			for (auto i : tokens)
+			{
+				total_size += i.size();
+			}
+			total_size += (tokens.size() - 1) * glue.size();
+			std::string result;
+			result.reserve(total_size);
+			for (std::size_t i = 0; i < tokens.size(); i++)
+			{
+				result += tokens[i];
+				if (i != tokens.size() - 1)
+				{
+					result += glue;
+				}
+			}
+			return result;
+
+		}
 		static std::string replace(const std::string& content, const std::string& match_pattern, const std::string& replace_pattern)
 		{
-			auto result = std::regex_replace(content, std::regex(match_pattern), replace_pattern);
+			std::vector<std::string_view> tokens;
+			auto match_size = match_pattern.size();
+			if (match_pattern.empty())
+			{
+				return content;
+			}
+			if (content.size() < match_pattern.size())
+			{
+				return content;
+			}
+			std::size_t index = 0;
+			while (true)
+			{
+				auto new_index = content.find(match_pattern, index);
+				if (new_index == std::string::npos)
+				{
+					tokens.push_back(std::string_view(content.data() + index, content.size() - index));
+					break;
+				}
+				tokens.push_back(std::string_view(content.data() + index, new_index - index));
+				index = new_index + match_size;
+			}
+				
+			auto result = join(tokens, replace_pattern);
 			return result;
 		}
 
