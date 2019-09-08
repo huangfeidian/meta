@@ -53,7 +53,7 @@ namespace meta::utils
             }
         }
         template <class K>
-        void register_type(const V& type_name) 
+        void register_type(const V& type_name) const
         {
 			auto cur_id = get_type_id<K>();
 			auto cur_iter = m_map.find(cur_id);
@@ -70,7 +70,7 @@ namespace meta::utils
 			}
         }  
 		template <class K>
-		void register_base_type(const V& type_name)
+		void register_base_type(const V& type_name) const
 		{
 			if (!std::is_same_v<K, std::remove_const_t<std::remove_reference_t<K>>>)
 			{
@@ -78,7 +78,7 @@ namespace meta::utils
 			}
 			register_type<K>(type_name);
 			register_type<K&>(type_name + " &");
-			register_type<const K>("const " + type_name;);
+			register_type<const K>("const " + type_name);
 			register_type<const K &>("const " + type_name + " &");
 		}
         template <class K>
@@ -230,7 +230,7 @@ namespace meta::utils
 
 		}
         template <typename... Args, std::size_t... idx>
-        bool can_convert_to_vector_impl(const std::vector<int>& dest_indexes, std::index_sequence<idx...> indexes)
+        bool can_convert_to_vector_impl(const std::vector<int>& dest_indexes, std::index_sequence<idx...> indexes) const
         {
             if(dest_indexes.size() != std::tuple_size_v<std::tuple<Args...>>)
             {
@@ -239,13 +239,13 @@ namespace meta::utils
             return (can_convert_to<Args>(dest_indexes[idx]) &&...);
         }
         template <typename... Args>
-        bool can_convert_to(const std::vector<int>& dest_indexes)
+        bool can_convert_to(const std::vector<int>& dest_indexes) const
         {
 			return can_convert_to_vector_impl<Args...>(dest_indexes, std::index_sequence_for<Args...>{});
         }
         public:
         template <class Key>
-        inline static int get_type_id() 
+        inline static int get_type_id()
         {
             static const int id = last_id++;
             return id;
@@ -304,7 +304,7 @@ namespace meta::utils
 		{
 			auto& cur_type_map = type_map<V>();
 			std::vector<int> result;
-			(result.push_back(cur_type_map.get_type_id<Args>()), ...);
+			(result.push_back(cur_type_map.template get_type_id<Args>()), ...);
 			return result;
 		}
 		
@@ -317,7 +317,7 @@ namespace meta::utils
 		{
 			auto& cur_type_map = type_map<V>();
 			std::vector<int> result;
-			(result.push_back(cur_type_map.get_type_id<Args>()), ...);
+			(result.push_back(cur_type_map.template get_type_id<Args>()), ...);
 			return result;
 		}
 

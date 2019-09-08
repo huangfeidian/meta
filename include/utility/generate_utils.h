@@ -443,7 +443,7 @@ namespace meta::utils
 		auto all_attr_fields = one_class->query_fields_with_pred(field_pred);
 		std::sort(all_attr_fields.begin(), all_attr_fields.end(), sort_by_unqualified_name<meta::language::variable_node>);
 		mustache::data var_list{ mustache::data::type::list };
-		for (int i = 0; i < all_attr_fields.size(); i++)
+		for (std::size_t i = 0; i < all_attr_fields.size(); i++)
 		{
 			mustache::data temp_var;
 			temp_var.set("var_idx", std::to_string(i));
@@ -468,7 +468,7 @@ namespace meta::utils
 		auto all_attr_fields = one_class->query_fields_with_pred(field_pred);
 		for (auto one_var : all_attr_fields)
 		{
-			base_type_set.insert(std::string(utils::string_utils::remove_cvr(one_var->decl_type()->name())));
+			base_type_set.insert(std::string(utils::string_utils::remove_cvr(one_var->decl_type()->pretty_name())));
 		}
 		const auto& attr_funcs_info = one_class->query_method_with_pred_recursive(func_pred);
 		for (auto one_method : attr_funcs_info)
@@ -476,9 +476,10 @@ namespace meta::utils
 			const auto& method_args = one_method->args_type();
 			for (auto one_arg : method_args)
 			{
-				base_type_set.insert(std::string(utils::string_utils::remove_cvr(one_arg->decl_type()->name())));
+				base_type_set.insert(std::string(utils::string_utils::remove_cvr(one_arg->decl_type()->pretty_name())));
 			}
 		}
+		base_type_set.insert(one_class->qualified_name());
 		for (const auto& one_type : base_type_set)
 		{
 			mustache::data temp_type;

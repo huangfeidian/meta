@@ -1,10 +1,10 @@
 
 
-std::unordered_map<std::string, std::pair<{{class_full_name}}::func_type, std:vector<int>>> {{class_full_name}}::attr_func_map;
-std::unordered_map<std::string, std::pair<{{class_full_name}}::const_func_type, std:vector<int>>> {{class_full_name}}::attr_const_func_map;
+std::unordered_map<std::string, std::pair<{{class_full_name}}::func_type, std::vector<int>>> {{class_full_name}}::attr_func_map;
+std::unordered_map<std::string, std::pair<{{class_full_name}}::const_func_type, std::vector<int>>> {{class_full_name}}::attr_const_func_map;
 void {{class_full_name}}::init_attr_func_map()
 {
-    auto& cur_type_map = meta::utils::type_map<std::string>();
+    auto cur_type_map = meta::utils::type_map<std::string>();
     {{#attr_funcs}}
     auto {{func_name}}_arg_require = meta::utils::func_arg_type_ids<std::string, meta::utils::function_arguments<decltype(&{{class_name}}::{{func_name}})>::type>::result();
     attr_{{#is_const_func}}const_{{/is_const_func}}func_map["{{func_name}}"] = std::make_pair(&{{class_name}}::attr_func_for_{{func_name}}, {{func_name}}_arg_require);
@@ -19,10 +19,10 @@ void {{class_full_name}}::init_attr_func_map()
 }
 
 {{#attr_funcs}}
-void {{class_full_name}}::attr_func_for_{{func_name}}(const std::vector<void*>& data)
+void {{class_full_name}}::attr_func_for_{{func_name}}(const std::vector<void*>& data){{#is_const_func}} const {{/is_const_func}}
 {
 	{{#func_args}}
-    auto p_{{arg_name}} = reinterpret_cast<{{{arg_type}}}*>(data[{{arg_idx}}]);
+    auto p_{{arg_name}} = reinterpret_cast<std::remove_reference_t<{{{arg_type}}>}*>(data[{{arg_idx}}]);
 	{{/func_args}}
     {{func_name}}({{#func_args}}*p_{{arg_name}}{{^last_idx}},{{/last_idx}}{{/func_args}});
 }

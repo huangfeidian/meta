@@ -1,12 +1,12 @@
 private:
 using func_type = void({{class_name}}::*)(const std::vector<const void*>&);
 using const_func_type = void({{class_name}}::*)(const std::vector<const void*>&)const ;
-static std::unordered_map<std::string, std::pair<func_type, std:vector<int>>> attr_func_map;
-static std::unordered_map<std::string, std::pair<const_func_type, std:vector<int>>> attr_const_func_map;
+static std::unordered_map<std::string, std::pair<func_type, std::vector<int>>> attr_func_map;
+static std::unordered_map<std::string, std::pair<const_func_type, std::vector<int>>> attr_const_func_map;
 static void init_attr_func_map(); // called in _static_constructor_
 
 {{#attr_funcs}}
-void attr_func_for_{{func_name}}(const std::vector<const void*>& data) {{is_const_func}}const{{is_const_func}};
+void attr_func_for_{{func_name}}(const std::vector<void*>& data) {{#is_const_func}}const{{/is_const_func}};
 {{/attr_funcs}}
 public:
 static bool has_attr_func(const std::string& func_name);
@@ -14,7 +14,7 @@ static bool has_attr_func_const(const std::string& func_name);
 template <typename... Args>
 bool has_attr_func_with_args(const std::string& func_name)
 {
-    auto& cur_type_map = meta::utils::type_map<std::string>();
+    auto cur_type_map = meta::utils::type_map<std::string>();
     if(has_attr_func_const_with_args<Args...>(func_name))
     {
         return true;
@@ -33,7 +33,7 @@ bool has_attr_func_with_args(const std::string& func_name)
 template <typename... Args>
 bool has_attr_func_const_with_args(const std::string& func_name)
 {
-    auto& cur_type_map = meta::utils::type_map<std::string>();
+    auto cur_type_map = meta::utils::type_map<std::string>();
     auto cur_iter = attr_const_func_map.find(func_name);
     if(cur_iter == attr_const_func_map.end())
     {
@@ -54,7 +54,7 @@ bool call_attr_func(const std::string& func_name, Args&... args) const
 template <typename... Args>
 bool call_attr_func(const std::string& func_name, Args&... args)
 {
-    auto& cur_type_map = meta::utils::type_map<std::string>();
+    auto cur_type_map = meta::utils::type_map<std::string>();
     if(call_attr_func_const_impl<Args...>(func_name, args...))
     {
         return true;
@@ -83,7 +83,7 @@ private:
 template <typename... Args>
 bool call_attr_func_const_impl(const std::string& func_name, Args&... args) const
 {
-    auto& cur_type_map = meta::utils::type_map<std::string>();
+    auto cur_type_map = meta::utils::type_map<std::string>();
     auto cur_iter = attr_const_func_map.find(func_name);
     if(cur_iter == attr_const_func_map.end())
     {
@@ -103,3 +103,4 @@ bool call_attr_func_const_impl(const std::string& func_name, Args&... args) cons
         return true;
     }
 }
+

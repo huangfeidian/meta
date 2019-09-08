@@ -90,7 +90,15 @@ const std::string& type_info::pretty_name() const
 		}
 		else
 		{
-			_pretty_name = meta::utils::string_utils::replace(_name, "std::basic_string<char, std::char_traits<char>, std::allocator<char>>", "std::string");
+			if (_name.find("std::basic_string") != std::string::npos)
+			{
+				_pretty_name = meta::utils::string_utils::replace(_name, "std::basic_string<char, std::char_traits<char>, std::allocator<char> >", "std::string");
+				_pretty_name = meta::utils::string_utils::replace(_pretty_name, "std::basic_string<char,std::char_traits<char>,std::allocator<char>>", "std::string");
+			}
+			else
+			{
+				_pretty_name = _name;
+			}
 			return _pretty_name;
 		}
 	}

@@ -1,7 +1,7 @@
 private:
 static std::unordered_map<std::string, std::pair<int, int>> attr_var_map;
 static void init_attr_var_map(); // called in _static_constructor_
-std::pair<void*, int> var_address_for_name(const std::string& var_name) const
+std::pair<void*, int> var_address_for_name(const std::string& var_name) const;
 public:
 static bool has_attr_var(const std::string& var_name);
 template <typename T>
@@ -18,10 +18,10 @@ static bool has_attr_var_with_type(const std::string& var_name)
 		return cur_type_map.can_convert_from<T>(cur_iter->second.second);
 	}
 }
-template <T>
+template <typename T>
 std::optional<std::reference_wrapper<T>> get_attr_var(const std::string& var_name)
 {
-	auto& cur_type_map = utils::type_map<std::string>();
+	auto cur_type_map = utils::type_map<std::string>();
 	auto[result_p, type_idx] = var_address_for_name(var_name);
 	if (!result_p)
 	{
@@ -36,10 +36,10 @@ std::optional<std::reference_wrapper<T>> get_attr_var(const std::string& var_nam
 		return std::ref(*reinterpret_cast<T*>(result_p));
 	}
 }
-template <T>
+template <typename T>
 std::optional<std::reference_wrapper<std::add_const_t<T>>> get_attr_var(const std::string& var_name) const
 {
-	auto& cur_type_map = utils::type_map<std::string>();
+	auto cur_type_map = utils::type_map<std::string>();
 	auto[result_p, type_idx] = var_address_for_name(var_name);
 	if (!result_p)
 	{

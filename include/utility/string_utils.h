@@ -58,7 +58,7 @@ namespace meta::utils
     public:
         static std::unordered_map<std::string, std::unordered_map<std::string, std::string>> parse_annotation(const std::string& cur_annotation)
         {
-            std::vector<std::string_view>& _tokens = get_tokens(cur_annotation);
+            const std::vector<std::string_view>& _tokens = get_tokens(cur_annotation);
             // auto& the_logger = meta::utils::get_logger();
             // the_logger.debug("parse_annotation for {} with token_size {}", cur_annotation, _tokens.size());
             std::unordered_map<std::string, std::unordered_map<std::string, std::string>> result;

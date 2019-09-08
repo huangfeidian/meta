@@ -40,8 +40,8 @@ std::unordered_map<std::string, std::string> generate_attr()
 	auto static_constructor_impl_mustache = utils::load_mustache_from_file("../mustache/static_constructor_impl.mustache");
 	auto attr_var_decl_mustache = utils::load_mustache_from_file("../mustache/attr_var_decl.mustache");
 	auto attr_var_impl_mustache = utils::load_mustache_from_file("../mustache/attr_var_impl.mustache");
-	auto register_type_decl_mustache = utils::load_mustache_from_file("../mustache/register_type_decl_mustache.mustache");
-	auto register_type_impl_mustache = utils::load_mustache_from_file("../mustache/register_type_impl_mustache.mustache");
+	auto register_type_decl_mustache = utils::load_mustache_from_file("../mustache/register_type_decl.mustache");
+	auto register_type_impl_mustache = utils::load_mustache_from_file("../mustache/register_type_impl.mustache");
 
 	for (auto one_class : all_property_classes)
 	{

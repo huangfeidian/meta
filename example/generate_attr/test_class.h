@@ -3,6 +3,11 @@
 #include <iomanip>
 #include <meta_macro.h>
 #include <optional>
+#include <vector>
+#include <unordered_map>
+#include <string>
+#include <utility/type_map.h>
+#include <utility/string_utils.h>
 namespace test
 {
 class test_class

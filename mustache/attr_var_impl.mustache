@@ -1,16 +1,15 @@
 
-static std::unordered_map<std::string, std::pair<attr_var_type, int>> {{class_full_name}}::attr_var_map;
+std::unordered_map<std::string, std::pair<int, int>> {{class_full_name}}::attr_var_map;
 void {{class_full_name}}::init_attr_var_map()
 {
-	auto& cur_type_map = meta::utils::type_map<std::string>();
+	auto cur_type_map = meta::utils::type_map<std::string>();
 	{{#attr_vars}}
 
-	attr_var_map["{{var_name}}] = std::make_pair({{var_idx}}, cur_type_map.get_type_id<decltype({{class_name}}::{{var_name}}));
+	attr_var_map["{{var_name}}"] = std::make_pair({{var_idx}}, cur_type_map.template get_type_id<decltype({{class_name}}::{{var_name}})>());
 	{{/attr_vars}}
 }
 
-public:
-static bool {{class_full_name}}::has_attr_var(const std::string& var_name)
+bool {{class_full_name}}::has_attr_var(const std::string& var_name)
 {
 	auto cur_iter = attr_var_map.find(var_name);
 	if(cur_iter == attr_var_map.end())
@@ -23,7 +22,7 @@ static bool {{class_full_name}}::has_attr_var(const std::string& var_name)
 	}
 }
 
-std::pair<void*, int> {{class_full_name}}::var_address_for_name(const std::string& var_name)
+std::pair<void*, int> {{class_full_name}}::var_address_for_name(const std::string& var_name) const
 {
 	auto cur_iter = attr_var_map.find(var_name);
 	if (cur_iter == attr_var_map.end())
