@@ -1,19 +1,22 @@
 private:
-friend class static_constructor_for_test_class;
-struct static_constructor_for_test_class
+friend class static_constructor_for_test_class_B;
+struct static_constructor_for_test_class_B
 {
-    static_constructor_for_test_class();
+    static_constructor_for_test_class_B();
 };
-static static_constructor_for_test_class _static_constructor_;private:
-using func_type = void(test_class::*)(const std::vector<const void*>&);
-using const_func_type = void(test_class::*)(const std::vector<const void*>&)const ;
+static static_constructor_for_test_class_B _static_constructor_;private:
+using func_type = void(test_class_B::*)(const std::vector<const void*>&);
+using const_func_type = void(test_class_B::*)(const std::vector<const void*>&)const ;
 static std::unordered_map<std::string, std::pair<func_type, std::vector<int>>> attr_func_map;
 static std::unordered_map<std::string, std::pair<const_func_type, std::vector<int>>> attr_const_func_map;
 static void init_attr_func_map(); // called in _static_constructor_
 
-void attr_func_for_interface_1(const std::vector<void*>& data) ;
-void attr_func_for_interface_2(const std::vector<void*>& data) const;
-void attr_func_for_interface_3(const std::vector<void*>& data) ;
+void attr_func_for_interface_4(const std::vector<void*>& data) ;
+void attr_func_for_interface_5(const std::vector<void*>& data) const;
+void attr_func_for_interface_6(const std::vector<void*>& data) ;
+
+
+
 public:
 static bool has_attr_func(const std::string& func_name);
 static bool has_attr_func_const(const std::string& func_name);

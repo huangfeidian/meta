@@ -12,6 +12,7 @@ namespace test
 {
 class test_class
 {
+    public:
     test_class(std::string& in_str):
     a(in_str),
     b(in_str),
@@ -24,7 +25,7 @@ class test_class
     {
         return;
     }
-    Meta(attr(type=func)) int interface_2()
+    Meta(attr(type=func)) int interface_2() const
     {
         return 1;
     }
@@ -38,5 +39,31 @@ class test_class
     Meta(attr(type=var)) const std::string& d;
 
 #include "test_class.generated_h"
+}Meta(attr);
+class test_class_B: public test_class
+{
+    test_class_B(std::string& in_str):
+    test_class(in_str),
+    f("heheh"),
+    g(3)
+    {
+
+    }
+    Meta(attr(type=func)) void interface_4(int a, std::string b)
+    {
+        return;
+    }
+    Meta(attr(type=func)) int interface_5() const
+    {
+        return 1;
+    }
+	Meta(attr(type=func)) bool interface_6(const std::string& s)
+	{
+		return false;
+	}
+    Meta(attr(type=var)) std::string e;
+    Meta(attr(type=var)) const std::string f;
+    Meta(attr(type=var)) const int g;
+#include "test_class_B.generated_h"
 }Meta(attr);
 }

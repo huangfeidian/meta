@@ -6,7 +6,9 @@ static std::unordered_map<std::string, std::pair<const_func_type, std::vector<in
 static void init_attr_func_map(); // called in _static_constructor_
 
 {{#attr_funcs}}
+{{^is_inherited}}
 void attr_func_for_{{func_name}}(const std::vector<void*>& data) {{#is_const_func}}const{{/is_const_func}};
+{{/is_inherited}}
 {{/attr_funcs}}
 public:
 static bool has_attr_func(const std::string& func_name);

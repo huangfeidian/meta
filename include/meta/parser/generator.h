@@ -401,6 +401,11 @@ namespace meta::generator
 			return filter_with_annotation<callable_node>("attr", _cur_node);
 		};
 		const auto& filed_func_info = one_class->query_method_with_pred_recursive(func_pred);
+		std::unordered_set<const callable_node*> local_func_set;
+		for (auto one_func : one_class->query_method_with_pred(func_pred))
+		{
+			local_func_set.insert(one_func);
+		}
 		std::uint16_t func_method_idx = 0;
 		std::size_t total_method_size = filed_func_info.size();
 		mustache::data method_list{ mustache::data::type::list };
@@ -411,6 +416,7 @@ namespace meta::generator
 			cur_method_data.set("func_index", std::to_string(func_method_idx));
 			cur_method_data.set("func_name", one_method->func_name());
 			cur_method_data.set("is_const_func", one_method->is_const_method());
+			cur_method_data.set("is_inherited", local_func_set.find(one_method) == local_func_set.end());
 			if (func_method_idx + 1 == total_method_size)
 			{
 				cur_method_data.set("last_func", true);
@@ -427,6 +433,7 @@ namespace meta::generator
 				cur_arg_data.set("is_no_const_ref", cur_arg_type->is_lvalue_refer() && !cur_arg_type->is_const());
 				cur_arg_data.set("arg_type", cur_arg_type->pretty_name());
 				cur_arg_data.set("arg_name", one_arg->unqualified_name());
+				
 				if (arg_idx + 1 == arg_size)
 				{
 					cur_arg_data.set("last_idx", true);
@@ -448,7 +455,12 @@ namespace meta::generator
 		{
 			return filter_with_annotation<variable_node>("attr", _cur_node);
 		};
-		auto all_attr_fields = one_class->query_fields_with_pred(field_pred);
+		auto all_attr_fields = one_class->query_fields_with_pred_recursive(field_pred);
+		std::unordered_set<const variable_node*>  local_attrs_set;
+		for (auto one_attr : all_attr_fields)
+		{
+			local_attrs_set.insert(one_attr);
+		}
 		std::sort(all_attr_fields.begin(), all_attr_fields.end(), sort_by_unqualified_name<meta::language::variable_node>);
 		mustache::data var_list{ mustache::data::type::list };
 		for (std::size_t i = 0; i < all_attr_fields.size(); i++)
@@ -457,6 +469,7 @@ namespace meta::generator
 			temp_var.set("var_idx", std::to_string(i));
 			temp_var.set("var_name", all_attr_fields[i]->unqualified_name());
 			temp_var.set("is_const", all_attr_fields[i]->decl_type()->is_const());
+			temp_var.set("is_inherited", local_attrs_set.find(all_attr_fields[i]) == local_attrs_set.end());
 			var_list << temp_var;
 		}
 		return var_list;
@@ -473,7 +486,7 @@ namespace meta::generator
 		{
 			return filter_with_annotation<callable_node>("attr", _cur_node);
 		};
-		auto all_attr_fields = one_class->query_fields_with_pred(field_pred);
+		auto all_attr_fields = one_class->query_fields_with_pred_recursive(field_pred);
 		for (auto one_var : all_attr_fields)
 		{
 			base_type_set.insert(std::string(utils::string_utils::remove_cvr(one_var->decl_type()->pretty_name())));
