@@ -1,4 +1,4 @@
-﻿#include "name_space.h"
+﻿#include <meta/parser/name_space.h>
 
 namespace meta::language
 {

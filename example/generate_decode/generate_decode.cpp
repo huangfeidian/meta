@@ -10,14 +10,12 @@
 #include <sstream>
 #include <queue>
 #include <filesystem>
-#include "nodes/type_info.h"
-#include "name_space.h"
-#include "utils.h"
-#include "nodes/class.h"
-#include "nodes/enum.h"
-#include "nodes/variable.h"
-#include <serialize/decode.h>
-#include <utility/generate_utils.h>
+#include <meta/parser/nodes/class.h>
+#include <meta/parser/clang_utils.h>
+
+#include <meta/serialize/decode.h>
+#include <meta/parser/generator.h>
+
 
 #include <mustache.hpp>
 
@@ -63,13 +61,13 @@ std::unordered_map<std::string, std::string> generate_encode_decode()
 		cpp_file_stream << "#include " << file_path.filename() << "\n";
 		if (language::filter_with_annotation_value<language::class_node>("encode", _annotation_value, *one_class))
 		{
-			auto encode_func_args = utils::generate_encode_func_for_class(one_class);
-			utils::append_output_to_stream(result, new_h_file_path.string(), encode_func_mustache_tempalte.render(encode_func_args));
+			auto encode_func_args = generator::generate_encode_func_for_class(one_class);
+			generator::append_output_to_stream(result, new_h_file_path.string(), encode_func_mustache_tempalte.render(encode_func_args));
 		}
 		if (language::filter_with_annotation_value<language::class_node>("decode", _annotation_value, *one_class))
 		{
-			auto decode_func_args = utils::generate_decode_func_for_class(one_class);
-			utils::append_output_to_stream(result, new_h_file_path.string(), decode_func_mustache_tempalte.render(decode_func_args));
+			auto decode_func_args = generator::generate_decode_func_for_class(one_class);
+			generator::append_output_to_stream(result, new_h_file_path.string(), decode_func_mustache_tempalte.render(decode_func_args));
 		}
 		
 	}
@@ -113,8 +111,8 @@ int main()
 	ofstream json_out("type_info.json");
 	json_out << setw(4) << result << endl;
 	std::unordered_map<std::string, std::string> file_content;
-	utils::merge_file_content(file_content, generate_encode_decode());
-	utils::write_content_to_file(file_content);
+	generator::merge_file_content(file_content, generate_encode_decode());
+	generator::write_content_to_file(file_content);
 	clang_disposeTranslationUnit(m_translationUnit);
 
 	return 0;

@@ -10,14 +10,12 @@
 #include <sstream>
 #include <queue>
 #include <filesystem>
-#include "nodes/type_info.h"
-#include "name_space.h"
-#include "utils.h"
-#include "nodes/class.h"
-#include "nodes/enum.h"
-#include "nodes/variable.h"
-#include <serialize/decode.h>
-#include <utility/generate_utils.h>
+#include <meta/parser/nodes/class.h>
+#include <meta/parser/clang_utils.h>
+
+#include <meta/serialize/decode.h>
+#include <meta/parser/generator.h>
+
 
 using namespace std;
 using namespace meta;
@@ -28,10 +26,10 @@ using namespace meta;
 std::unordered_map<std::string, std::string> generate_component()
 {
 	auto& the_logger = utils::get_logger();
-	std::vector<std::string> _annotation_value = { };
+	std::unordered_map<std::string, std::string> _annotation_value = { };
 	auto all_property_classes = language::type_db::instance().get_class_with_pred([&_annotation_value](const language::class_node& _cur_node)
 		{
-			return utils::filter_with_annotation_value<language::class_node>("component_owner", _annotation_value, _cur_node);
+			return language::filter_with_annotation_value<language::class_node>(std::string("component_owner"), _annotation_value, _cur_node);
 		});
 	std::unordered_map<std::string, std::string> result;
 	auto component_mustache_file = std::ifstream("../mustache/component.mustache");
@@ -50,7 +48,10 @@ std::unordered_map<std::string, std::string> generate_component()
 		auto _cur_parent_path = file_path.parent_path();
 		auto generated_h_file_name = one_class->unqualified_name() + ".generated_h";
 		auto new_h_file_path = _cur_parent_path / generated_h_file_name;
-		utils::append_output_to_stream(result, new_h_file_path.string(), utils::generate_components_for_class(one_class, component_mustache_tempalte, stub_interface_mustache_tempalte));
+		auto component_data = generator::generate_components_add_for_class(one_class);
+		
+		generator::append_output_to_stream(result, new_h_file_path.string(), component_mustache_tempalte.render(component_data));
+		generator::append_output_to_stream(result, new_h_file_path.string(), stub_interface_mustache_tempalte.render(component_data));
 	}
 	return result;
 }
@@ -92,8 +93,8 @@ int main()
 	json_out << setw(4) << result << endl;
 	std::unordered_map<std::string, std::string> file_content;
 	//utils::merge_file_content(file_content, generate_encode_decode());
-	utils::merge_file_content(file_content, generate_component());
-	utils::write_content_to_file(file_content);
+	generator::merge_file_content(file_content, generate_component());
+	generator::write_content_to_file(file_content);
 	clang_disposeTranslationUnit(m_translationUnit);
 
 	return 0;

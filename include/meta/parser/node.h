@@ -6,7 +6,7 @@
 #include <clang-c/Index.h>
 #include <utility>
 #include <queue>
-#include "utils.h"
+#include <meta/parser/clang_utils.h>
 
 namespace meta::language
 {

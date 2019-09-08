@@ -9,14 +9,8 @@
 #include <iostream>
 #include <queue>
 #include <filesystem>
-#include "nodes/type_info.h"
-#include "name_space.h"
-#include "utils.h"
-#include "nodes/class.h"
-#include "nodes/enum.h"
-#include "nodes/variable.h"
 
-#include <serialize/encode.h>
+#include <meta/serialize/encode.h>
 
 using namespace std;
 using namespace meta;

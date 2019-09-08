@@ -10,14 +10,12 @@
 #include <sstream>
 #include <queue>
 #include <filesystem>
-#include "nodes/type_info.h"
-#include "name_space.h"
-#include "utils.h"
-#include "nodes/class.h"
-#include "nodes/enum.h"
-#include "nodes/variable.h"
-#include <serialize/decode.h>
-#include <utility/generate_utils.h>
+
+#include <meta/parser/nodes/class.h>
+#include <meta/parser/clang_utils.h>
+
+#include <meta/serialize/decode.h>
+#include <meta/parser/generator.h>
 
 using namespace std;
 using namespace meta;
@@ -46,7 +44,7 @@ std::unordered_map<std::string, std::string> generate_rpc()
 		auto _cur_parent_path = file_path.parent_path();
 		auto generated_h_file_name = one_class->unqualified_name() + ".generated_h";
 		auto new_h_file_path = _cur_parent_path / generated_h_file_name;
-		utils::append_output_to_stream(result, new_h_file_path.string(), rpc_call_mustache_tempalte.render(utils::generate_rpc_call_for_class(one_class)));
+		generator::append_output_to_stream(result, new_h_file_path.string(), rpc_call_mustache_tempalte.render(generator::generate_rpc_call_for_class(one_class)));
 	}
 	return result;
 }
@@ -88,8 +86,8 @@ int main()
 	json_out << setw(4) << result << endl;
 	std::unordered_map<std::string, std::string> file_content;
 	//utils::merge_file_content(file_content, generate_encode_decode());
-	utils::merge_file_content(file_content, generate_rpc());
-	utils::write_content_to_file(file_content);
+	generator::merge_file_content(file_content, generate_rpc());
+	generator::write_content_to_file(file_content);
 	clang_disposeTranslationUnit(m_translationUnit);
 
 	return 0;

@@ -1,4 +1,4 @@
-﻿#include "nodes/variable.h"
+﻿#include <meta/parser/nodes/variable.h>
 
 namespace meta::language
 {

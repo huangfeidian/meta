@@ -1,6 +1,6 @@
-﻿#include "nodes/type_info.h"
-#include "nodes/class.h"
-#include "nodes/enum.h"
+﻿#include <meta/parser/nodes/type_info.h>
+#include <meta/parser/nodes/class.h>
+#include <meta/parser/nodes/enum.h>
 namespace
 {
 bool interested_kind(CXCursorKind _cur_kind)

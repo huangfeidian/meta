@@ -1,8 +1,8 @@
 #pragma once
-#include <serialize/property.h>
+#include <meta/serialize/property.h>
 #include <iostream>
 #include <iomanip>
-#include <meta_macro.h>
+#include <meta/macro.h>
 using namespace meta::utils;
 namespace test
 {

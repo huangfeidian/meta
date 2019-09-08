@@ -1,6 +1,6 @@
-﻿#include "nodes/class.h"
-#include "nodes/variable.h"
-#include "nodes/callable.h"
+﻿#include <meta/parser/nodes/class.h>
+#include <meta/parser/nodes/variable.h>
+#include <meta/parser/nodes/callable.h>
 
 namespace meta::language
 {

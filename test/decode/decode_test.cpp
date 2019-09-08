@@ -1,7 +1,7 @@
 ﻿#include <iostream>
 #include <iomanip>
-#include <serialize/decode.h>
-#include <serialize/encode.h>
+#include <meta/serialize/decode.h>
+#include <meta/serialize/encode.h>
 using namespace meta::serialize;
 template <typename T>
 void decode_test_print(const T& data)

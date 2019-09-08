@@ -1,4 +1,4 @@
-﻿#include "nodes/enum.h"
+﻿#include <meta/parser/nodes/enum.h>
 
 namespace meta::language
 {

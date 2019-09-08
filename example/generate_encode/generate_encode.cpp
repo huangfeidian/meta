@@ -13,14 +13,11 @@
 
 #include <mustache.hpp>
 
-#include "nodes/type_info.h"
-#include "name_space.h"
-#include "utils.h"
-#include "nodes/class.h"
-#include "nodes/enum.h"
-#include "nodes/variable.h"
-#include <serialize/encode.h>
-#include <utility/generate_utils.h>
+#include <meta/parser/nodes/class.h>
+#include <meta/parser/clang_utils.h>
+
+#include <meta/serialize/decode.h>
+#include <meta/parser/generator.h>
 
 using namespace std;
 using namespace meta;
@@ -50,8 +47,8 @@ std::unordered_map<std::string, std::string> generate_encode()
 		auto _cur_parent_path = file_path.parent_path();
 		auto generated_h_file_name = one_class->unqualified_name() + ".generated_h";
 		auto new_h_file_path = _cur_parent_path / generated_h_file_name;
-		auto encode_args = utils::generate_encode_func_for_class(one_class);
-		utils::append_output_to_stream(result, new_h_file_path.string(), encode_func_mustache_tempalte.render(encode_args));
+		auto encode_args = generator::generate_encode_func_for_class(one_class);
+		generator::append_output_to_stream(result, new_h_file_path.string(), encode_func_mustache_tempalte.render(encode_args));
 	}
 	return result;
 }
@@ -93,8 +90,8 @@ int main()
 	ofstream json_out("type_info.json");
 	json_out << setw(4) << result << endl;
 	std::unordered_map<std::string, std::string> file_content;
-	utils::merge_file_content(file_content, generate_encode());
-	utils::write_content_to_file(file_content);
+	generator::merge_file_content(file_content, generate_encode());
+	generator::write_content_to_file(file_content);
 	clang_disposeTranslationUnit(m_translationUnit);
 
 	return 0;

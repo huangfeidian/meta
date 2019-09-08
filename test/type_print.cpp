@@ -1,13 +1,13 @@
 ﻿
-#include "name_space.h"
-#include "utils.h"
+#include <meta/parser/name_space.h>
+#include <meta/parser/clang_utils.h>
 #include <iostream>
 #include <queue>
-#include "nodes/type_info.h"
+#include <meta/parser/nodes/type_info.h>
 #include <fstream>
 #include <iomanip>
-#include "nodes/class.h"
-#include "nodes/enum.h"
+#include <meta/parser/nodes/class.h>
+#include <meta/parser/nodes/enum.h>
 #include <cstdint>
 
 using namespace std;

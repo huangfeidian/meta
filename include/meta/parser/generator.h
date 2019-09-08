@@ -7,12 +7,12 @@
 #include <sstream>
 #include <mustache.hpp>
 
-#include <nodes/callable.h>
+#include "nodes/callable.h"
 
-#include "../utils.h"
+#include "clang_utils.h"
 namespace mustache = kainjow::mustache;
 using namespace meta::language;
-namespace meta::utils
+namespace meta::generator
 {
 	template<typename T>
 	bool sort_by_unqualified_name(const T* a, const T* b)
@@ -41,7 +41,7 @@ namespace meta::utils
 	}
 	void write_content_to_file(const std::unordered_map<std::string, std::string>& file_buffer)
 	{
-		auto& the_logger = get_logger();
+		auto& the_logger = utils::get_logger();
 		for (const auto&[file_name, file_content] : file_buffer)
 		{
 			if (!std::filesystem::exists(file_name))

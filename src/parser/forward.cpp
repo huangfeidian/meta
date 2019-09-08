@@ -1,8 +1,8 @@
-﻿#include "nodes/forward.h"
-#include "nodes/callable.h"
-#include "nodes/variable.h"
-#include "nodes/class.h"
-#include "nodes/enum.h"
+﻿#include <meta/parser/nodes/forward.h>
+#include <meta/parser/nodes/callable.h>
+#include <meta/parser/nodes/variable.h>
+#include <meta/parser/nodes/class.h>
+#include <meta/parser/nodes/enum.h>
 
 namespace meta::language
 {
