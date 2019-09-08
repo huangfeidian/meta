@@ -56,6 +56,7 @@ namespace meta::utils
 			if (pre_str == file_content)
 			{
 				the_logger.info("write generate file {} ignored the content is same", file_name);
+				return;
 			}
 			std::ofstream cur_file_stream(file_name);
 			cur_file_stream << file_content;
