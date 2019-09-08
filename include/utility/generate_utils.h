@@ -50,6 +50,13 @@ namespace meta::utils
 				continue;
 			}
 			the_logger.info("write generate file {}", file_name);
+			auto pre_file = std::ifstream(file_name);
+			std::string pre_str = std::string(std::istreambuf_iterator<char>(pre_file), std::istreambuf_iterator<char>());
+			pre_file.close();
+			if (pre_str == file_content)
+			{
+				the_logger.info("write generate file {} ignored the content is same", file_name);
+			}
 			std::ofstream cur_file_stream(file_name);
 			cur_file_stream << file_content;
 			cur_file_stream.close();
