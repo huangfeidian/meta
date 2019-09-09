@@ -1,0 +1,28 @@
+class _helper
+{
+public:
+	static std::optional<> from_string(const std::string& val)
+	{
+		static std::unordered_map<std::string, class_name> enum_map = {
+			
+		};
+		auto cur_iter = enum_map.find(val);
+		if(cur_iter == enum_map.end())
+		{
+			return {};
+		}
+		else
+		{
+			return cur_iter->second;
+		}
+	}
+	static std::string to_string( val)
+	{
+		switch(val)
+		{
+		
+		default:
+			return "invalid_enum__with_value_" + std::to_string(int(val));
+		}
+	}
+};

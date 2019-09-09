@@ -7,6 +7,7 @@
 #include <optional>
 #include "../node.h"
 #include "../name_space.h"
+#include "../../utility/string_utils.h"
 
 using json = nlohmann::json;
 
@@ -19,6 +20,15 @@ namespace meta::language
 		node_base(const node* _in_node):
 			_node(_in_node)
 		{
+			const auto& _cur_cursor = get_node()->get_cursor();
+			std::vector<CXCursor> children = utils::cursor_get_children(_cur_cursor);
+			for (auto i : children)
+			{
+				if (i.kind == CXCursor_AnnotateAttr)
+				{
+					_annotation = utils::string_utils::parse_annotation(utils::to_string(i));
+				}
+			}
 
 		}
 		const std::string& name() const

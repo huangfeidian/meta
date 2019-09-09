@@ -141,11 +141,6 @@ namespace meta::language
 				the_logger.debug("{} has subclass {}", name(), utils::to_string(i));
 				break;
 			}
-			case CXCursor_AnnotateAttr:
-			{
-				_annotation = utils::string_utils::parse_annotation(utils::to_string(i));
-				break;
-			}
 			default:
 				the_logger.debug("visit unknown cursor {} with kind {} in class {}", utils::to_string(i), utils::to_string(cur_kind), name());
 				break;

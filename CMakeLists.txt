@@ -71,4 +71,6 @@ target_link_libraries(generate_attr PRIVATE meta)
 add_executable(generate_component ${META_EXAMPLE_DIR}/generate_component/generate_component.cpp)
 target_link_libraries(generate_component PRIVATE meta)
 
+add_executable(generate_enum ${META_EXAMPLE_DIR}/generate_enum/generate_enum.cpp)
+target_link_libraries(generate_enum PRIVATE meta)
 

@@ -95,13 +95,6 @@ namespace meta::language
 				}
 			}
 		}
-		for (auto i : children)
-		{
-			if (i.kind == CXCursor_AnnotateAttr)
-			{
-				_annotation = utils::string_utils::parse_annotation(utils::to_string(i));
-			}
-		}
 	}
 	json callable_node::to_json() const
 	{

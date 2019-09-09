@@ -29,6 +29,10 @@ namespace meta::language
 				break;
 			}
 		}
+		if (!type_db::instance().add_enum(this))
+		{
+			the_logger.warn("fail to add enum {} to type_db", name());
+		}
 		auto _enum_value_type = clang_getEnumDeclIntegerType(get_node()->get_cursor());
 		auto _enum_value_name = utils::to_string(_enum_value_type);
 		

@@ -562,6 +562,24 @@ bool type_db::add_class(class_node *_cur_class)
 		return false;
 	}
 }
+bool type_db::add_enum(enum_node *_cur_enum)
+{
+	if (!_cur_enum)
+	{
+		return false;
+	}
+	auto cur_enum_name = _cur_enum->name();
+	auto cur_iter = _enum_data.find(cur_enum_name);
+	if (cur_iter == _enum_data.end())
+	{
+		_enum_data[cur_enum_name] = _cur_enum;
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
 class_node *type_db::get_class(const std::string &_class_name)
 {
 	auto cur_iter = _class_data.find(_class_name);

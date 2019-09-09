@@ -8,7 +8,7 @@
 #include <mustache.hpp>
 
 #include "nodes/callable.h"
-
+#include "nodes/enum.h"
 #include "clang_utils.h"
 namespace mustache = kainjow::mustache;
 using namespace meta::language;
@@ -508,5 +508,18 @@ namespace meta::generator
 			var_list << temp_type;
 		}
 		return var_list;
+	}
+	mustache::data generate_helper_for_enum(const enum_node* one_class)
+	{
+		mustache::data enum_items{ mustache::data::type::list };
+		auto& enum_names = one_class->keys();
+		for (std::size_t i = 0; i < enum_names.size(); i++)
+		{
+			mustache::data temp_item;
+			temp_item.set("enum_name", enum_names[i]);
+			temp_item.set("last_item", i == enum_names.size());
+			enum_items << temp_item;
+		}
+		return enum_items;
 	}
 }
