@@ -1,11 +1,10 @@
-public:
+
 {{#stub_interface}}
-void {{stub_interface_name}}()
+void {{class_full_name}}::{{stub_interface_name}}()
 {
     {{#components}}
-    {{name}}->{{stub_interface_name}}(); // priority({{priority}})
+    {{name}}.{{stub_interface_name}}(); // priority({{priority}})
     {{/components}}
 }
 {{/stub_interface}}
-private:
 

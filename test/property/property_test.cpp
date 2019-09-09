@@ -4,7 +4,6 @@
 #include <meta/serialize/property.h>
 using namespace std;
 using namespace meta::serialize;
-using namespace meta::utils;
 
 
 class PropertyMap

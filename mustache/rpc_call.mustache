@@ -2,33 +2,32 @@ public:
 bool rpc_call(std::uint16_t rpc_index, const std::string& args)
 {
     json json_arg;
-    auto& the_logger = meta::utils::get_logger();
     if(args.size())
     {
         json_arg = json::parse(args);
     }
     switch(rpc_index)
     {
-        {{#func_methods}}
-        case {{func_index}}:
+        {{#rpc_methods}}
+        case {{rpc_index}}:
         {
-            {{#func_args}}
-            {{{arg_type}}} {{arg_name}};
-            {{/func_args}}
-            bool decode_result = decode_multi(json_arg{{#func_args}}, {{arg_name}}{{/func_args}});
+            {{#rpc_args}}
+            std::remove_const_t<std::remove_reference_t<{{{arg_type}}}>> {{arg_name}};
+            {{/rpc_args}}
+            bool decode_result = meta::serialize::decode_multi(json_arg{{#rpc_args}}, {{arg_name}}{{/rpc_args}});
             if(decode_result)
             {
-                {{func_name}}({{#func_args}}{{arg_name}}{{^last_idx}}, {{/last_idx}}{{/func_args}});
+                {{rpc_name}}({{#rpc_args}}{{arg_name}}{{^last_idx}}, {{/last_idx}}{{/rpc_args}});
             }
             else
             {
-                the_logger.warn("fail to decode args {} for rpc {{func_name}} index {}", args,  cur_rpc_index);
+                //the_logger.warn("fail to decode args {} for rpc {{rpc_name}} index {}", args,  cur_rpc_index);
             }
             return decode_result;
         }
-        {{/func_methods}}
+        {{/rpc_methods}}
         default:
-            the_logger.warn("cant find rpc_name with rpc_index {} args {}", rpc_index, args);
+            //the_logger.warn("cant find rpc_name with rpc_index {} args {}", rpc_index, args);
             return false;
     }
 	
@@ -36,11 +35,11 @@ bool rpc_call(std::uint16_t rpc_index, const std::string& args)
 
 static const std::unordered_map<std::string, std::uint16_t>& rpc_indexes()
 {
-    static std::unordered_map<std::string, std:uint16_t> rpc_index_map = {
-        {{#func_methods}}
-        { "{{func_name}}", {{func_index}} }{{^last_func}},{{/last_func}}
-        {{/func_methods}}
-    }
-    retrurn rpc_index_map;
+    static std::unordered_map<std::string, std::uint16_t> rpc_index_map = {
+        {{#rpc_methods}}
+        { "{{rpc_name}}", {{rpc_index}} }{{^last_rpc}},{{/last_rpc}}
+        {{/rpc_methods}}
+    };
+    return rpc_index_map;
 }
 private:

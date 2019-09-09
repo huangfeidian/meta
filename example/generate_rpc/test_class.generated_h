@@ -1,0 +1,55 @@
+public:
+bool rpc_call(std::uint16_t rpc_index, const std::string& args)
+{
+    json json_arg;
+    if(args.size())
+    {
+        json_arg = json::parse(args);
+    }
+    switch(rpc_index)
+    {
+        case 0:
+        {
+            int a;
+            std::string b;
+            bool decode_result = meta::serialize::decode_multi(json_arg, a, b);
+            if(decode_result)
+            {
+                rpc_1(a, b);
+            }
+            else
+            {
+                //the_logger.warn("fail to decode args {} for rpc rpc_1 index {}", args,  cur_rpc_index);
+            }
+            return decode_result;
+        }
+        case 1:
+        {
+            
+            bool decode_result = meta::serialize::decode_multi(json_arg);
+            if(decode_result)
+            {
+                rpc_2();
+            }
+            else
+            {
+                //the_logger.warn("fail to decode args {} for rpc rpc_2 index {}", args,  cur_rpc_index);
+            }
+            return decode_result;
+        }
+        default:
+            //the_logger.warn("cant find rpc_name with rpc_index {} args {}", rpc_index, args);
+            return false;
+    }
+	
+}
+
+static const std::unordered_map<std::string, std::uint16_t>& rpc_indexes()
+{
+    static std::unordered_map<std::string, std::uint16_t> rpc_index_map = {
+        { "rpc_1", 0 },
+        { "rpc_2", 1 }
+    };
+    return rpc_index_map;
+}
+private:

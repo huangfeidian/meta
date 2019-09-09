@@ -3,37 +3,37 @@ const decltype(a)& a_ref() const
 {
     return a;
 }
-meta::utils::prop_proxy<decltype(a)> a_mut()
+meta::serialize::prop_proxy<decltype(a)> a_mut()
 {
-	return meta::utils::prop_proxy(a, _cmd_buffer, index_for_a, _cur_depth);
+	return meta::serialize::prop_proxy(a, _cmd_buffer, index_for_a, _cur_depth);
 }
 const decltype(b)& b_ref() const
 {
     return b;
 }
-meta::utils::prop_proxy<decltype(b)> b_mut()
+meta::serialize::prop_proxy<decltype(b)> b_mut()
 {
-	return meta::utils::prop_proxy(b, _cmd_buffer, index_for_b, _cur_depth);
+	return meta::serialize::prop_proxy(b, _cmd_buffer, index_for_b, _cur_depth);
 }
 const decltype(c)& c_ref() const
 {
     return c;
 }
-meta::utils::prop_proxy<decltype(c)> c_mut()
+meta::serialize::prop_proxy<decltype(c)> c_mut()
 {
-	return meta::utils::prop_proxy(c, _cmd_buffer, index_for_c, _cur_depth);
+	return meta::serialize::prop_proxy(c, _cmd_buffer, index_for_c, _cur_depth);
 }
 const decltype(d)& d_ref() const
 {
     return d;
 }
-meta::utils::prop_proxy<decltype(d)> d_mut()
+meta::serialize::prop_proxy<decltype(d)> d_mut()
 {
-	return meta::utils::prop_proxy(d, _cmd_buffer, index_for_d, _cur_depth);
+	return meta::serialize::prop_proxy(d, _cmd_buffer, index_for_d, _cur_depth);
 }
 private:
 public:
-bool replay_mutate_msg(std::size_t field_index, meta::utils::var_mutate_cmd cmd, const json& data)
+bool replay_mutate_msg(std::size_t field_index, meta::serialize::var_mutate_cmd cmd, const json& data)
 {
     
     switch(field_index)
@@ -64,7 +64,7 @@ bool replay_mutate_msg(std::size_t field_index, meta::utils::var_mutate_cmd cmd,
 }
 
 private:
-const static var_idx_type index_for_a = 0;
-const static var_idx_type index_for_b = 1;
-const static var_idx_type index_for_c = 2;
-const static var_idx_type index_for_d = 3;
+const static meta::serialize::var_idx_type index_for_a = 0;
+const static meta::serialize::var_idx_type index_for_b = 1;
+const static meta::serialize::var_idx_type index_for_c = 2;
+const static meta::serialize::var_idx_type index_for_d = 3;

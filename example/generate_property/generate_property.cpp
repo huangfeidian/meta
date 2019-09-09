@@ -49,7 +49,12 @@ std::unordered_map<std::string, std::string> generate_property()
 		auto generated_h_file_name = one_class->unqualified_name() + ".generated_h";
 		auto new_h_file_path = _cur_parent_path / generated_h_file_name;
 		auto property_func_args = generator::generate_property_func_for_class(one_class);
-		generator::append_output_to_stream(result, new_h_file_path.string(),  property_proxy_mustache_tempalte.render(property_func_args) + property_sequence_mustache_tempalte.render(property_func_args));
+		mustache::data render_args;
+		render_args.set("class_name", one_class->unqualified_name());
+		render_args.set("class_full_name", one_class->qualified_name());
+		render_args.set("property_fields", property_func_args);
+		generator::append_output_to_stream(result, new_h_file_path.string(), property_proxy_mustache_tempalte.render(render_args));
+		generator::append_output_to_stream(result, new_h_file_path.string(), property_sequence_mustache_tempalte.render(render_args));
 	}
 	return result;
 }

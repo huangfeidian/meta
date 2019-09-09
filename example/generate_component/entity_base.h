@@ -8,6 +8,7 @@
 #include "forward_decl.h"
 #include <meta/macro.h>
 #include <nlohmann/json.hpp>
+#include <meta/serialize/decode.h>
 using json = nlohmann::json;
 namespace test
 {
@@ -37,6 +38,7 @@ namespace test
 
 		const entity_type _type;
 		std::unordered_map<component_type, component_base*> _component_address;
+	protected:
 		void add_component(component_base* _cur_component);
 		const std::string& _id;
 	};

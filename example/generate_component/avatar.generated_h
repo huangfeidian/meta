@@ -1,32 +1,61 @@
-public:
+
 void register_components()
 {
-    add_component(_aoi, _aoi->type());
-    add_component(_transform, _transform->type());
+    add_component(&_aoi);
+    add_component(&_transform);
 }
-private:
-
-
 public:
-void on_created()
+bool rpc_call(std::uint16_t rpc_index, const std::string& args)
 {
-    _aoi->on_created(); // priority(20)
-    _transform->on_created(); // priority(0)
+    json json_arg;
+    if(args.size())
+    {
+        json_arg = json::parse(args);
+    }
+    switch(rpc_index)
+    {
+        case 0:
+        {
+            std::remove_const_t<std::remove_reference_t<const std::vector<int, std::allocator<int> > &>> a;
+            bool decode_result = meta::serialize::decode_multi(json_arg, a);
+            if(decode_result)
+            {
+                test_1(a);
+            }
+            else
+            {
+                //the_logger.warn("fail to decode args {} for rpc test_1 index {}", args,  cur_rpc_index);
+            }
+            return decode_result;
+        }
+        case 1:
+        {
+            std::remove_const_t<std::remove_reference_t<std::unordered_map<std::string,int>>> a;
+            std::remove_const_t<std::remove_reference_t<std::string>> b;
+            bool decode_result = meta::serialize::decode_multi(json_arg, a, b);
+            if(decode_result)
+            {
+                test_2(a, b);
+            }
+            else
+            {
+                //the_logger.warn("fail to decode args {} for rpc test_2 index {}", args,  cur_rpc_index);
+            }
+            return decode_result;
+        }
+        default:
+            //the_logger.warn("cant find rpc_name with rpc_index {} args {}", rpc_index, args);
+            return false;
+    }
+	
 }
-void on_destroy()
+
+static const std::unordered_map<std::string, std::uint16_t>& rpc_indexes()
 {
-    _transform->on_destroy(); // priority(10)
-    _aoi->on_destroy(); // priority(0)
-}
-void on_enter_space()
-{
-    _aoi->on_enter_space(); // priority(75)
-    _transform->on_enter_space(); // priority(11)
-}
-void on_leave_space()
-{
-    _aoi->on_leave_space(); // priority(71)
-    _transform->on_leave_space(); // priority(5)
+    static std::unordered_map<std::string, std::uint16_t> rpc_index_map = {
+        { "test_1", 0 },
+        { "test_2", 1 }
+    };
+    return rpc_index_map;
 }
 private:
-

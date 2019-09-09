@@ -8,7 +8,6 @@
 
 #include <vector>
 #include <unordered_map>
-#include <meta/serialize/encode.h>
 #include <meta/serialize/decode.h>
 using namespace std;
 namespace test

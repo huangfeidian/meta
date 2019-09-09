@@ -1,9 +1,10 @@
 #pragma once
-#include <meta/serialize/property.h>
+#include <meta/serialize/decode.h>
 #include <iostream>
 #include <iomanip>
 #include <meta/macro.h>
-using namespace meta::utils;
+#include <nlohmann/json.hpp>
+using json = nlohmann::json;
 namespace test
 {
 class test_class

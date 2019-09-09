@@ -44,7 +44,11 @@ std::unordered_map<std::string, std::string> generate_rpc()
 		auto _cur_parent_path = file_path.parent_path();
 		auto generated_h_file_name = one_class->unqualified_name() + ".generated_h";
 		auto new_h_file_path = _cur_parent_path / generated_h_file_name;
-		generator::append_output_to_stream(result, new_h_file_path.string(), rpc_call_mustache_tempalte.render(generator::generate_rpc_call_for_class(one_class)));
+		mustache::data render_args;
+		render_args.set("class_name", one_class->unqualified_name());
+		render_args.set("class_full_name", one_class->qualified_name());
+		render_args.set("rpc_methods", generator::generate_rpc_call_for_class(one_class));
+		generator::append_output_to_stream(result, new_h_file_path.string(), rpc_call_mustache_tempalte.render(render_args));
 	}
 	return result;
 }

@@ -1,0 +1,18 @@
+
+void test::avatar::on_created()
+{
+    _transform.on_created(); // priority(0)
+}
+void test::avatar::on_destroy()
+{
+    _aoi.on_destroy(); // priority(0)
+}
+void test::avatar::on_enter_space()
+{
+    
+}
+void test::avatar::on_leave_space()
+{
+    
+}
+

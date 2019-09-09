@@ -1,10 +1,7 @@
-public:
+
 void register_components()
 {
     {{#components}}
-    add_component({{name}}, {{name}}->type());
+    add_component(&{{name}});
     {{/components}}
 }
-private:
-
-

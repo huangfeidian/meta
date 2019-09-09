@@ -5,13 +5,13 @@ json encode() const
 
 	//begin base encode
 	{{#bases}}
-	result.push_back(encode(static_cast<const {{base_type}}&>(*this)));
+	result.push_back(meta::serialize::encode(static_cast<const {{base_type}}&>(*this)));
 	{{/bases}}
 
-	//begin fields encode
-	{{#fields}}
-	result.push_back(encode({{field_name}}));
-	{{/fields}}
+	//begin encode_fields encode
+	{{#encode_fields}}
+	result.push_back(meta::serialize::encode({{field_name}}));
+	{{/encode_fields}}
 	return result;
 }
 private:

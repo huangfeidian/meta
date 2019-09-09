@@ -6,10 +6,10 @@ json encode() const
 	//begin base encode
 	
 
-	//begin fields encode
-	result.push_back(a);
-	result.push_back(b);
-	result.push_back(c);
+	//begin encode_fields encode
+	result.push_back(meta::serialize::encode(a));
+	result.push_back(meta::serialize::encode(b));
+	result.push_back(meta::serialize::encode(c));
 	return result;
 }
 private:

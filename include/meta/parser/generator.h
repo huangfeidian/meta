@@ -70,10 +70,8 @@ namespace meta::generator
 			append_output_to_stream(final_result, file_name, file_content);
 		}
 	}
-
-	mustache::data generate_encode_func_for_class(const class_node* one_class)
+	mustache::data generate_base_for_class(const class_node* one_class)
 	{
-		// 首先encode父类 按照父类的名称排序
 		auto _bases = one_class->bases();
 		std::sort(_bases.begin(), _bases.end(), sort_by_unqualified_name <language::type_info>);
 		mustache::data base_list{ mustache::data::type::list };
@@ -81,7 +79,11 @@ namespace meta::generator
 		{
 			base_list << mustache::data{ "base_type", one_base->name() };
 		}
-		// 然后encode自己的变量
+		return base_list;
+	}
+	mustache::data generate_encode_field_for_class(const class_node* one_class)
+	{
+	
 		std::unordered_map<std::string, std::string> field_encode_value = {};
 		auto encode_fields = one_class->query_fields_with_pred([&field_encode_value](const variable_node& _cur_node)
 			{
@@ -93,77 +95,7 @@ namespace meta::generator
 		{
 			field_list << mustache::data{ "field_name", one_field->unqualified_name() };
 		}
-		mustache::data render_args;
-		render_args.set("fields", field_list);
-		render_args.set("bases", base_list);
-		return render_args;
-	}
-	mustache::data generate_decode_func_for_class(const class_node* one_class)
-	{
-		// 首先decode父类 按照父类的名称排序
-		auto pre_bases = one_class->bases();
-		std::vector<const language::type_info*> _bases;
-		std::copy_if(pre_bases.begin(), pre_bases.end(), std::back_inserter(_bases), [](const language::type_info* _cur_node)
-			{
-				if (meta::utils::string_utils::starts_with(_cur_node->name(), "std::"))
-				{
-					return true;
-				}
-				auto cur_related_class = _cur_node->related_class();
-				if (!cur_related_class)
-				{
-					return false;
-				}
-				if (filter_with_annotation<class_node>("encode", *cur_related_class))
-				{
-					return true;
-				}
-				return false;
-			});
-		std::sort(_bases.begin(), _bases.end(), sort_by_unqualified_name<language::type_info>);
-		std::unordered_map<std::string, std::string> field_decode_value = {};
-		auto decode_fields = one_class->query_fields_with_pred([&field_decode_value](const variable_node& _cur_node)
-			{
-				return filter_with_annotation_value<variable_node>("decode", field_decode_value, _cur_node);
-			});
-		std::sort(decode_fields.begin(), decode_fields.end(), sort_by_unqualified_name<language::variable_node>);
-
-		mustache::data base_list{ mustache::data::type::list };
-		std::size_t decode_idx = 0;
-		for (auto one_base : _bases)
-		{
-			auto _one_class = one_base->related_class();
-
-			if (filter_with_annotation<class_node>("decode", *_one_class))
-			{
-
-				// 默认encode 与decode 的需求格式统一
-				mustache::data base_arg;
-				base_arg.set("idx", std::to_string(decode_idx));
-				base_arg.set("base_type", _one_class->name());
-				base_list << base_arg;
-			}
-
-			decode_idx += 1;
-		}
-		mustache::data field_list{ mustache::data::type::list };
-
-		for (auto one_field : decode_fields)
-		{
-			if (filter_with_annotation<variable_node>("decode", *one_field))
-			{
-				mustache::data field_arg;
-				field_arg.set("idx", std::to_string(decode_idx));
-				field_arg.set("field_name", one_field->unqualified_name());
-				field_list << field_arg;
-			}
-			decode_idx += 1;
-		}
-		mustache::data render_args;
-		render_args.set("fields", field_list);
-		render_args.set("bases", base_list);
-		render_args.set("total_size", std::to_string(decode_idx));
-		return render_args;
+		return field_list;
 	}
 	mustache::data generate_property_func_for_class(const class_node* one_class)
 	{
@@ -207,8 +139,7 @@ namespace meta::generator
 			field_list << cur_field_render_arg;
 			field_begin_index++;
 		}
-		render_args.set("fields", field_list);
-		return render_args;
+		return field_list;
 
 	}
 	mustache::data generate_rpc_call_for_class(const class_node* one_class)
@@ -256,11 +187,8 @@ namespace meta::generator
 			rpc_method_idx += 1;
 			method_list << cur_method_data;
 		}
-		mustache::data render_args;
-		render_args.set("rpc_methods", method_list);
 
-
-		return render_args;
+		return method_list;
 	}
 	mustache::data generate_components_add_for_class(const class_node* one_class)
 	{
@@ -279,9 +207,7 @@ namespace meta::generator
 			cur_component.set("name", one_field->unqualified_name());
 			components << cur_component;
 		}
-		mustache::data component_args;
-		component_args.set("components", components);
-		return component_args;
+		return components;
 	}
 	mustache::data generate_stub_func_for_class(const class_node* one_class)
 	{
@@ -345,9 +271,7 @@ namespace meta::generator
 			temp2.set("components", cur_stub_funcs);
 			stub_func_render_args << temp2;
 		}
-		mustache::data temp3;
-		temp3.set("stub_interface", stub_func_render_args);
-		return temp3;
+		return stub_func_render_args;
 	}
 	using tag_func_desc = std::pair<const variable_node*, const callable_node*>;
 	std::vector<tag_func_desc> parse_tag_func_for_class_with_field(const class_node* one_class, const std::string& field_tag, const std::string& tag)

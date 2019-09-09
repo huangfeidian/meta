@@ -1,5 +1,5 @@
 public:
-bool replay_mutate_msg(std::size_t field_index, meta::utils::var_mutate_cmd cmd, const json& data)
+bool replay_mutate_msg(std::size_t field_index, meta::serialize::var_mutate_cmd cmd, const json& data)
 {
     {{#base_class}}
     if(static_cast<std::uint16_t>(field_index) < {{base_idx}})
@@ -9,19 +9,19 @@ bool replay_mutate_msg(std::size_t field_index, meta::utils::var_mutate_cmd cmd,
     {{/base_class}}
     switch(field_index)
     {
-    {{#fields}}
+    {{#property_fields}}
     case index_for_{{field_name}}:
     {
         auto temp_proxy = {{field_name}}_mut();
         return temp_proxy.replay(cmd, data);
     }
-    {{/fields}}
+    {{/property_fields}}
     default:
         return false;
     }
 }
 
 private:
-{{#fields}}
-const static var_idx_type index_for_{{field_name}} = {{field_idx}};
-{{/fields}}
+{{#property_fields}}
+const static meta::serialize::var_idx_type index_for_{{field_name}} = {{field_idx}};
+{{/property_fields}}

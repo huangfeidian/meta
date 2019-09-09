@@ -32,13 +32,11 @@ std::unordered_map<std::string, std::string> generate_component()
 			return language::filter_with_annotation_value<language::class_node>(std::string("component_owner"), _annotation_value, _cur_node);
 		});
 	std::unordered_map<std::string, std::string> result;
-	auto component_mustache_file = std::ifstream("../mustache/component.mustache");
-	std::string component_template_str = std::string(std::istreambuf_iterator<char>(component_mustache_file), std::istreambuf_iterator<char>());
-	mustache::mustache component_mustache_tempalte(component_template_str);
 
-	auto stub_interface_mustache_file = std::ifstream("../mustache/stub_interface.mustache");
-	std::string stub_interface_template_str = std::string(std::istreambuf_iterator<char>(stub_interface_mustache_file), std::istreambuf_iterator<char>());
-	mustache::mustache stub_interface_mustache_tempalte(stub_interface_template_str);
+	mustache::mustache component_mustache_tempalte = generator::load_mustache_from_file("../mustache/component.mustache");
+
+	mustache::mustache stub_interface_mustache_tempalte = generator::load_mustache_from_file("../mustache/stub_interface.mustache");
+	mustache::mustache rpc_mustache_tempalte = generator::load_mustache_from_file("../mustache/rpc_call.mustache");
 
 
 	for (auto one_class : all_property_classes)
@@ -48,10 +46,19 @@ std::unordered_map<std::string, std::string> generate_component()
 		auto _cur_parent_path = file_path.parent_path();
 		auto generated_h_file_name = one_class->unqualified_name() + ".generated_h";
 		auto new_h_file_path = _cur_parent_path / generated_h_file_name;
+		auto generated_cpp_file_name = one_class->unqualified_name() + ".generated_cpp";
+		auto new_cpp_file_path = _cur_parent_path / generated_cpp_file_name;
 		auto component_data = generator::generate_components_add_for_class(one_class);
-		
-		generator::append_output_to_stream(result, new_h_file_path.string(), component_mustache_tempalte.render(component_data));
-		generator::append_output_to_stream(result, new_h_file_path.string(), stub_interface_mustache_tempalte.render(component_data));
+		auto stub_func_data = generator::generate_stub_func_for_class(one_class);
+		mustache::data render_args;
+		render_args.set("class_name", one_class->unqualified_name());
+		render_args.set("class_full_name", one_class->qualified_name());
+		render_args.set("components", component_data);
+		render_args.set("stub_interface", stub_func_data);
+		render_args.set("rpc_methods", generator::generate_rpc_call_for_class(one_class));
+		generator::append_output_to_stream(result, new_h_file_path.string(), component_mustache_tempalte.render(render_args));
+		generator::append_output_to_stream(result, new_cpp_file_path.string(), stub_interface_mustache_tempalte.render(render_args));
+		generator::append_output_to_stream(result, new_h_file_path.string(), rpc_mustache_tempalte.render(render_args));
 	}
 	return result;
 }

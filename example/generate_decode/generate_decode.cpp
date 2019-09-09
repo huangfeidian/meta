@@ -41,12 +41,8 @@ std::unordered_map<std::string, std::string> generate_encode_decode()
 	std::copy(all_encode_classses.begin(), all_encode_classses.end(), std::inserter(all_related_classes, all_related_classes.end()));
 	std::copy(all_decode_classes.begin(), all_decode_classes.end(), std::inserter(all_related_classes, all_related_classes.end()));
 	std::unordered_map<std::string, std::string> result;
-	auto encode_func_mustache_file = std::ifstream("../mustache/encode_func.mustache");
-	std::string template_str = std::string(std::istreambuf_iterator<char>(encode_func_mustache_file), std::istreambuf_iterator<char>());
-	mustache::mustache encode_func_mustache_tempalte(template_str);
-	auto decode_func_mustache_file = std::ifstream("../mustache/decode_func.mustache");
-	template_str = std::string(std::istreambuf_iterator<char>(decode_func_mustache_file), std::istreambuf_iterator<char>());
-	mustache::mustache decode_func_mustache_tempalte(template_str);
+	mustache::mustache encode_func_mustache_tempalte = generator::load_mustache_from_file("../mustache/encode_func.mustache");
+	mustache::mustache decode_func_mustache_tempalte = generator::load_mustache_from_file("../mustache/decode_func.mustache");
 	for (auto one_class : all_related_classes)
 	{
 		auto cur_file_path_str = one_class->file();
@@ -59,16 +55,13 @@ std::unordered_map<std::string, std::string> generate_encode_decode()
 		std::ostringstream h_file_stream;
 		std::ostringstream cpp_file_stream;
 		cpp_file_stream << "#include " << file_path.filename() << "\n";
-		if (language::filter_with_annotation_value<language::class_node>("encode", _annotation_value, *one_class))
-		{
-			auto encode_func_args = generator::generate_encode_func_for_class(one_class);
-			generator::append_output_to_stream(result, new_h_file_path.string(), encode_func_mustache_tempalte.render(encode_func_args));
-		}
-		if (language::filter_with_annotation_value<language::class_node>("decode", _annotation_value, *one_class))
-		{
-			auto decode_func_args = generator::generate_decode_func_for_class(one_class);
-			generator::append_output_to_stream(result, new_h_file_path.string(), decode_func_mustache_tempalte.render(decode_func_args));
-		}
+		mustache::data render_args;
+		render_args.set("class_name", one_class->unqualified_name());
+		render_args.set("class_full_name", one_class->qualified_name());
+		render_args.set("bases", generator::generate_base_for_class(one_class));
+		render_args.set("encode_fields", generator::generate_encode_field_for_class(one_class));
+		generator::append_output_to_stream(result, new_h_file_path.string(), encode_func_mustache_tempalte.render(render_args));
+		generator::append_output_to_stream(result, new_h_file_path.string(), decode_func_mustache_tempalte.render(render_args));
 		
 	}
 	return result;

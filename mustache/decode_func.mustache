@@ -5,27 +5,35 @@ bool decode(const json& data)
 	{
 		return false;
 	}
-	if(data.size() != {{total_size}})
-	{
-		return false;
-	}
+	std::size_t total_size = data.size();
+	std::size_t index = 0;
 	//begin base decode
 
 	{{#bases}}
-	if(!decode(data[{{idx}}], static_cast<{{base_type}}&>(*this)))
+	if(index >= total_size)
 	{
 		return false;
 	}
+	if(!meta::serialize::decode(data[index], static_cast<{{base_type}}&>(*this)))
+	{
+		return false;
+	}
+	index++;
 	{{/bases}}
 
 	//begin field decode
 
-	{{#fields}}
-	if(!decode(data[{{idx}}], {{field_name}}))
+	{{#encode_fields}}
+	if(index >= total_size)
 	{
 		return false;
 	}
-	{{/fields}}
+	if(!meta::serialize::decode(data[index], {{field_name}}))
+	{
+		return false;
+	}
+	index++;
+	{{/encode_fields}}
 	return true;
 }
 private:

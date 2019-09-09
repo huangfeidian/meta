@@ -6,37 +6,55 @@ json encode() const
 	//begin base encode
 	
 
-	//begin fields encode
-	result.push_back(a);
-	result.push_back(b);
-	result.push_back(c);
+	//begin encode_fields encode
+	result.push_back(meta::serialize::encode(a));
+	result.push_back(meta::serialize::encode(b));
+	result.push_back(meta::serialize::encode(c));
 	return result;
 }
-private:public:
+private:
+public:
 bool decode(const json& data)
 {
 	if(!data.is_array())
 	{
 		return false;
 	}
-	if(data.size() != 2)
-	{
-		return false;
-	}
+	std::size_t total_size = data.size();
+	std::size_t index = 0;
 	//begin base decode
 
 	
 
 	//begin field decode
 
-	if(!decode(data[0], a))
+	if(index >= total_size)
 	{
 		return false;
 	}
-	if(!decode(data[1], b))
+	if(!meta::serialize::decode(data[index], a))
 	{
 		return false;
 	}
+	index++;
+	if(index >= total_size)
+	{
+		return false;
+	}
+	if(!meta::serialize::decode(data[index], b))
+	{
+		return false;
+	}
+	index++;
+	if(index >= total_size)
+	{
+		return false;
+	}
+	if(!meta::serialize::decode(data[index], c))
+	{
+		return false;
+	}
+	index++;
 	return true;
 }
 private:

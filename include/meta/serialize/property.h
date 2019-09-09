@@ -1,6 +1,5 @@
 ﻿#include "decode.h"
-
-namespace meta::utils
+namespace meta::serialize
 {
 	using var_idx_type = std::uint8_t;// 每个变量在当前定义内只能是uint8的整数索引 所以一个类里面只能定义255个变量 0号变量保留不使用 以后可以扩充为std::uint16_t 或者与var_mutate_cmd合并为一个std::uint16_t 
 	using var_cmd_type = std::uint8_t;// 对于变量的改变操作类型 全量赋值 清空 等等
@@ -58,9 +57,9 @@ namespace meta::utils
 		{
 			switch (_cmd)
 			{
-			case meta::utils::var_mutate_cmd::clear:
+			case var_mutate_cmd::clear:
 				return replay_clear(j_data);
-			case meta::utils::var_mutate_cmd::set:
+			case var_mutate_cmd::set:
 				return replay_set(j_data);
 			default:
 				return false;
@@ -151,17 +150,17 @@ namespace meta::utils
 		{
 			switch (_cmd)
 			{
-			case meta::utils::var_mutate_cmd::clear:
+			case var_mutate_cmd::clear:
 				return replay_clear(j_data);
-			case meta::utils::var_mutate_cmd::set:
+			case var_mutate_cmd::set:
 				return replay_set(j_data);
-			case meta::utils::var_mutate_cmd::vector_push_back:
+			case var_mutate_cmd::vector_push_back:
 				return replay_push_back(j_data);
-			case meta::utils::var_mutate_cmd::vector_pop_back:
+			case var_mutate_cmd::vector_pop_back:
 				return replay_pop_back(j_data);
-			case meta::utils::var_mutate_cmd::vector_idx_mutate:
+			case var_mutate_cmd::vector_idx_mutate:
 				return replay_idx_mutate(j_data);
-			case meta::utils::var_mutate_cmd::vector_idx_delete:
+			case var_mutate_cmd::vector_idx_delete:
 				return replay_idx_delete(j_data);
 			default:
 				return false;
@@ -280,13 +279,13 @@ namespace meta::utils
 		{
 			switch (_cmd)
 			{
-			case meta::utils::var_mutate_cmd::clear:
+			case var_mutate_cmd::clear:
 				return replay_clear(j_data);
-			case meta::utils::var_mutate_cmd::set:
+			case var_mutate_cmd::set:
 				return replay_set(j_data);
-			case meta::utils::var_mutate_cmd::map_insert:
+			case var_mutate_cmd::map_insert:
 				return replay_insert(j_data);
-			case meta::utils::var_mutate_cmd::map_erase:
+			case var_mutate_cmd::map_erase:
 				return replay_erase(j_data);
 			default:
 				return false;
