@@ -20,16 +20,24 @@ namespace meta::serialize
 		set_erase = 31,
 
 	};
+	enum class notify_kind
+	{
+		no_notify = 0,
+		self_notify = 1,
+		all_notify = 2
+	};
+
 	using mutate_msg = std::tuple<var_prefix_idx_type, var_idx_type, var_mutate_cmd, json>;
     template <typename T>
     class prop_proxy
     {
     public:
-        prop_proxy(T& _in_data, std::deque<mutate_msg>& _in_msg_queue, var_idx_type _in_var_idx, const var_prefix_idx_type& in_parent_idxes):
+        prop_proxy(T& _in_data, std::deque<mutate_msg>& _in_msg_queue, var_idx_type _in_var_idx, const var_prefix_idx_type& in_parent_idxes, notify_kind in_notify_kind = notify_kind::self_notify):
         _data(_in_data),
 		_msg_queue(_in_msg_queue),
 		_var_idx(_in_var_idx),
-		_parent_idxes(in_parent_idxes)
+		_parent_idxes(in_parent_idxes),
+		_notify_kind(in_notify_kind)
         {
 
         }
@@ -44,13 +52,20 @@ namespace meta::serialize
 		void set(const T& _in_data)
 		{
 			_data = _in_data;
-			_msg_queue.emplace_back(_parent_idxes, _var_idx, var_mutate_cmd::set, encode(_data));
+			if (_notify_kind != notify_kind::no_notify)
+			{
+				_msg_queue.emplace_back(_parent_idxes, _var_idx, var_mutate_cmd::set, encode(_data));
+			}
+			
 		}
 		
 		void clear()
 		{
 			_data = {};
-			_msg_queue.emplace_back(_parent_idxes, _var_idx, var_mutate_cmd::clear, json());
+			if (_notify_kind != notify_kind::no_notify)
+			{
+				_msg_queue.emplace_back(_parent_idxes, _var_idx, var_mutate_cmd::clear, json());
+			}
 		}
 		
 		bool replay(var_mutate_cmd _cmd, const json& j_data)
@@ -80,6 +95,7 @@ namespace meta::serialize
 		std::deque<mutate_msg>& _msg_queue;
 		const var_prefix_idx_type& _parent_idxes;
 		const var_idx_type _var_idx;
+		const notify_kind _notify_kind;
 	};
 	template<typename T>
 	class prop_proxy<std::vector<T>>
