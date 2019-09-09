@@ -1,10 +1,13 @@
-class _helper
+class test_class_helper
 {
 public:
-	static std::optional<> from_string(const std::string& val)
+	static std::optional<test_class> from_string(const std::string& val)
 	{
-		static std::unordered_map<std::string, class_name> enum_map = {
-			
+		static std::unordered_map<std::string, test_class> enum_map = {
+			{ "ERR_OK", test_class::ERR_OK },
+			{ "ERR_1", test_class::ERR_1 },
+			{ "ERR_2", test_class::ERR_2 },
+			{ "ERR_INVALID", test_class::ERR_INVALID }
 		};
 		auto cur_iter = enum_map.find(val);
 		if(cur_iter == enum_map.end())
@@ -16,13 +19,20 @@ public:
 			return cur_iter->second;
 		}
 	}
-	static std::string to_string( val)
+	static std::string to_string(test_class val)
 	{
 		switch(val)
 		{
-		
+		case test_class::ERR_OK:
+			return "ERR_OK";
+		case test_class::ERR_1:
+			return "ERR_1";
+		case test_class::ERR_2:
+			return "ERR_2";
+		case test_class::ERR_INVALID:
+			return "ERR_INVALID";
 		default:
-			return "invalid_enum__with_value_" + std::to_string(int(val));
+			return "invalid_enum_test_class_with_value_" + std::to_string(int(val));
 		}
 	}
 };

@@ -42,7 +42,11 @@ std::unordered_map<std::string, std::string> generate_enum()
 		auto _cur_parent_path = file_path.parent_path();
 		auto generated_h_file_name = one_enum->unqualified_name() + ".generated_h";
 		auto new_h_file_path = _cur_parent_path / generated_h_file_name;
-		generator::append_output_to_stream(result, new_h_file_path.string(), enum_helper_mustache_tempalte.render(generator::generate_helper_for_enum(one_enum)));
+		mustache::data render_args;
+		render_args.set("enum_items", generator::generate_helper_for_enum(one_enum));
+		render_args.set("class_name", one_enum->unqualified_name());
+		render_args.set("class_full_name", one_enum->name());
+		generator::append_output_to_stream(result, new_h_file_path.string(), enum_helper_mustache_tempalte.render(render_args));
 	}
 	return result;
 }

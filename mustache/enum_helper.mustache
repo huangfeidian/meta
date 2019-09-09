@@ -3,7 +3,7 @@ class {{class_name}}_helper
 public:
 	static std::optional<{{class_name}}> from_string(const std::string& val)
 	{
-		static std::unordered_map<std::string, class_name> enum_map = {
+		static std::unordered_map<std::string, {{class_name}}> enum_map = {
 			{{#enum_items}}
 			{ "{{enum_name}}", {{class_name}}::{{enum_name}} }{{^last_item}},{{/last_item}}
 			{{/enum_items}}

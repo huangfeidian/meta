@@ -517,7 +517,7 @@ namespace meta::generator
 		{
 			mustache::data temp_item;
 			temp_item.set("enum_name", enum_names[i]);
-			temp_item.set("last_item", i == enum_names.size());
+			temp_item.set("last_item", i == enum_names.size() - 1);
 			enum_items << temp_item;
 		}
 		return enum_items;
