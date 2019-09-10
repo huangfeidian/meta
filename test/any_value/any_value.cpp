@@ -27,6 +27,10 @@ void debug_show(const any_value_type& cur_value)
 	{
 		cout << "type is is_bool" << endl;
 	}
+	if (cur_value.is_str())
+	{
+		cout << "type is is_str" << endl;
+	}
 	if (cur_value.is_vector())
 	{
 		cout << "type is is_vector" << endl;
@@ -69,6 +73,8 @@ int main()
 	temp_map["str1"] = 1;
 	temp_map["str2"] = 2;
 	int_map[5] = any_convert(temp_map);
+	int_map[6] = any_convert(std::make_pair(temp_map, str_vec));
+	int_map[7] = any_convert(std::make_tuple(std::string("string"), false, 1.0));
 	std::cout << "result is" <<encode(int_map) << std::endl;
 	debug_show(int_map);
 

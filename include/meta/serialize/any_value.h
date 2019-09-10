@@ -48,6 +48,10 @@ namespace meta::serialize
 		{
 			return std::holds_alternative<bool>(*this);
 		}
+		bool is_str() const
+		{
+			return std::holds_alternative<std::string>(*this);
+		}
 		bool is_vector() const
 		{
 			return std::holds_alternative<any_vector>(*this);
@@ -171,7 +175,26 @@ namespace meta::serialize
 		}
 		return result;
 	}
-
+	template <typename T1, typename T2>
+	any_value_type any_convert(const std::pair<T1, T2>& _in_value)
+	{
+		any_vector result;
+		result.push_back(any_convert(_in_value.first));
+		result.push_back(any_convert(_in_value.second));
+		return result;
+	}
+	template <typename... Args, std::size_t... index>
+	any_value_type any_convert_tuple(const std::tuple<Args...>& _in_value, std::index_sequence<index...>)
+	{
+		any_vector result;
+		(result.push_back(any_convert(std::get<index>(_in_value))),...);
+		return result;
+	}
+	template <typename... Args>
+	any_value_type any_convert(const std::tuple<Args...>& _in_value)
+	{
+		return any_convert_tuple(_in_value, std::index_sequence_for<Args...>{});
+	}
 
 }
 
