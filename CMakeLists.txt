@@ -74,3 +74,7 @@ target_link_libraries(generate_component PRIVATE meta)
 add_executable(generate_enum ${META_EXAMPLE_DIR}/generate_enum/generate_enum.cpp)
 target_link_libraries(generate_enum PRIVATE meta)
 
+FILE(GLOB_RECURSE BEHAVIOR_TREE_SRC_LISTS ${META_EXAMPLE_DIR}/behavior_tree/*.cpp)
+add_executable(behavior_tree ${BEHAVIOR_TREE_SRC_LISTS})
+
+add_executable(any_value_test ${META_TEST_DIR}/any_value/any_value.cpp)
