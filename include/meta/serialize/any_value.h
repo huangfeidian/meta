@@ -56,6 +56,10 @@ namespace meta::serialize
 		{
 			return std::holds_alternative<any_vector>(*this);
 		}
+		bool is_numerical() const
+		{
+			return is_int() || is_int64() || is_float() || is_double();
+		}
 	};
 	template <typename T>
 	typename std::enable_if< std::is_constructible_v<any_value_type, T>, any_value_type>::type 
