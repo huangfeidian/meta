@@ -5,7 +5,34 @@
 #include <variant>
 #include <string>
 #include <cstdint>
+#include <optional>
 
+#define ANY_NUMERIC_CAL(op_name, op_val) template<typename T>	\
+std::optional<T> numeric_cal_##op_name(const T& other_value)	\
+{																\
+	const auto& cur_any_value = *this;							\
+	if (!cur_any_value.is_numeric())							\
+	{															\
+		return std::nullopt;									\
+	}															\
+	if (cur_any_value.is_float())								\
+	{															\
+		std::get<float>(cur_any_value) op_val add_value;		\
+	}															\
+	else if (cur_any_value.is_double())							\
+	{															\
+		std::get<double>(cur_any_value) op_val add_value;		\
+	}															\
+	else if (cur_any_value.is_int())							\
+	{															\
+		std::get<int>(cur_any_value) op_val add_value;			\
+	}															\
+	else														\
+	{															\
+		std::get<std::int64_t>(cur_any_value) op_val add_value;	\
+	}															\
+	return numeric_value<T>();									\
+}
 namespace meta::serialize
 {
     using any_key_type = std::variant<std::string, int>;
@@ -56,10 +83,122 @@ namespace meta::serialize
 		{
 			return std::holds_alternative<any_vector>(*this);
 		}
-		bool is_numerical() const
+		bool is_numeric() const
 		{
 			return is_int() || is_int64() || is_float() || is_double();
 		}
+		template <typename T>
+		std::optional<T> numeric_value() const
+		{
+			if (!is_numeric())
+			{
+				return std::nullopt;
+			}
+			else
+			{
+				T result;
+				std::visit([&result](auto&& v)
+					{
+						result = static_cast<T>(v);
+					}, *this);
+				return result;
+
+			}
+		}
+		template <typename T>
+		std::optional<bool> numeric_larger_than_impl(const any_value_type& other_value) const
+		{
+			const auto& cur_any_value = *this;
+			if (!cur_any_value.is_numeric() || !other_value.is_numeric())
+			{
+				return std::nullopt;
+			}
+			if (!std::holds_alternative<T>(cur_any_value))
+			{
+				return std::nullopt;
+			}
+			const auto& cur_value = std::get<T>(cur_any_value);
+			if (other_value.is_double())
+			{
+				return cur_raw_value > std::get<double>(other_value);
+			}
+			else if (other_value.is_float())
+			{
+				return cur_raw_value > std::get<float>(other_value);
+			}
+			else if (other_value.is_int())
+			{
+				return cur_raw_value > std::get<int>(other_value);
+			}
+			else if (other_value.is_int64())
+			{
+				return cur_raw_value > std::get<std::int64_t>(other_value);
+			}
+			return false;
+
+		}
+
+		std::optional<bool> numeric_larger_than(const any_value_type& other_value) const
+		{
+			const auto& cur_any_value = *this;
+			if (!cur_any_value.is_numeric() || !other_value.is_numeric())
+			{
+				return std::nullopt;
+			}
+			if (cur_any_value.is_float())
+			{
+				return cur_any_value.numeric_larger_than_impl<float> (other_value);
+			}
+			else if (cur_any_value.is_double())
+			{
+				return cur_any_value.numeric_larger_than_impl<double>(other_value);
+			}
+			else if (cur_any_value.is_int())
+			{
+				return cur_any_value.numeric_larger_than_impl<int>(other_value);
+			}
+			else
+			{
+				return cur_any_value.numeric_larger_than_impl<std::int64_t>(other_value);
+			}
+			
+		}
+		std::optional<bool> numeric_less_than(const any_value_type& other_value) const
+		{
+			return other_value.numeric_larger_than(*this);
+
+		}
+		std::optional<bool> numeric_no_larger_than(const any_value_type& other_value) const
+		{
+			const auto& cur_any_value = *this;
+			if (!cur_any_value.is_numeric() || !other_value.is_numeric())
+			{
+				return std::nullopt;
+			}
+			if (*this == other_value)
+			{
+				return true;
+			}
+			return numeric_less_than(other_value);
+		}
+		std::optional<bool> numeric_no_less_than(const any_value_type& other_value) const
+		{
+			const auto& cur_any_value = *this;
+			if (!cur_any_value.is_numeric() || !other_value.is_numeric())
+			{
+				return std::nullopt;
+			}
+			if (*this == other_value)
+			{
+				return true;
+			}
+			return numeric_larger_than(other_value);
+		}
+ANY_NUMERIC_CAL(add, +=)
+ANY_NUMERIC_CAL(dec, -=)
+ANY_NUMERIC_CAL(multiply, *+)
+ANY_NUMERIC_CAL(div, /+)
+		
 	};
 	template <typename T>
 	typename std::enable_if< std::is_constructible_v<any_value_type, T>, any_value_type>::type 
@@ -199,6 +338,65 @@ namespace meta::serialize
 	{
 		return any_convert_tuple(_in_value, std::index_sequence_for<Args...>{});
 	}
+	template <typename T>
+	bool numeric_larger_than(const any_value_type& cur_value, const any_value_type& other_value)
+	{
+		if (!std::holds_alternative<T>(cur_value))
+		{
+			return false;
+		}
+		else
+		{
+			const auto& cur_raw_value = std::get<T>(cur_value);
+			if (other_value.is_double())
+			{
+				return cur_raw_value > std::get<double>(other_value);
+			}
+			else if (other_value.is_float())
+			{
+				return cur_raw_value > std::get<float>(other_value);
+			}
+			else if (other_value.is_int())
+			{
+				return cur_raw_value > std::get<int>(other_value);
+			}
+			else if (other_value.is_int64())
+			{
+				return cur_raw_value > std::get<std::int64_t>(other_value);
+			}
+			return false;
+		}
 
+	}
+	template <typename T>
+	bool numeric_larger_than(const any_value_type& cur_value, const any_value_type& other_value)
+	{
+		if (!std::holds_alternative<T>(cur_value))
+		{
+			return false;
+		}
+		else
+		{
+			const auto& cur_raw_value = std::get<T>(cur_value);
+			if (other_value.is_double())
+			{
+				return cur_raw_value > std::get<double>(other_value);
+			}
+			else if (other_value.is_float())
+			{
+				return cur_raw_value > std::get<float>(other_value);
+			}
+			else if (other_value.is_int())
+			{
+				return cur_raw_value > std::get<int>(other_value);
+			}
+			else if (other_value.is_int64())
+			{
+				return cur_raw_value > std::get<std::int64_t>(other_value);
+			}
+			return false;
+		}
+
+	}
 }
 

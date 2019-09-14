@@ -1,156 +1,187 @@
-﻿#pragma once
-#include <vector>
-#include <unordered_map>
-#include <deque>
-#include <string>
-#include <meta/serialize/decode.h>
-#include <meta/serialize/any_value.h>
-#include "timer_manager.hpp"
-using namespace meta::serialize;
+﻿#include "agent.h"
+#include "nodes.h"
 namespace bahavior
 {
-	class timer_scheduler
+	bool agent::has_key(const std::string& bb_key)
 	{
-	public:
-
-	};
-	class node;
-	using event_type = std::string;
-	enum class arg_value_choice
+		auto cur_iter = _blackboard.find(bb_key);
+		return cur_iter != _blackboard.end();
+	}
+	bool agent::set_key_value(const std::string& bb_key, const any_value_type& new_value)
 	{
-		plain_value = 0,
-		blackboard_value,
-	};
-	using node_arg_value_type = std::pair< arg_value_choice, std::string>;
-	class agent
+		_blackboard[bb_key] = new_value;
+		return true;
+	}
+	bool agent::has_key_value(const std::string& bb_key, const any_value_type& value)
 	{
-	public:
-		bool poll(); // first handle events then handle fronts
-		void dispatch_event(event_type new_event);
-	public:
-		bool during_poll;
-		std::deque<node*> _fronts; // node ready to run
-		std::deque<event_type> _events; // events to be handled;
-		any_str_map _blackboard;
-	private:
-		bool poll_fronts(); // run the nodes
-		bool poll_events(); // handle the events;
-		
-	private:
-		// actions return true or false for immediate result
-		// if the result is not immediate then return nullopt
-		bool key_in_bb(const std::string& bb_key)
+		auto cur_iter = _blackboard.find(bb_key);
+		if (cur_iter == _blackboard.end())
 		{
-			auto cur_iter = _blackboard.find(bb_key);
-			return cur_iter == _blackboard.end();
+			return false;
 		}
-		bool value_equal(const std::string& bb_key, const any_value_type& value)
+
+		const auto& cur_value = cur_iter->second;
+		return cur_value == value;
+
+	}
+	bool agent::number_add(const std::string& bb_key, const any_value_type& value)
+	{
+		auto cur_iter = _blackboard.find(bb_key);
+		if (cur_iter == _blackboard.end())
 		{
-			auto cur_iter = _blackboard.find(bb_key);
-			if (cur_iter == _blackboard.end())
-			{
-				return false;
-			}
+			return false;
+		}
+		auto& cur_value = cur_iter->second;
+		auto result = cur_value.numeric_cal_add(value);
+		return !!result;
+	}
+	bool agent::number_dec(const std::string& bb_key, const any_value_type& value)
+	{
+		auto cur_iter = _blackboard.find(bb_key);
+		if (cur_iter == _blackboard.end())
+		{
+			return false;
+		}
+		auto& cur_value = cur_iter->second;
+		auto result = cur_value.numeric_cal_dec(value);
+		return !!result;
+	}
+	bool agent::number_multiply(const std::string& bb_key, const any_value_type& value)
+	{
+		auto cur_iter = _blackboard.find(bb_key);
+		if (cur_iter == _blackboard.end())
+		{
+			return false;
+		}
+		auto& cur_value = cur_iter->second;
+		auto result = cur_value.numeric_cal_multiply(value);
+		return !!result;
+	}
+	bool agent::number_div(const std::string& bb_key, const any_value_type& value)
+	{
+		auto cur_iter = _blackboard.find(bb_key);
+		if (cur_iter == _blackboard.end())
+		{
+			return false;
+		}
+		auto& cur_value = cur_iter->second;
+		auto result = cur_value.numeric_cal_div(value);
+		return !!result;
+	}
+
+
+
+	bool agent::number_larger_than(const std::string& bb_key, const any_value_type& other_value)
+	{
+		auto cur_iter = _blackboard.find(bb_key);
+		if (cur_iter == _blackboard.end())
+		{
+			return false;
+		}
+		auto& cur_value = cur_iter->second;
+		auto result = cur_value.numeric_larger_than(other_value);
+		return result.value_or(false);
+	}
+	bool agent::number_less_than(const std::string& bb_key, const any_value_type& other_value)
+	{
+		auto cur_iter = _blackboard.find(bb_key);
+		if (cur_iter == _blackboard.end())
+		{
+			return false;
+		}
+		auto& cur_value = cur_iter->second;
+		auto result = cur_value.numeric_less_than(other_value);
+		return result.value_or(false);
+	}
+	std::optional<bool> agent::wait_for_second(double duration)
+	{
+		auto timeout_lambda = [this]()
+		{
+			current_poll_node->set_result(true);
+		};
+		duration = std::max(0.5, duration);
+		auto cur_timer_handler = timer_manager::instance().add_timer_with_gap(
+			std::chrono::microseconds(static_cast<int>(duration * 1000)), timeout_lambda);
+		_timers[current_poll_node] = cur_timer_handler;
+		return std::nullopt;
+	}
+	bool agent::poll()
+	{
+		if (during_poll)
+		{
+			return false;
+		}
+		during_poll = true;
+		std::size_t poll_count = 0;
+		while (true)
+		{
 			
-			const auto& cur_value = cur_iter->second;
-			return cur_value == value;
-
+			bool poll_result = false;
+			poll_result |= poll_events();
+			poll_result |= poll_fronts();
+			if (!poll_result)
+			{
+				break;
+			}
+			poll_count += 1;
 		}
-		bool add_int(const std::string& bb_key, const int& value)
+		during_poll = false;
+		if (poll_count)
 		{
-			auto cur_iter = _blackboard.find(bb_key);
-			if (cur_iter == _blackboard.end())
-			{
-				return false;
-			}
-			auto& cur_value = cur_iter->second;
-			if (cur_value.is_double())
-			{
-				std::get<double>(cur_value) += value;
-				return true;
-			}
-			else if (cur_value.is_float())
-			{
-				std::get<float>(cur_value) += value;
-				return true;
-			}
-			else if (cur_value.is_int())
-			{
-				std::get<int>(cur_value) += value;
-				return true;
-			}
-			else if (cur_value.is_int64())
-			{
-				std::get<std::int64_t>(cur_value) += value;
-				return true;
-			}
-			else
-			{
-				return false;
-			}
-		}
-		bool set_key_value(const std::string& bb_key, const any_value_type& new_value)
-		{
-			_blackboard[bb_key] = new_value;
 			return true;
 		}
-		template <typename T>
-		bool numeric_larger_than(const std::string& bb_key, const any_value_type& other_value)
+		else
 		{
-			auto cur_iter = _blackboard.find(bb_key);
-			if (cur_iter == _blackboard.end())
+			return false;
+		}
+	}
+	bool agent::poll_events()
+	{
+		if (_events.empty())
+		{
+			return false;
+		}
+		for (const auto& one_event : _events)
+		{
+			for (auto one_node : _fronts)
 			{
-				return false;
+				if (one_node->handle_event(one_event))
+				{
+					break;
+				}
 			}
-			auto& cur_value = cur_iter->second;
-			if (!std::holds_alternative<T>(cur_value))
+		}
+		_events.clear();
+		return true;
+		
+	}
+	bool agent::poll_fronts()
+	{
+		if (_fronts.empty())
+		{
+			return false;
+		}
+		std::vector<node*> pre_fronts;
+		std::swap(pre_fronts, _fronts);
+		int ready_count = 0;
+		for (const auto& one_node : pre_fronts)
+		{
+			if (one_node->ready())
 			{
-				return false;
+				ready_count++;
+				poll_node(one_node);
 			}
 			else
 			{
-				const auto& cur_raw_value = std::get<T>(cur_value);
-				if (other_value.is_double())
-				{
-					return cur_raw_value > std::get<double>(other_value);
-				}
-				else if (other_value.is_float())
-				{
-					return cur_raw_value > std::get<float>(other_value);
-				}
-				else if (other_value.is_int())
-				{
-					return cur_raw_value > std::get<int>(other_value);
-				}
-				else if (other_value.is_int64())
-				{
-					return cur_raw_value > std::get<std::int64_t>(other_value);
-				}
-				return false;
+				_fronts.push_back(one_node);
 			}
-
 		}
-		bool int_larger_than(const std::string& bb_key, const any_value_type& other_value)
-		{
-			return numeric_larger_than<int>(bb_key, other_value);
-		}
-		bool int64_larger_than(const std::string& bb_key, const any_value_type& other_value)
-		{
-			return numeric_larger_than<std::int64_t>(bb_key, other_value);
-		}
-		bool float_larger_than(const std::string& bb_key, const any_value_type& other_value)
-		{
-			return numeric_larger_than<float>(bb_key, other_value);
-		}
-		bool double_larger_than(const std::string& bb_key, const any_value_type& other_value)
-		{
-			return numeric_larger_than<double>(bb_key, other_value);
-		}
-		std::optional<bool> wait_for_second(double duration)
-		{
-
-			return std::nullopt;
-		}
-
-	};
+		return ready_count > 0;
+	}
+	void agent::poll_node(node* cur_node)
+	{
+		current_poll_node = cur_node;
+		cur_node->visit();
+		current_poll_node = nullptr;
+	}
 }
