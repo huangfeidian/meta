@@ -100,6 +100,7 @@ namespace bahavior
 						auto cur_callback = cur_iter->second;
 						_callbacks.erase(cur_iter);
 						cur_callback();
+						
 					}
 					handler_for_reuse.push_back(cur_handler);
 					count++;

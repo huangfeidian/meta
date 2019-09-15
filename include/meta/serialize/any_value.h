@@ -1,4 +1,5 @@
-﻿#include <vector>
+﻿#pragma once
+#include <vector>
 #include <list>
 #include <unordered_map>
 #include <unordered_set>
@@ -338,65 +339,6 @@ ANY_NUMERIC_CAL(div, /+)
 	{
 		return any_convert_tuple(_in_value, std::index_sequence_for<Args...>{});
 	}
-	template <typename T>
-	bool numeric_larger_than(const any_value_type& cur_value, const any_value_type& other_value)
-	{
-		if (!std::holds_alternative<T>(cur_value))
-		{
-			return false;
-		}
-		else
-		{
-			const auto& cur_raw_value = std::get<T>(cur_value);
-			if (other_value.is_double())
-			{
-				return cur_raw_value > std::get<double>(other_value);
-			}
-			else if (other_value.is_float())
-			{
-				return cur_raw_value > std::get<float>(other_value);
-			}
-			else if (other_value.is_int())
-			{
-				return cur_raw_value > std::get<int>(other_value);
-			}
-			else if (other_value.is_int64())
-			{
-				return cur_raw_value > std::get<std::int64_t>(other_value);
-			}
-			return false;
-		}
-
-	}
-	template <typename T>
-	bool numeric_larger_than(const any_value_type& cur_value, const any_value_type& other_value)
-	{
-		if (!std::holds_alternative<T>(cur_value))
-		{
-			return false;
-		}
-		else
-		{
-			const auto& cur_raw_value = std::get<T>(cur_value);
-			if (other_value.is_double())
-			{
-				return cur_raw_value > std::get<double>(other_value);
-			}
-			else if (other_value.is_float())
-			{
-				return cur_raw_value > std::get<float>(other_value);
-			}
-			else if (other_value.is_int())
-			{
-				return cur_raw_value > std::get<int>(other_value);
-			}
-			else if (other_value.is_int64())
-			{
-				return cur_raw_value > std::get<std::int64_t>(other_value);
-			}
-			return false;
-		}
-
-	}
+	
 }
 

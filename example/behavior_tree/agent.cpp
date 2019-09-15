@@ -7,12 +7,12 @@ namespace bahavior
 		auto cur_iter = _blackboard.find(bb_key);
 		return cur_iter != _blackboard.end();
 	}
-	bool agent::set_key_value(const std::string& bb_key, const any_value_type& new_value)
+	bool agent::set_key_value(const std::string& bb_key, const meta::serialize::any_value_type& new_value)
 	{
 		_blackboard[bb_key] = new_value;
 		return true;
 	}
-	bool agent::has_key_value(const std::string& bb_key, const any_value_type& value)
+	bool agent::has_key_value(const std::string& bb_key, const meta::serialize::any_value_type& value)
 	{
 		auto cur_iter = _blackboard.find(bb_key);
 		if (cur_iter == _blackboard.end())
@@ -24,7 +24,7 @@ namespace bahavior
 		return cur_value == value;
 
 	}
-	bool agent::number_add(const std::string& bb_key, const any_value_type& value)
+	bool agent::number_add(const std::string& bb_key, const meta::serialize::any_value_type& value)
 	{
 		auto cur_iter = _blackboard.find(bb_key);
 		if (cur_iter == _blackboard.end())
@@ -35,7 +35,7 @@ namespace bahavior
 		auto result = cur_value.numeric_cal_add(value);
 		return !!result;
 	}
-	bool agent::number_dec(const std::string& bb_key, const any_value_type& value)
+	bool agent::number_dec(const std::string& bb_key, const meta::serialize::any_value_type& value)
 	{
 		auto cur_iter = _blackboard.find(bb_key);
 		if (cur_iter == _blackboard.end())
@@ -46,7 +46,7 @@ namespace bahavior
 		auto result = cur_value.numeric_cal_dec(value);
 		return !!result;
 	}
-	bool agent::number_multiply(const std::string& bb_key, const any_value_type& value)
+	bool agent::number_multiply(const std::string& bb_key, const meta::serialize::any_value_type& value)
 	{
 		auto cur_iter = _blackboard.find(bb_key);
 		if (cur_iter == _blackboard.end())
@@ -57,7 +57,7 @@ namespace bahavior
 		auto result = cur_value.numeric_cal_multiply(value);
 		return !!result;
 	}
-	bool agent::number_div(const std::string& bb_key, const any_value_type& value)
+	bool agent::number_div(const std::string& bb_key, const meta::serialize::any_value_type& value)
 	{
 		auto cur_iter = _blackboard.find(bb_key);
 		if (cur_iter == _blackboard.end())
@@ -71,7 +71,7 @@ namespace bahavior
 
 
 
-	bool agent::number_larger_than(const std::string& bb_key, const any_value_type& other_value)
+	bool agent::number_larger_than(const std::string& bb_key, const meta::serialize::any_value_type& other_value)
 	{
 		auto cur_iter = _blackboard.find(bb_key);
 		if (cur_iter == _blackboard.end())
@@ -82,7 +82,7 @@ namespace bahavior
 		auto result = cur_value.numeric_larger_than(other_value);
 		return result.value_or(false);
 	}
-	bool agent::number_less_than(const std::string& bb_key, const any_value_type& other_value)
+	bool agent::number_less_than(const std::string& bb_key, const meta::serialize::any_value_type& other_value)
 	{
 		auto cur_iter = _blackboard.find(bb_key);
 		if (cur_iter == _blackboard.end())
@@ -93,11 +93,18 @@ namespace bahavior
 		auto result = cur_value.numeric_less_than(other_value);
 		return result.value_or(false);
 	}
-	std::optional<bool> agent::wait_for_second(double duration)
+	std::optional<bool> agent::wait_for_seconds(double duration)
 	{
-		auto timeout_lambda = [this]()
+		auto cur_timeout_closure = std::make_shared<timeout_closure>(current_poll_node);
+		std::weak_ptr<timeout_closure> weak_closure = cur_timeout_closure;
+		current_poll_node->_closure = std::move(cur_timeout_closure);
+		auto timeout_lambda = [=]()
 		{
-			current_poll_node->set_result(true);
+			auto temp_callback = weak_closure.lock();
+			if (temp_callback)
+			{
+				temp_callback->operator();
+			}
 		};
 		duration = std::max(0.5, duration);
 		auto cur_timer_handler = timer_manager::instance().add_timer_with_gap(
@@ -183,5 +190,10 @@ namespace bahavior
 		current_poll_node = cur_node;
 		cur_node->visit();
 		current_poll_node = nullptr;
+	}
+	void agent::dispatch_event(const event_type& new_event)
+	{
+		_events.push_back(new_event);
+		poll();
 	}
 }
