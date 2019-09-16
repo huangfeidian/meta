@@ -121,6 +121,10 @@ namespace bahavior
 				return _parent->tree_name();
 			}
 		}
+		void create_sub_node()
+		{
+
+		}
 	};
 
 	class timeout_closure : public node_closure
