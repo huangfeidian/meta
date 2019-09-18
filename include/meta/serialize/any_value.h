@@ -7,6 +7,9 @@
 #include <string>
 #include <cstdint>
 #include <optional>
+#include <nlohmann/json.hpp>
+
+using json = nlohmann::json;
 
 #define ANY_NUMERIC_CAL(op_name, op_val) template<typename T>	\
 std::optional<T> numeric_cal_##op_name(const T& other_value)	\
@@ -33,7 +36,8 @@ std::optional<T> numeric_cal_##op_name(const T& other_value)	\
 		std::get<std::int64_t>(cur_any_value) op_val add_value;	\
 	}															\
 	return numeric_value<T>();									\
-}
+}																\
+
 namespace meta::serialize
 {
     using any_key_type = std::variant<std::string, int>;
@@ -339,6 +343,51 @@ ANY_NUMERIC_CAL(div, /+)
 	{
 		return any_convert_tuple(_in_value, std::index_sequence_for<Args...>{});
 	}
-	
+
+	any_value_type any_convert(const json& data)
+	{
+		if (data.is_null())
+		{
+			return any_value_type();
+		}
+		else if (data.is_boolean())
+		{
+			return data.get<bool>();
+		}
+		else if (data.is_number_float())
+		{
+			return data.get<float>();
+		}
+		else if (data.is_number_integer())
+		{
+			return data.get<int>();
+		}
+		else if (data.is_number_unsigned())
+		{
+			return data.get<std::int64_t>();
+		}
+		else if (data.is_array())
+		{
+			auto result = any_vector();
+			for (const auto& one_item : data)
+			{
+				result.push_back(any_convert(one_item));
+			}
+			return result;
+		}
+		else if (data.is_object())
+		{
+			any_str_map result;
+			for (auto& one_item : data.items())
+			{
+				auto& item_value = one_item.value();
+				result[one_item.key()] = any_convert(item_value);
+
+			}
+			return result;
+		}
+		return any_value_type();
+	}
+		
 }
 

@@ -1,5 +1,4 @@
 ﻿#include "agent.h"
-#include "btree.h"
 namespace bahavior
 {
 	enum class node_type
@@ -54,17 +53,21 @@ namespace bahavior
 		std::uint8_t next_child_idx = 0;
 		agent* _agent;
 		const std::uint16_t _node_idx;
-		const std::string& _tree_name;
+		const btree_desc& btree_config;
+		const node_desc& node_config;
 		std::shared_ptr<node_closure> _closure;
+		std::shared_ptr<spdlog::logger> _logger;
 
-		node(node* in_parent, std::uint16_t in_node_idx, const std::string& in_tree_name, node_type in_type) :
+		node(node* in_parent, std::uint16_t in_node_idx, const btree_desc& in_btree, node_type in_type) :
 			_parent(in_parent),
 			_node_idx(in_node_idx),
-			_tree_name(in_tree_name),
+			btree_config(in_btree),
 			_state(node_state::init),
 			next_child_idx(0),
 			_agent(in_parent->_agent),
-			_type(in_type)
+			_type(in_type),
+			node_config(in_btree.nodes[in_node_idx]),
+			_logger(std::move(meta::utils::logger_mgr::instance().create_logger("btree")))
 		{
 
 		}
@@ -91,14 +94,45 @@ namespace bahavior
 		}
 		void visit()
 		{
-			if (_state == node_state::init)
+			if (!node_config.children.empty() && children.empty())
 			{
-
+				// 初始化所有的子节点
+				for (auto one_child_idx : node_config.children)
+				{
+					children.push_back(create_node_by_idx(btree_config, one_child_idx));
+				}
+			}
+			switch (_state)
+			{
+			case bahavior::node_state::init:
+				break;
+			case bahavior::node_state::enter:
+				on_enter();
+				break;
+			case bahavior::node_state::revisit:
+				on_revisit();
+				break;
+			case bahavior::node_state::waiting:
+				_logger->warn("btree {} visit node {} while state is waiting", btree_config.tree_name, node_config.idx);
+				break;
+			case bahavior::node_state::leave:
+				break;
+			case bahavior::node_state::finish:
+				break;
+			case bahavior::node_state::destroy:
+				_logger->warn("btree {} visit node {} while state is destroy", btree_config.tree_name, node_config.idx);
+				break;
+			default:
+				break;
 			}
 
 
 		}
 		virtual void on_enter()
+		{
+
+		}
+		virtual void on_revisit()
 		{
 
 		}
@@ -109,17 +143,15 @@ namespace bahavior
 				_closure.reset();
 			}
 			_state = node_state::finish;
+			next_child_idx = 0;
 		}
 		const std::string& tree_name() const
 		{
-			if (_type != node_type::node_root|| !_parent)
-			{
-				return _tree_name;
-			}
-			else
-			{
-				return _parent->tree_name();
-			}
+			return btree_config.tree_name;
+		}
+		void notify_stop()
+		{
+			_logger->warn("notify stop at tree {} node {}", btree_config.tree_name, node_config.idx);
 		}
 	};
 
@@ -135,4 +167,5 @@ namespace bahavior
 
 		}
 	};
+	static node* create_node_by_idx(const btree_desc& btree_config, std::uint16_t node_idx);
 }

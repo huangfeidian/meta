@@ -6,6 +6,7 @@
 #include <meta/serialize/decode.h>
 #include <meta/serialize/any_value.h>
 #include "timer_manager.hpp"
+#include "btree.h"
 
 namespace bahavior
 {
@@ -33,6 +34,7 @@ namespace bahavior
 		std::unordered_map<const node*, timer_handler> _timers;
 	private:
 		node* current_poll_node;
+		std::shared_ptr<spdlog::logger> _logger;
 	private:
 		bool poll_fronts(); // run the nodes
 		bool poll_events(); // handle the events;
