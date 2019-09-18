@@ -153,6 +153,10 @@ namespace bahavior
 		{
 			_logger->warn("notify stop at tree {} node {}", btree_config.tree_name, node_config.idx);
 		}
+		void create_sub_node()
+		{
+
+		}
 	};
 
 	class timeout_closure : public node_closure
