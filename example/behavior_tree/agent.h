@@ -23,6 +23,7 @@ namespace bahavior
 
 	class agent
 	{
+		friend class node;
 	public:
 		bool poll(); // first handle events then handle fronts
 		void dispatch_event(const event_type& new_event);
@@ -35,10 +36,12 @@ namespace bahavior
 	private:
 		node* current_poll_node;
 		std::shared_ptr<spdlog::logger> _logger;
+		bool _enabled = false;
 	private:
 		bool poll_fronts(); // run the nodes
 		bool poll_events(); // handle the events;
 		void poll_node(node* cur_node);// run one node
+		void notify_stop();
 
 	private:
 		// actions return true or false for immediate result
