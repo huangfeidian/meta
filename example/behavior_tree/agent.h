@@ -27,9 +27,15 @@ namespace bahavior
 	public:
 		bool poll(); // first handle events then handle fronts
 		void dispatch_event(const event_type& new_event);
+		bool is_running() const
+		{
+			return _enabled;
+		}
+		void notify_stop();
 	public:
 		bool during_poll;
 		std::vector<node*> _fronts; // node ready to run
+		std::vector<node*> pre_fronts;
 		std::vector<event_type> _events; // events to be handled;
 		meta::serialize::any_str_map _blackboard;
 		std::unordered_map<const node*, timer_handler> _timers;
@@ -41,7 +47,7 @@ namespace bahavior
 		bool poll_fronts(); // run the nodes
 		bool poll_events(); // handle the events;
 		void poll_node(node* cur_node);// run one node
-		void notify_stop();
+		
 
 	private:
 		// actions return true or false for immediate result

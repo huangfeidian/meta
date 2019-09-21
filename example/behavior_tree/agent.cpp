@@ -122,7 +122,11 @@ namespace bahavior
 		std::size_t poll_count = 0;
 		while (true)
 		{
-			
+			if (!_enabled)
+			{
+				return false;
+			}
+
 			bool poll_result = false;
 			poll_result |= poll_events();
 			poll_result |= poll_fronts();
@@ -168,7 +172,6 @@ namespace bahavior
 		{
 			return false;
 		}
-		std::vector<node*> pre_fronts;
 		std::swap(pre_fronts, _fronts);
 		int ready_count = 0;
 		for (const auto& one_node : pre_fronts)
@@ -177,13 +180,19 @@ namespace bahavior
 			{
 				ready_count++;
 				poll_node(one_node);
+				if (!_enabled)
+				{
+					break;
+					return false;
+				}
 			}
 			else
 			{
 				_fronts.push_back(one_node);
 			}
 		}
-		return ready_count > 0;
+		pre_fronts.clear();
+		return _enabled && ready_count > 0;
 	}
 	void agent::poll_node(node* cur_node)
 	{
@@ -195,5 +204,29 @@ namespace bahavior
 	{
 		_events.push_back(new_event);
 		poll();
+	}
+	void agent::notify_stop()
+	{
+		if (current_poll_node)
+		{
+			_logger->warn("btree stop at {}", current_poll_node->debug_info());
+		}
+		else
+		{
+			_logger->warn("btree stop while current_poll_node empty");
+		}
+		_logger->warn("fronts begin ");
+		for (const auto i : pre_fronts)
+		{
+			_logger->warn(i->debug_info());
+			i->interrupt();
+		}
+		_logger->warn("fronts ends ");
+		_fronts.clear();
+		_events.clear();
+		current_poll_node = nullptr;
+		_enabled = false;
+
+		
 	}
 }
