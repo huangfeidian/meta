@@ -68,13 +68,13 @@ int main()
 	std::vector<string> str_vec;
 	str_vec.push_back("str1");
 	str_vec.push_back("str2");
-	int_map[4] = any_convert(str_vec);
+	int_map[4] = any_encode(str_vec);
 	std::unordered_map<std::string, int> temp_map;
 	temp_map["str1"] = 1;
 	temp_map["str2"] = 2;
-	int_map[5] = any_convert(temp_map);
-	int_map[6] = any_convert(std::make_pair(temp_map, str_vec));
-	int_map[7] = any_convert(std::make_tuple(std::string("string"), false, 1.0));
+	int_map[5] = any_encode(temp_map);
+	int_map[6] = any_encode(std::make_pair(temp_map, str_vec));
+	int_map[7] = any_encode(std::make_tuple(std::string("string"), false, 1.0));
 	std::cout << "result is" <<encode(int_map) << std::endl;
 	debug_show(int_map);
 

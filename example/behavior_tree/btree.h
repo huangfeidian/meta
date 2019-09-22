@@ -6,13 +6,14 @@
 #include <meta/utility/logger.h>
 namespace bahavior
 {
+	using node_idx_type = std::uint32_t;
 	class node_desc
 	{
 	public:
-		std::uint32_t idx;
+		node_idx_type idx;
 		std::string type;
-		std::vector<std::uint32_t> children;
-		std::uint32_t parent_idx;
+		std::vector<node_idx_type> children;
+		node_idx_type parent_idx;
 		meta::serialize::any_str_map extra;
 		node_desc(const meta::serialize::any_str_map &data)
 		{

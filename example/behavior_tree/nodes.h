@@ -72,13 +72,13 @@ namespace bahavior
 		node_type _type;
 		std::uint8_t next_child_idx = 0;
 		agent* _agent;
-		const std::uint16_t _node_idx;
+		const node_idx_type _node_idx;
 		const btree_desc& btree_config;
 		const node_desc& node_config;
 		std::shared_ptr<node_closure> _closure;
 		std::shared_ptr<spdlog::logger> _logger;
 
-		node(node* in_parent, std::uint16_t in_node_idx, const btree_desc& in_btree, node_type in_type) :
+		node(node* in_parent, node_idx_type in_node_idx, const btree_desc& in_btree, node_type in_type) :
 			_parent(in_parent),
 			_node_idx(in_node_idx),
 			btree_config(in_btree),
@@ -145,6 +145,9 @@ namespace bahavior
 				break;
 			
 			default:
+				_logger->warn("btree {} visit node {} with invalid state {}",
+					btree_config.tree_name, node_config.idx, int(_state));
+				_agent->notify_stop();
 				break;
 			}
 
@@ -157,7 +160,7 @@ namespace bahavior
 				// 初始化所有的子节点
 				for (auto one_child_idx : node_config.children)
 				{
-					children.push_back(create_node_by_idx(btree_config, one_child_idx));
+					children.push_back(create_node_by_idx(btree_config, one_child_idx, this));
 				}
 			}
 		}
@@ -166,12 +169,16 @@ namespace bahavior
 			_state = node_state::entering;
 			next_child_idx = 0;
 			result = false;
+			for (auto one_child : children)
+			{
+				one_child->_state = node_state::init;
+			}
 		}
 		virtual void on_revisit()
 		{
 			_state = node_state::revisiting;
 		}
-		virtual void visit_child(std::uint16_t child_idx)
+		virtual void visit_child(node_idx_type child_idx)
 		{
 			if (child_idx >= children.size())
 			{
@@ -182,6 +189,7 @@ namespace bahavior
 			}
 			children[child_idx]->_state = node_state::init;
 			_agent->_fronts.push_back(children[child_idx]);
+			_state = node_state::wait_child;
 
 		}
 		virtual void leave()
@@ -227,7 +235,7 @@ namespace bahavior
 	};
 
 	
-	static node* create_node_by_idx(const btree_desc& btree_config, std::uint16_t node_idx, node* parent);
+	static node* create_node_by_idx(const btree_desc& btree_config, node_idx_type node_idx, node* parent);
 	class root :public node
 	{
 	public:
@@ -294,7 +302,7 @@ namespace bahavior
 	class random_sequence : public node
 	{
 	private:
-		std::vector<std::uint16_t> _shuffle;
+		std::vector<node_idx_type> _shuffle;
 		
 		void on_enter()
 		{
@@ -402,11 +410,11 @@ namespace bahavior
 			}
 			return true;
 		}
-		std::uint16_t prob_choose_child_idx() const
+		node_idx_type prob_choose_child_idx() const
 		{
-			std::uint16_t prob_sum = std::accumulate(_probilities.begin(), _probilities.end(), 0);
+			node_idx_type prob_sum = std::accumulate(_probilities.begin(), _probilities.end(), 0);
 			auto cur_choice = _distribution(_generator);
-			std::uint16_t temp = cur_choice % prob_sum;
+			node_idx_type temp = cur_choice % prob_sum;
 			for (int i = 0; i < children.size(); i++)
 			{
 				temp -= _probilities[0];
@@ -533,8 +541,9 @@ namespace bahavior
 					_agent->notify_stop();
 					return;
 				}
-				visit_child(0);
+				
 			}
+			visit_child(0);
 
 		}
 		bool create_sub_tree_node()
@@ -581,19 +590,112 @@ namespace bahavior
 		}
 		void on_revisit()
 		{
-			// 如果获得返回结果的那个节点
+			bool final_result = false;
 			for (auto one_child : children)
 			{
+				if (one_child->_state == node_state::dead)
+				{
+					final_result = one_child->result;
+				}
 				one_child->interrupt();
 			}
-			set_result(true);
+			
+			set_result(final_result);
 		}
 	};
 	class action : public node
 	{
+		std::string action_name;
+		meta::serialize::any_vector action_args;
 		void on_enter()
 		{
 			node::on_enter();
+			if (action_name.empty())
+			{
+				if (!load_action_config())
+				{
+					_logger->warn("{} fail to load action args with extra {}", debug_info(), encode(node_config.extra));
+					_agent->notify_stop();
+					return;
+				}
+			}
+			std::optional<bool> action_result = _agent->agent_action(this, action_name, action_args);
+			if (!action_result)
+			{
+				_state = node_state::blocking;
+				return;
+			}
+			else
+			{
+				set_result(action_result.value());
+			}
+
+		}
+		bool load_action_config()
+		{
+			auto& extra = node_config.extra;
+			auto action_iter = extra.find("action_name");
+			if (action_iter == extra.end())
+			{
+				return false;
+			}
+			if (!action_iter->second.is_str())
+			{
+				return false;
+			}
+			action_name = std::get<std::string>(action_iter->second);
+			auto action_args_iter = extra.find("action_args");
+			if (action_args_iter == extra.end())
+			{
+				return false;
+			}
+			if (!action_args_iter->second.is_vector())
+			{
+				return false;
+			}
+			const meta::serialize::any_vector& args_vec = std::get<meta::serialize::any_vector>(action_iter->second);
+			for (auto& one_arg : args_vec)
+			{
+				if (!one_arg.is_vector())
+				{
+					return false;
+				}
+				auto& one_arg_vec = std::get<meta::serialize::any_vector>(one_arg);
+				if (one_arg_vec.size() != 2)
+				{
+					return false;
+				}
+				if (!one_arg_vec[0].is_str())
+				{
+					return false;
+				}
+				auto& cur_arg_type_str = std::get<std::string>(one_arg_vec[0]);
+				if (cur_arg_type_str == "blackboard")
+				{
+					if (!one_arg_vec[1].is_str())
+					{
+						return false;
+					}
+					auto& cur_bb_key = std::get<std::string>(one_arg_vec[1]);
+					auto cur_bb_iter = _agent->_blackboard.find(cur_bb_key);
+					if (cur_bb_iter == _agent->_blackboard.end())
+					{
+						return false;
+					}
+					action_args.push_back(cur_bb_iter->second);
+
+				}
+				else if (cur_arg_type_str == "plain")
+				{
+					action_args.push_back(one_arg_vec[1]);
+				}
+				else
+				{
+					return false;
+				}
+			}
+			return true;
+
 		}
 	};
 }

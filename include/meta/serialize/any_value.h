@@ -207,13 +207,13 @@ ANY_NUMERIC_CAL(div, /+)
 	};
 	template <typename T>
 	typename std::enable_if< std::is_constructible_v<any_value_type, T>, any_value_type>::type 
-		any_convert(const T& _in_value)
+		any_encode(const T& _in_value)
 	{
 		return any_value_type(_in_value);
 	}
 	template <typename T>
 	typename std::enable_if< std::is_constructible_v<any_value_type, T>, any_value_type>::type 
-		any_convert(const std::vector<T>& _in_value)
+		any_encode(const std::vector<T>& _in_value)
 	{
 		any_vector result;
 		for (const auto& one_item : _in_value)
@@ -224,18 +224,18 @@ ANY_NUMERIC_CAL(div, /+)
 	}
 	template <typename T>
 	typename std::enable_if< !std::is_constructible_v<any_value_type, T>, any_value_type>::type 
-		any_convert(const std::vector<T>& _in_value)
+		any_encode(const std::vector<T>& _in_value)
 	{
 		any_vector result;
 		for (const auto& one_item : _in_value)
 		{
-			result.emplace_back(any_convert(one_item));
+			result.emplace_back(any_encode(one_item));
 		}
 		return result;
 	}
 	template <typename T>
 	typename std::enable_if< std::is_constructible_v<any_value_type, T>, any_value_type>::type 
-		any_convert(const std::list<T>& _in_value)
+		any_encode(const std::list<T>& _in_value)
 	{
 		any_vector result;
 		for (const auto& one_item : _in_value)
@@ -246,18 +246,18 @@ ANY_NUMERIC_CAL(div, /+)
 	}
 	template <typename T>
 	typename std::enable_if< !std::is_constructible_v<any_value_type, T>, any_value_type>::type 
-		any_convert(const std::list<T>& _in_value)
+		any_encode(const std::list<T>& _in_value)
 	{
 		any_vector result;
 		for (const auto& one_item : _in_value)
 		{
-			result.emplace_back(any_convert(one_item));
+			result.emplace_back(any_encode(one_item));
 		}
 		return result;
 	}
 	template <typename T>
 	typename std::enable_if< std::is_constructible_v<any_value_type, T>, any_value_type>::type
-		any_convert(const std::unordered_set<T>& _in_value)
+		any_encode(const std::unordered_set<T>& _in_value)
 	{
 		any_vector result;
 		for (const auto& one_item : _in_value)
@@ -268,19 +268,19 @@ ANY_NUMERIC_CAL(div, /+)
 	}
 	template <typename T>
 	typename std::enable_if< !std::is_constructible_v<any_value_type, T>, any_value_type>::type
-		any_convert(const std::unordered_set<T>& _in_value)
+		any_encode(const std::unordered_set<T>& _in_value)
 	{
 		any_vector result;
 		for (const auto& one_item : _in_value)
 		{
-			result.emplace_back(any_convert(one_item));
+			result.emplace_back(any_encode(one_item));
 		}
 		return result;
 	}
 
 	template <typename T>
 	typename std::enable_if< std::is_constructible_v<any_value_type, T>, any_value_type>::type 
-		any_convert(const std::unordered_map<int, T>& _in_value)
+		any_encode(const std::unordered_map<int, T>& _in_value)
 	{
 		any_int_map result;
 		for (const auto& one_item : _in_value)
@@ -291,19 +291,19 @@ ANY_NUMERIC_CAL(div, /+)
 	}
 	template <typename T>
 	typename std::enable_if< !std::is_constructible_v<any_value_type, T>, any_value_type>::type 
-		any_convert(const std::unordered_map<int, T>& _in_value)
+		any_encode(const std::unordered_map<int, T>& _in_value)
 	{
 		any_int_map result;
 		for (const auto& one_item : _in_value)
 		{
-			result.emplace(one_item.first, any_convert(one_item.second));
+			result.emplace(one_item.first, any_encode(one_item.second));
 		}
 		return result;
 	}
 
 	template <typename T>
 	typename std::enable_if< std::is_constructible_v<any_value_type, T>, any_value_type>::type 
-		any_convert(const std::unordered_map<std::string, T>& _in_value)
+		any_encode(const std::unordered_map<std::string, T>& _in_value)
 	{
 		any_str_map result;
 		for (const auto& one_item : _in_value)
@@ -314,37 +314,37 @@ ANY_NUMERIC_CAL(div, /+)
 	}
 	template <typename T>
 	typename std::enable_if< !std::is_constructible_v<any_value_type, T>, any_value_type>::type 
-		any_convert(const std::unordered_map<std::string, T>& _in_value)
+		any_encode(const std::unordered_map<std::string, T>& _in_value)
 	{
 		any_str_map result;
 		for (const auto& one_item : _in_value)
 		{
-			result.emplace(one_item.first, any_convert(one_item.second));
+			result.emplace(one_item.first, any_encode(one_item.second));
 		}
 		return result;
 	}
 	template <typename T1, typename T2>
-	any_value_type any_convert(const std::pair<T1, T2>& _in_value)
+	any_value_type any_encode(const std::pair<T1, T2>& _in_value)
 	{
 		any_vector result;
-		result.push_back(any_convert(_in_value.first));
-		result.push_back(any_convert(_in_value.second));
+		result.push_back(any_encode(_in_value.first));
+		result.push_back(any_encode(_in_value.second));
 		return result;
 	}
 	template <typename... Args, std::size_t... index>
-	any_value_type any_convert_tuple(const std::tuple<Args...>& _in_value, std::index_sequence<index...>)
+	any_value_type any_encode_tuple(const std::tuple<Args...>& _in_value, std::index_sequence<index...>)
 	{
 		any_vector result;
-		(result.push_back(any_convert(std::get<index>(_in_value))),...);
+		(result.push_back(any_encode(std::get<index>(_in_value))),...);
 		return result;
 	}
 	template <typename... Args>
-	any_value_type any_convert(const std::tuple<Args...>& _in_value)
+	any_value_type any_encode(const std::tuple<Args...>& _in_value)
 	{
-		return any_convert_tuple(_in_value, std::index_sequence_for<Args...>{});
+		return any_encode_tuple(_in_value, std::index_sequence_for<Args...>{});
 	}
 
-	any_value_type any_convert(const json& data)
+	any_value_type any_encode(const json& data)
 	{
 		if (data.is_null())
 		{
@@ -371,7 +371,7 @@ ANY_NUMERIC_CAL(div, /+)
 			auto result = any_vector();
 			for (const auto& one_item : data)
 			{
-				result.push_back(any_convert(one_item));
+				result.push_back(any_encode(one_item));
 			}
 			return result;
 		}
@@ -381,13 +381,231 @@ ANY_NUMERIC_CAL(div, /+)
 			for (auto& one_item : data.items())
 			{
 				auto& item_value = one_item.value();
-				result[one_item.key()] = any_convert(item_value);
+				result[one_item.key()] = any_encode(item_value);
 
 			}
 			return result;
 		}
 		return any_value_type();
 	}
-		
+	template <typename T>
+	typename std::enable_if<std::is_constructible_v<any_value_type, T>, bool>::type
+		any_decode(const any_value_type& data, T& dst)
+	{
+		if (std::holds_alternative<T>(data))
+		{
+			dst = std::get<T>(data);
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+	template <typename T>
+	bool any_decode(const any_value_type& data, std::vector<T>& dst)
+	{
+		if (!std::holds_alternative<any_vector>(data))
+		{
+			return false;
+			
+		}
+		auto& cur_vec = std::get<any_vector>(data);
+		for (auto& one_item : cur_vec)
+		{
+			T temp;
+			if (any_decode(one_item, temp))
+			{
+				dst.push_back(temp);
+			}
+			else
+			{
+				return false;
+			}
+		}
+		return true;
+	}
+	template <typename T, std::size_t N>
+	bool any_decode(const any_value_type& data, std::array<T, N>& dst)
+	{
+		if (!std::holds_alternative<any_vector>(data))
+		{
+			return false;
+		}
+		auto& cur_vec = std::get<any_vector>(data);
+		if (cur_vec.size() != N)
+		{
+			return false;
+		}
+		for (auto& one_item : cur_vec)
+		{
+			T temp;
+			if (any_decode(one_item, temp))
+			{
+				dst.push_back(temp);
+			}
+			else
+			{
+				return false;
+			}
+		}
+		return true;
+	}
+	template <typename T>
+	bool any_decode(const any_value_type& data, std::unordered_map<std::string, T>& dst)
+	{
+		if (!std::holds_alternative<any_str_map>(data))
+		{
+			return false;
+		}
+		auto& cur_map = std::get<any_str_map>(data);
+		for (auto& one_item : cur_map)
+		{
+			T temp;
+			if (any_decode(one_item.second, temp))
+			{
+				dst[one_item.first] = temp;
+			}
+			else
+			{
+				return false;
+			}
+		}
+		return true;
+	}
+	template <typename T>
+	bool any_decode(const any_value_type& data, std::unordered_map<int, T>& dst)
+	{
+		if (!std::holds_alternative<any_str_map>(data))
+		{
+			return false;
+		}
+		auto& cur_map = std::get<any_str_map>(data);
+		for (auto& one_item : cur_map)
+		{
+			T temp;
+			if (any_decode(one_item.second, temp))
+			{
+				dst[one_item.first] = temp;
+			}
+			else
+			{
+				return false;
+			}
+		}
+		return true;
+	}
+
+	template <typename T1, typename T2>
+	bool any_decode(const any_value_type& data, std::pair<T1, T2>& dst)
+	{
+		if (!std::holds_alternative<any_vector>(data))
+		{
+			return false;
+		}
+		auto& cur_vec = std::get<any_vector>(data);
+		if (cur_vec.size() != 2)
+		{
+			return false;
+		}
+		if (!any_decode(cur_vec[0], dst.first))
+		{
+			return false;
+		}
+		if (!any_decode(cur_vec[1], dst.second))
+		{
+			return false;
+		}
+		return true;
+	}
+	template <typename... Args>
+	bool any_decode(const any_value_type& data, std::tuple<Args...>& dst)
+	{
+		if (!std::holds_alternative<any_vector>(data))
+		{
+			return false;
+		}
+		auto& cur_vec = std::get<any_vector>(data);
+		if (cur_vec.size() != std::tuple_size<std::tuple<Args...>>::value)
+		{
+			return false;
+		}
+	}
+	template <typename... Args, std::size_t... index>
+	bool decode_for_tuple(const any_vector& data, std::tuple<Args...>& dst, std::index_sequence<index...>)
+	{
+		return (any_decode(data[index], std::get<index>(dst)) && ...);
+	}
+
+	bool any_decode(const any_value_type& data, json& dst)
+	{
+		if (data.is_bool())
+		{
+			dst = std::get<bool>(data);
+			return true;
+		}
+		else if (data.is_str())
+		{
+			dst = std::get<std::string>(data);
+			return true;
+		}
+		else if (data.is_float())
+		{
+			dst = std::get<float>(data);
+			return true;
+		}
+		else if (data.is_double())
+		{
+			dst = std::get<double>(data);
+			return true;
+		}
+		else if (data.is_int())
+		{
+			dst = std::get<int>(data);
+			return true;
+		}
+		else if (data.is_int64())
+		{
+			dst = std::get<std::int64_t>(data);
+			return true;
+		}
+		else if (data.is_vector())
+		{
+			const auto& cur_vec = std::get<any_vector>(data);
+			for (auto& one_item : cur_vec)
+			{
+				json temp;
+				any_decode(one_item, temp);
+				dst.push_back(temp);
+			}
+			return true;
+		}
+		else if (data.is_str_map())
+		{
+			const auto& cur_vec = std::get<any_str_map>(data);
+			for (auto& one_item : cur_vec)
+			{
+				json temp;
+				any_decode(one_item.second, temp);
+				dst[one_item.first] = temp;
+			}
+			return true;
+		}
+		else if (data.is_int_map())
+		{
+			const auto& cur_vec = std::get<any_int_map>(data);
+			for (auto& one_item : cur_vec)
+			{
+				json temp;
+				any_decode(one_item.second, temp);
+				dst[one_item.first] = temp;
+			}
+			return true;
+		}
+		else
+		{
+			return true;
+		}
+	}
 }
 
