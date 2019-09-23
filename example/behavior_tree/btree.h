@@ -4,7 +4,7 @@
 #include <filesystem>
 #include <sstream>
 #include <meta/utility/logger.h>
-namespace bahavior
+namespace behavior
 {
 	using node_idx_type = std::uint32_t;
 	class node_desc
@@ -89,7 +89,7 @@ namespace bahavior
 	private:
 		bool load_from_json(const json& btree_file_data)
 		{
-			meta::serialize::any_value_type parse_result = meta::serialize::any_convert(btree_file_data);
+			meta::serialize::any_value_type parse_result = meta::serialize::any_encode(btree_file_data);
 			if (!parse_result.is_str_map())
 			{
 				return false;

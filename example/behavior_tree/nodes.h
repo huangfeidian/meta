@@ -1,7 +1,7 @@
 ﻿#include "agent.h"
 #include <algorithm>
 #include <random>
-namespace bahavior
+namespace behavior
 {
 	enum class node_type
 	{
@@ -124,7 +124,7 @@ namespace bahavior
 			
 			switch (_state)
 			{
-			case bahavior::node_state::init:
+			case node_state::init:
 				create_children();
 				on_enter();
 				if (_state == node_state::entering)
@@ -134,7 +134,7 @@ namespace bahavior
 					_agent->notify_stop();
 				}
 				break;
-			case bahavior::node_state::awaken:
+			case node_state::awaken:
 				on_revisit();
 				if (_state == node_state::revisiting)
 				{

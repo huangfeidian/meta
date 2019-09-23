@@ -7,7 +7,7 @@
 #include <functional>
 #include <memory>
 #include <queue>
-namespace bahavior
+namespace behavior
 {
 
 	class timer_manager
