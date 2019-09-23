@@ -118,8 +118,8 @@ namespace behavior
 		current_poll_node = nullptr;
 		_enabled = false;
 	}
-	std::optional<bool> agent_action(const std::string& action_name, const meta::serialize::any_vector& action_args)
+	std::optional<bool> agent::agent_action(const std::string& action_name, const meta::serialize::any_vector& action_args)
 	{
-
+		return std::nullopt;
 	}
 }

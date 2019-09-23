@@ -41,7 +41,7 @@ namespace behavior
 		std::vector<event_type> _events; // events to be handled;
 		meta::serialize::any_str_map _blackboard;
 		std::unordered_map<const node*, timer_handler> _timers;
-		virtual std::optional<bool> agent_action(node* cur_node, const std::string& action_name, 
+		virtual std::optional<bool> agent_action(const std::string& action_name, 
 			const meta::serialize::any_vector& action_args);
 	protected:
 		node* current_poll_node;

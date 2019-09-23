@@ -1,0 +1,16 @@
+private:
+using action_func_type = std::optional<bool> ({{class_name}}::*)(const meta::serialize::any_vector&);
+
+static std::unordered_map<std::string, action_func_type> action_funcs_map;
+
+static void init_actions_func_map(); // called in _static_constructor_
+
+{{#behavior_actions}}
+{{^is_inherited}}
+std::optional<bool> {{func_name}}_action_wrapper(const meta::serialize::any_vector& data);
+{{/is_inherited}}
+{{/behavior_actions}}
+
+
+
+

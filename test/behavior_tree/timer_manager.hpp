@@ -9,12 +9,13 @@
 #include <queue>
 namespace behavior
 {
-
+	using time_handler_t = std::uint64_t;
+	class timer_handler;
 	class timer_manager
 	{
 	public:
 		using callback_type = std::function<void()>;
-		using handler_t = std::uint64_t;
+		
 		using ts_t = std::chrono::time_point<std::chrono::system_clock>;
 	private:
 		timer_manager()
@@ -22,12 +23,12 @@ namespace behavior
 
 		}
 	private:
-		handler_t max_handler_used = 0;
-		std::vector<handler_t> handler_for_reuse;
-		std::unordered_map<handler_t, callback_type> _callbacks;
-		std::priority_queue<std::pair<ts_t, handler_t>> ts_handlers;
+		time_handler_t max_handler_used = 0;
+		std::vector<time_handler_t> handler_for_reuse;
+		std::unordered_map<time_handler_t, callback_type> _callbacks;
+		std::priority_queue<std::pair<ts_t, time_handler_t>> ts_handlers;
 	private:
-		handler_t gen_handler()
+		time_handler_t gen_handler()
 		{
 			if (handler_for_reuse.empty())
 			{
@@ -66,12 +67,12 @@ namespace behavior
 			auto expire_ts = std::chrono::system_clock::now() + cur_expire_gap;
 			return add_timer_with_ts(expire_ts, cur_callback);
 		}
-		bool is_timer_active(handler_t cur_handler)
+		bool is_timer_active(time_handler_t cur_handler)
 		{
 			auto cur_iter = _callbacks.find(cur_handler);
 			return cur_iter == _callbacks.end();
 		}
-		bool cancel_timer(handler_t cur_handler)
+		bool cancel_timer(time_handler_t cur_handler)
 		{
 			auto cur_iter = _callbacks.find(cur_handler);
 			if (cur_iter == _callbacks.end())
@@ -116,9 +117,9 @@ namespace behavior
 	class timer_handler
 	{
 	private:
-		timer_manager::handler_t _handler;
+		time_handler_t _handler;
 	public:
-		timer_handler(timer_manager::handler_t in_handler) :
+		timer_handler(time_handler_t in_handler) :
 			_handler(in_handler)
 		{
 

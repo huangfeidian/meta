@@ -4,7 +4,8 @@ struct static_constructor_for_test_class
 {
     static_constructor_for_test_class();
 };
-static static_constructor_for_test_class _static_constructor_;private:
+static static_constructor_for_test_class _static_constructor_;
+private:
 using func_type = void(test_class::*)(const std::vector<const void*>&);
 using const_func_type = void(test_class::*)(const std::vector<const void*>&)const ;
 static std::unordered_map<std::string, std::pair<func_type, std::vector<int>>> attr_func_map;

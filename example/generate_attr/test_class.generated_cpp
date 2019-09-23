@@ -124,7 +124,6 @@ std::pair<void*, int> test::test_class::var_address_for_name(const std::string& 
 	}
 }
 void test::test_class::register_types()
-
 {
     auto cur_type_map = meta::utils::type_map<std::string>();
     cur_type_map.template register_base_type<std::string>("std::string");

@@ -111,4 +111,16 @@ namespace behavior
 		_timers[current_poll_node] = cur_timer_handler;
 		return std::nullopt;
 	}
+	std::optional<bool> action_agent::agent_action(const std::string& action_name, const meta::serialize::any_vector& action_args)
+	{
+		auto action_iter = action_funcs_map.find(action_name);
+		if (action_iter == action_funcs_map.end())
+		{
+			_logger->warn("cant find action {}", action_name);
+			notify_stop();
+			return std::nullopt;
+		}
+		return (this->*(action_iter->second))(action_args);
+	}
 }
+#include "action_agent.generated_cpp"

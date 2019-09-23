@@ -1,4 +1,5 @@
-﻿#include "agent.h"
+﻿#pragma once
+#include "agent.h"
 #include <algorithm>
 #include <random>
 namespace behavior
@@ -620,15 +621,24 @@ namespace behavior
 				}
 			}
 			std::optional<bool> action_result = _agent->agent_action(this, action_name, action_args);
-			if (!action_result)
+			if (_agent->during_poll)
 			{
-				_state = node_state::blocking;
-				return;
+				if (!action_result)
+				{
+					_state = node_state::blocking;
+					return;
+				}
+				else
+				{
+					set_result(action_result.value());
+				}
 			}
 			else
 			{
-				set_result(action_result.value());
+				return;
 			}
+
+			
 
 		}
 		bool load_action_config()

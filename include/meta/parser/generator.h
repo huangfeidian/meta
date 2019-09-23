@@ -308,22 +308,10 @@ namespace meta::generator
 			});
 		return result;
 	}
-	std::vector<std::pair<const variable_node*, const callable_node*>> parse_rpc_func_for_class(const class_node* one_class)
-	{
-		return parse_tag_func_for_class_with_field(one_class, "component", "rpc");
-	}
-	std::vector<std::pair<const variable_node*, const callable_node*>> parse_attr_func_for_class(const class_node* one_class)
-	{
-		return parse_tag_func_for_class_with_field(one_class, "", "attr");
-	}
 
 
-	mustache::data generate_attr_funcs_for_class(const class_node* one_class)
+	mustache::data generate_funcs_for_class_with_pred(const class_node* one_class, const std::function<bool(const callable_node&)>& func_pred)
 	{
-		auto func_pred = [](const callable_node& _cur_node)
-		{
-			return filter_with_annotation<callable_node>("attr", _cur_node);
-		};
 		const auto& filed_func_info = one_class->query_method_with_pred_recursive(func_pred);
 		std::unordered_set<const callable_node*> local_func_set;
 		for (auto one_func : one_class->query_method_with_pred(func_pred))
@@ -373,12 +361,8 @@ namespace meta::generator
 
 		return method_list;
 	}
-	mustache::data generate_attr_vars_for_class(const class_node* one_class)
+	mustache::data generate_fields_for_class_with_pred(const class_node* one_class, const std::function<bool(const variable_node&)>& field_pred)
 	{
-		auto field_pred = [](const variable_node& _cur_node)
-		{
-			return filter_with_annotation<variable_node>("attr", _cur_node);
-		};
 		auto all_attr_fields = one_class->query_fields_with_pred_recursive(field_pred);
 		std::unordered_set<const variable_node*>  local_attrs_set;
 		for (auto one_attr : all_attr_fields)
