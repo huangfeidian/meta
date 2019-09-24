@@ -1,0 +1,27 @@
+{
+    "tree_name": "test_1",
+    "signature": "created by spiritsaway 2019/09/25/",
+    "extra": {
+
+    },
+    "nodes": [
+        {
+            "idx": 0,
+            "type": "root",
+            "extra": {},
+            "children": [1]
+        },
+        {
+            "idx": 1,
+            "type": "action",
+            "extra": {
+                "action_name": "wait_for_seconds",
+                "action_args": [
+                    ["plain", 2]
+                ] 
+            },
+            "children": []
+        }
+    ]
+
+}

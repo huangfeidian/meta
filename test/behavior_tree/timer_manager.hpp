@@ -114,8 +114,10 @@ namespace behavior
 			return count;
 		}
 	};
+	class timer_handler_hash;
 	class timer_handler
 	{
+		friend class timer_handler_hash;
 	private:
 		time_handler_t _handler;
 	public:
@@ -135,6 +137,17 @@ namespace behavior
 			auto pre_handler = _handler;
 			_handler = 0;
 			return timer_manager::instance().cancel_timer(pre_handler);
+		}
+		bool operator==(const timer_handler& other)
+		{
+			return _handler == other._handler;
+		}
+	};
+	class timer_handler_hash
+	{
+		std::size_t operator()(const timer_handler& cur_handler)
+		{
+			return cur_handler._handler;
 		}
 	};
 }

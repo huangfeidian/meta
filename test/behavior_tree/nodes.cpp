@@ -402,6 +402,9 @@ namespace behavior
 		const btree_desc* cur_tree_desc = btree_desc::load(sub_tree_name);
 		if (!cur_tree_desc)
 		{
+			_logger->warn("{} fail to load btree {}", debug_info(), sub_tree_name);
+			_agent->notify_stop();
+
 			return false;
 		}
 		auto new_root = node_creator::create_node_by_idx(*cur_tree_desc, 0, this);
@@ -532,6 +535,36 @@ namespace behavior
 			}
 		}
 		return true;
+
+	}
+	void wait_event::on_enter()
+	{
+		node::on_enter();
+		if (expetced_event.empty())
+		{
+			auto event_iter = node_config.extra.find("expected_event");
+			if (event_iter == node_config.extra.end())
+			{
+				_logger->warn("{} fail to load expected event", debug_info());
+				_agent->notify_stop();
+				return;
+			}
+			if (!event_iter->second.is_str())
+			{
+				_logger->warn("{} fail to load expected event form value {}", debug_info(), 
+					meta::serialize::encode(event_iter->second));
+				_agent->notify_stop();
+				return;
+			}
+			expetced_event = std::get<std::string>(event_iter->second);
+		}
+		_state = node_state::blocking;
+	}
+	void reset::on_enter()
+	{
+		node::on_enter();
+		_state = node_state::init;
+		_agent->reset();
 
 	}
 	node* node_creator::create_node_by_idx(const btree_desc& btree_config, node_idx_type node_idx, node* parent)

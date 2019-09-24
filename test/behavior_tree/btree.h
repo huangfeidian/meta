@@ -13,7 +13,6 @@ namespace behavior
 		node_idx_type idx;
 		std::string type;
 		std::vector<node_idx_type> children;
-		node_idx_type parent_idx;
 		meta::serialize::any_str_map extra;
 		node_desc(const meta::serialize::any_str_map &data)
 		{
@@ -27,17 +26,6 @@ namespace behavior
 				return;
 			}
 			idx = std::get<int>(idx_iter->second);
-
-			auto parent_idx_iter = data.find("parent_idx_iter");
-			if (parent_idx_iter == data.end())
-			{
-				return;
-			}
-			if (!parent_idx_iter->second.is_int())
-			{
-				return;
-			}
-			parent_idx = std::get<int>(parent_idx_iter->second);
 
 			auto children_iter = data.find("children");
 			if (children_iter == data.end())
@@ -182,9 +170,18 @@ namespace behavior
 			{
 				return cur_iter->second;
 			}
-			auto new_btree = new btree_desc(file_path);
+			auto new_btree = new btree_desc(btree_respository + file_path + ".json");
+			if (new_btree->nodes.empty())
+			{
+				return nullptr;
+			}
 			tree_cache[file_path] = new_btree;
 			return new_btree;
+		}
+		static std::string btree_respository;
+		static void set_btree_directory(const std::string& cur_directory)
+		{
+			btree_respository = cur_directory;
 		}
 	};
 

@@ -11,6 +11,14 @@ namespace behavior
 		}
 		during_poll = true;
 		std::size_t poll_count = 0;
+		if (_debug_on)
+		{
+			_logger->info("poll begins with fronts:");
+			for (const auto one_node : _fronts)
+			{
+				_logger->info("{}", one_node->debug_info());
+			}
+		}
 		while (true)
 		{
 			if (!_enabled)
@@ -21,9 +29,17 @@ namespace behavior
 			bool poll_result = false;
 			poll_result |= poll_events();
 			poll_result |= poll_fronts();
-			if (!poll_result)
+			if (!reset_flag)
 			{
-				break;
+				if (!poll_result)
+				{
+					break;
+				}
+			}
+			else
+			{
+				reset_flag = false;
+				_fronts.push_back(cur_root_node);
 			}
 			poll_count += 1;
 		}
@@ -88,6 +104,10 @@ namespace behavior
 	void agent::poll_node(node* cur_node)
 	{
 		current_poll_node = cur_node;
+		if (_debug_on)
+		{
+			_logger->info("poll node {}", cur_node->debug_info());
+		}
 		cur_node->visit();
 		current_poll_node = nullptr;
 	}
@@ -106,6 +126,10 @@ namespace behavior
 		{
 			_logger->warn("btree stop while current_poll_node empty");
 		}
+		for (auto one_timer : _timers)
+		{
+			one_timer.cancel();
+		}
 		_logger->warn("fronts begin ");
 		for (const auto i : pre_fronts)
 		{
@@ -118,8 +142,67 @@ namespace behavior
 		current_poll_node = nullptr;
 		_enabled = false;
 	}
-	std::optional<bool> agent::agent_action(const std::string& action_name, const meta::serialize::any_vector& action_args)
+	std::optional<bool> agent::agent_action(const std::string& action_name, 
+		const meta::serialize::any_vector& action_args)
 	{
 		return std::nullopt;
+	}
+	void agent::reset()
+	{
+		_blackboard.clear();
+		
+		reset_flag = true;
+		notify_stop();
+	}
+	bool agent::set_debug(bool debug_flag)
+	{
+		auto pre_flag = _debug_on;
+		_debug_on = debug_flag;
+		return pre_flag;
+	}
+	bool agent::load_btree(const std::string& btree_name)
+	{
+		const btree_desc* cur_btree = btree_desc::load(btree_name);
+		if (!cur_btree)
+		{
+			return false;
+		}
+		cur_root_node = node_creator::create_node_by_idx(*cur_btree, 0, nullptr);
+		if (!cur_root_node)
+		{
+			return false;
+		}
+		_fronts.push_back(cur_root_node);
+
+
+	}
+	bool agent::enable(bool enable_flag)
+	{
+		if (enable_flag)
+		{
+			if (_enabled)
+			{
+				return true;
+			}
+			else
+			{
+				_enabled = true;
+				poll();
+				return false;
+			}
+		}
+		else
+		{
+			if (!_enabled)
+			{
+				return false;
+			}
+			else
+			{
+				_enabled = false;
+				notify_stop();
+				return true;
+			}
+		}
 	}
 }

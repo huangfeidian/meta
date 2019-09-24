@@ -34,34 +34,31 @@ namespace behavior
 			return _enabled;
 		}
 		void notify_stop();
+		bool load_btree(const std::string& btree_name);
 	public:
 		bool during_poll;
 		std::vector<node*> _fronts; // node ready to run
 		std::vector<node*> pre_fronts;
 		std::vector<event_type> _events; // events to be handled;
 		meta::serialize::any_str_map _blackboard;
-		std::unordered_map<const node*, timer_handler> _timers;
+		//std::unordered_map<const node*, timer_handler> _timers;
 		virtual std::optional<bool> agent_action(const std::string& action_name, 
 			const meta::serialize::any_vector& action_args);
+		void reset();
+		bool set_debug(bool debug_flag);
+		bool enable(bool enable_flag);
 	protected:
-		node* current_poll_node;
+		node* current_poll_node = nullptr;
+		bool reset_flag = false;
+		node* cur_root_node = nullptr;
 		std::shared_ptr<spdlog::logger> _logger;
 		bool _enabled = false;
+		bool _debug_on = false;
+		std::unordered_set<timer_handler, timer_handler_hash> _timers;
 	private:
 		bool poll_fronts(); // run the nodes
 		bool poll_events(); // handle the events;
 		void poll_node(node* cur_node);// run one node
-		
-
-	protected:
-		
-		static const btree* load_tree(const std::string& tree_name);
-		static std::string btree_respository;
-
-		static std::unordered_map<std::string, const btree*> _btrees;
-	public:
-		static bool set_btree_directory(const std::string& cur_directory);
-	private:
 
 	};
 

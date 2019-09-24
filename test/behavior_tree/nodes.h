@@ -308,11 +308,17 @@ namespace behavior
 	};
 	class wait_event : public node
 	{
+		event_type expetced_event;
 		wait_event(node* in_parent, node_idx_type in_node_idx,
 			const btree_desc& in_btree, node_type in_type) :
 			node(in_parent, in_node_idx, in_btree, in_type)
 		{
 
+		}
+		void on_enter();
+		virtual bool handle_event(const event_type& cur_event)
+		{
+			return cur_event == expetced_event;
 		}
 		friend class node_creator;
 	};
@@ -324,6 +330,7 @@ namespace behavior
 		{
 
 		}
+		void on_enter();
 		friend class node_creator;
 	};
 	class node_creator
