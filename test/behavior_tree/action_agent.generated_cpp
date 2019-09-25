@@ -1,19 +1,19 @@
 
 
-std::unordered_map<std::string, behavior::action_agent::func_type> behavior::action_agent::action_funcs_map;
+std::unordered_map<std::string, behavior::action_agent::action_func_type> behavior::action_agent::action_funcs_map;
 
 void behavior::action_agent::init_action_funcs_map()
 {
-    action_funcs_map[has_key] = &action_agent::has_key_action_wrapper;
-    action_funcs_map[has_key_value] = &action_agent::has_key_value_action_wrapper;
-    action_funcs_map[number_add] = &action_agent::number_add_action_wrapper;
-    action_funcs_map[number_dec] = &action_agent::number_dec_action_wrapper;
-    action_funcs_map[number_div] = &action_agent::number_div_action_wrapper;
-    action_funcs_map[number_larger_than] = &action_agent::number_larger_than_action_wrapper;
-    action_funcs_map[number_less_than] = &action_agent::number_less_than_action_wrapper;
-    action_funcs_map[number_multiply] = &action_agent::number_multiply_action_wrapper;
-    action_funcs_map[set_key_value] = &action_agent::set_key_value_action_wrapper;
-    action_funcs_map[wait_for_seconds] = &action_agent::wait_for_seconds_action_wrapper;
+    action_funcs_map["has_key"] = &action_agent::has_key_action_wrapper;
+    action_funcs_map["has_key_value"] = &action_agent::has_key_value_action_wrapper;
+    action_funcs_map["number_add"] = &action_agent::number_add_action_wrapper;
+    action_funcs_map["number_dec"] = &action_agent::number_dec_action_wrapper;
+    action_funcs_map["number_div"] = &action_agent::number_div_action_wrapper;
+    action_funcs_map["number_larger_than"] = &action_agent::number_larger_than_action_wrapper;
+    action_funcs_map["number_less_than"] = &action_agent::number_less_than_action_wrapper;
+    action_funcs_map["number_multiply"] = &action_agent::number_multiply_action_wrapper;
+    action_funcs_map["set_key_value"] = &action_agent::set_key_value_action_wrapper;
+    action_funcs_map["wait_for_seconds"] = &action_agent::wait_for_seconds_action_wrapper;
 }
 
 std::optional<bool> behavior::action_agent::has_key_action_wrapper(const meta::serialize::any_vector& data)
@@ -27,7 +27,7 @@ std::optional<bool> behavior::action_agent::has_key_action_wrapper(const meta::s
     }
     if(!meta::serialize::any_decode(data[0], tmp_bb_key))
     {
-        _logger->warn("fail to call action has_key when convert arg 0 with value {} to type const std::string & fail", meta::serialize::encode(data[0]));
+        _logger->warn("fail to call action has_key when convert arg 0 with value {} to type const std::string & fail", std::string(meta::serialize::encode(data[0])));
         notify_stop();
         return std::nullopt;
     }
@@ -44,7 +44,7 @@ std::optional<bool> behavior::action_agent::has_key_value_action_wrapper(const m
     }
     if(!meta::serialize::any_decode(data[0], tmp_bb_key))
     {
-        _logger->warn("fail to call action has_key_value when convert arg 0 with value {} to type const std::string & fail", meta::serialize::encode(data[0]));
+        _logger->warn("fail to call action has_key_value when convert arg 0 with value {} to type const std::string & fail", std::string(meta::serialize::encode(data[0])));
         notify_stop();
         return std::nullopt;
     }
@@ -57,7 +57,7 @@ std::optional<bool> behavior::action_agent::has_key_value_action_wrapper(const m
     }
     if(!meta::serialize::any_decode(data[1], tmp_value))
     {
-        _logger->warn("fail to call action has_key_value when convert arg 1 with value {} to type const meta::serialize::any_value_type & fail", meta::serialize::encode(data[1]));
+        _logger->warn("fail to call action has_key_value when convert arg 1 with value {} to type const meta::serialize::any_value_type & fail", std::string(meta::serialize::encode(data[1])));
         notify_stop();
         return std::nullopt;
     }
@@ -74,7 +74,7 @@ std::optional<bool> behavior::action_agent::number_add_action_wrapper(const meta
     }
     if(!meta::serialize::any_decode(data[0], tmp_bb_key))
     {
-        _logger->warn("fail to call action number_add when convert arg 0 with value {} to type const std::string & fail", meta::serialize::encode(data[0]));
+        _logger->warn("fail to call action number_add when convert arg 0 with value {} to type const std::string & fail", std::string(meta::serialize::encode(data[0])));
         notify_stop();
         return std::nullopt;
     }
@@ -87,7 +87,7 @@ std::optional<bool> behavior::action_agent::number_add_action_wrapper(const meta
     }
     if(!meta::serialize::any_decode(data[1], tmp_value))
     {
-        _logger->warn("fail to call action number_add when convert arg 1 with value {} to type const meta::serialize::any_value_type & fail", meta::serialize::encode(data[1]));
+        _logger->warn("fail to call action number_add when convert arg 1 with value {} to type const meta::serialize::any_value_type & fail", std::string(meta::serialize::encode(data[1])));
         notify_stop();
         return std::nullopt;
     }
@@ -104,7 +104,7 @@ std::optional<bool> behavior::action_agent::number_dec_action_wrapper(const meta
     }
     if(!meta::serialize::any_decode(data[0], tmp_bb_key))
     {
-        _logger->warn("fail to call action number_dec when convert arg 0 with value {} to type const std::string & fail", meta::serialize::encode(data[0]));
+        _logger->warn("fail to call action number_dec when convert arg 0 with value {} to type const std::string & fail", std::string(meta::serialize::encode(data[0])));
         notify_stop();
         return std::nullopt;
     }
@@ -117,7 +117,7 @@ std::optional<bool> behavior::action_agent::number_dec_action_wrapper(const meta
     }
     if(!meta::serialize::any_decode(data[1], tmp_value))
     {
-        _logger->warn("fail to call action number_dec when convert arg 1 with value {} to type const meta::serialize::any_value_type & fail", meta::serialize::encode(data[1]));
+        _logger->warn("fail to call action number_dec when convert arg 1 with value {} to type const meta::serialize::any_value_type & fail", std::string(meta::serialize::encode(data[1])));
         notify_stop();
         return std::nullopt;
     }
@@ -134,7 +134,7 @@ std::optional<bool> behavior::action_agent::number_div_action_wrapper(const meta
     }
     if(!meta::serialize::any_decode(data[0], tmp_bb_key))
     {
-        _logger->warn("fail to call action number_div when convert arg 0 with value {} to type const std::string & fail", meta::serialize::encode(data[0]));
+        _logger->warn("fail to call action number_div when convert arg 0 with value {} to type const std::string & fail", std::string(meta::serialize::encode(data[0])));
         notify_stop();
         return std::nullopt;
     }
@@ -147,7 +147,7 @@ std::optional<bool> behavior::action_agent::number_div_action_wrapper(const meta
     }
     if(!meta::serialize::any_decode(data[1], tmp_value))
     {
-        _logger->warn("fail to call action number_div when convert arg 1 with value {} to type const meta::serialize::any_value_type & fail", meta::serialize::encode(data[1]));
+        _logger->warn("fail to call action number_div when convert arg 1 with value {} to type const meta::serialize::any_value_type & fail", std::string(meta::serialize::encode(data[1])));
         notify_stop();
         return std::nullopt;
     }
@@ -164,7 +164,7 @@ std::optional<bool> behavior::action_agent::number_larger_than_action_wrapper(co
     }
     if(!meta::serialize::any_decode(data[0], tmp_bb_key))
     {
-        _logger->warn("fail to call action number_larger_than when convert arg 0 with value {} to type const std::string & fail", meta::serialize::encode(data[0]));
+        _logger->warn("fail to call action number_larger_than when convert arg 0 with value {} to type const std::string & fail", std::string(meta::serialize::encode(data[0])));
         notify_stop();
         return std::nullopt;
     }
@@ -177,7 +177,7 @@ std::optional<bool> behavior::action_agent::number_larger_than_action_wrapper(co
     }
     if(!meta::serialize::any_decode(data[1], tmp_other_value))
     {
-        _logger->warn("fail to call action number_larger_than when convert arg 1 with value {} to type const meta::serialize::any_value_type & fail", meta::serialize::encode(data[1]));
+        _logger->warn("fail to call action number_larger_than when convert arg 1 with value {} to type const meta::serialize::any_value_type & fail", std::string(meta::serialize::encode(data[1])));
         notify_stop();
         return std::nullopt;
     }
@@ -194,7 +194,7 @@ std::optional<bool> behavior::action_agent::number_less_than_action_wrapper(cons
     }
     if(!meta::serialize::any_decode(data[0], tmp_bb_key))
     {
-        _logger->warn("fail to call action number_less_than when convert arg 0 with value {} to type const std::string & fail", meta::serialize::encode(data[0]));
+        _logger->warn("fail to call action number_less_than when convert arg 0 with value {} to type const std::string & fail", std::string(meta::serialize::encode(data[0])));
         notify_stop();
         return std::nullopt;
     }
@@ -207,7 +207,7 @@ std::optional<bool> behavior::action_agent::number_less_than_action_wrapper(cons
     }
     if(!meta::serialize::any_decode(data[1], tmp_other_value))
     {
-        _logger->warn("fail to call action number_less_than when convert arg 1 with value {} to type const meta::serialize::any_value_type & fail", meta::serialize::encode(data[1]));
+        _logger->warn("fail to call action number_less_than when convert arg 1 with value {} to type const meta::serialize::any_value_type & fail", std::string(meta::serialize::encode(data[1])));
         notify_stop();
         return std::nullopt;
     }
@@ -224,7 +224,7 @@ std::optional<bool> behavior::action_agent::number_multiply_action_wrapper(const
     }
     if(!meta::serialize::any_decode(data[0], tmp_bb_key))
     {
-        _logger->warn("fail to call action number_multiply when convert arg 0 with value {} to type const std::string & fail", meta::serialize::encode(data[0]));
+        _logger->warn("fail to call action number_multiply when convert arg 0 with value {} to type const std::string & fail", std::string(meta::serialize::encode(data[0])));
         notify_stop();
         return std::nullopt;
     }
@@ -237,7 +237,7 @@ std::optional<bool> behavior::action_agent::number_multiply_action_wrapper(const
     }
     if(!meta::serialize::any_decode(data[1], tmp_value))
     {
-        _logger->warn("fail to call action number_multiply when convert arg 1 with value {} to type const meta::serialize::any_value_type & fail", meta::serialize::encode(data[1]));
+        _logger->warn("fail to call action number_multiply when convert arg 1 with value {} to type const meta::serialize::any_value_type & fail", std::string(meta::serialize::encode(data[1])));
         notify_stop();
         return std::nullopt;
     }
@@ -254,7 +254,7 @@ std::optional<bool> behavior::action_agent::set_key_value_action_wrapper(const m
     }
     if(!meta::serialize::any_decode(data[0], tmp_bb_key))
     {
-        _logger->warn("fail to call action set_key_value when convert arg 0 with value {} to type const std::string & fail", meta::serialize::encode(data[0]));
+        _logger->warn("fail to call action set_key_value when convert arg 0 with value {} to type const std::string & fail", std::string(meta::serialize::encode(data[0])));
         notify_stop();
         return std::nullopt;
     }
@@ -267,7 +267,7 @@ std::optional<bool> behavior::action_agent::set_key_value_action_wrapper(const m
     }
     if(!meta::serialize::any_decode(data[1], tmp_new_value))
     {
-        _logger->warn("fail to call action set_key_value when convert arg 1 with value {} to type const meta::serialize::any_value_type & fail", meta::serialize::encode(data[1]));
+        _logger->warn("fail to call action set_key_value when convert arg 1 with value {} to type const meta::serialize::any_value_type & fail", std::string(meta::serialize::encode(data[1])));
         notify_stop();
         return std::nullopt;
     }
@@ -284,7 +284,7 @@ std::optional<bool> behavior::action_agent::wait_for_seconds_action_wrapper(cons
     }
     if(!meta::serialize::any_decode(data[0], tmp_duration))
     {
-        _logger->warn("fail to call action wait_for_seconds when convert arg 0 with value {} to type double fail", meta::serialize::encode(data[0]));
+        _logger->warn("fail to call action wait_for_seconds when convert arg 0 with value {} to type double fail", std::string(meta::serialize::encode(data[0])));
         notify_stop();
         return std::nullopt;
     }
@@ -295,5 +295,5 @@ std::optional<bool> behavior::action_agent::wait_for_seconds_action_wrapper(cons
 behavior::action_agent::static_constructor_for_action_agent behavior::action_agent::_static_constructor_;
 behavior::action_agent::static_constructor_for_action_agent::static_constructor_for_action_agent()
 {
-	init_actions_func_map();
+	init_action_funcs_map();
 }

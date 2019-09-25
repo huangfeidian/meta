@@ -57,7 +57,7 @@ std::unordered_map<std::string, std::string> generate_behavior_actions()
 		render_args.set("class_full_name", one_class->qualified_name());
 		mustache::data static_construct_funcs{ mustache::data::type::list };
 		std::vector<std::string> func_names;
-		func_names.push_back("init_actions_func_map");
+		func_names.push_back("init_action_funcs_map");
 		std::sort(func_names.begin(), func_names.end());
 		for (const auto& one_func : func_names)
 		{

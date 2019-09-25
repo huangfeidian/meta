@@ -2,7 +2,8 @@
 #include "nodes.h"
 namespace behavior
 {
-	
+	std::unordered_map<std::string, const btree_desc*> btree_desc::tree_cache = {};
+	std::string btree_desc::btree_respository = "";
 	bool agent::poll()
 	{
 		if (during_poll)
@@ -173,7 +174,7 @@ namespace behavior
 			return false;
 		}
 		_fronts.push_back(cur_root_node);
-
+		return true;
 
 	}
 	bool agent::enable(bool enable_flag)

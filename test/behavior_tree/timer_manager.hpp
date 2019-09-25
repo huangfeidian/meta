@@ -1,4 +1,5 @@
-﻿#include <deque>
+﻿#pragma once
+#include <deque>
 #include <string>
 #include <cstdint>
 #include <vector>
@@ -9,14 +10,43 @@
 #include <queue>
 namespace behavior
 {
-	using time_handler_t = std::uint64_t;
-	class timer_handler;
+	using time_handler_t = std::size_t;
+	class timer_handler_hash;
+	
 	class timer_manager
 	{
 	public:
 		using callback_type = std::function<void()>;
 		
 		using ts_t = std::chrono::time_point<std::chrono::system_clock>;
+		class timer_handler_impl
+		{
+			friend class timer_handler_hash;
+		private:
+			time_handler_t _handler;
+		public:
+			timer_handler_impl(time_handler_t in_handler) :
+				_handler(in_handler)
+			{
+
+			}
+
+			timer_handler_impl& operator=(const timer_handler_impl& other) = default;
+			bool is_active() const
+			{
+				return timer_manager::instance().is_timer_active(_handler);
+			}
+			bool cancel()
+			{
+				auto pre_handler = _handler;
+				_handler = 0;
+				return timer_manager::instance().cancel_timer(pre_handler);
+			}
+			bool operator==(const timer_handler_impl& other) const
+			{
+				return _handler == other._handler;
+			}
+		};
 	private:
 		timer_manager()
 		{
@@ -49,14 +79,14 @@ namespace behavior
 			return _the_instance;
 		}
 
-		timer_handler add_timer_with_ts(ts_t cur_expire_ts, callback_type cur_callback)
+		timer_handler_impl add_timer_with_ts(ts_t cur_expire_ts, callback_type cur_callback)
 		{
 			auto cur_handler = gen_handler();
 			_callbacks[cur_handler] = cur_callback;
 			ts_handlers.emplace(cur_expire_ts, cur_handler);
-			return timer_handler(cur_handler);
+			return timer_handler_impl(cur_handler);
 		}
-		timer_handler add_timer_with_gap(std::chrono::microseconds cur_expire_gap, callback_type cur_callback)
+		timer_handler_impl add_timer_with_gap(std::chrono::microseconds cur_expire_gap, callback_type cur_callback)
 		{
 			if (cur_expire_gap.count() < 0)
 			{
@@ -114,38 +144,11 @@ namespace behavior
 			return count;
 		}
 	};
-	class timer_handler_hash;
-	class timer_handler
-	{
-		friend class timer_handler_hash;
-	private:
-		time_handler_t _handler;
-	public:
-		timer_handler(time_handler_t in_handler) :
-			_handler(in_handler)
-		{
-
-		}
-		
-		timer_handler& operator=(const timer_handler& other) = default;
-		bool is_active() const
-		{
-			return timer_manager::instance().is_timer_active(_handler);
-		}
-		bool cancel()
-		{
-			auto pre_handler = _handler;
-			_handler = 0;
-			return timer_manager::instance().cancel_timer(pre_handler);
-		}
-		bool operator==(const timer_handler& other)
-		{
-			return _handler == other._handler;
-		}
-	};
+	using timer_handler = timer_manager::timer_handler_impl;
 	class timer_handler_hash
 	{
-		std::size_t operator()(const timer_handler& cur_handler)
+	public:
+		std::size_t operator()(const timer_handler& cur_handler) const
 		{
 			return cur_handler._handler;
 		}

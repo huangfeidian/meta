@@ -1,11 +1,11 @@
 
 
-std::unordered_map<std::string, {{class_full_name}}::func_type> {{class_full_name}}::action_funcs_map;
+std::unordered_map<std::string, {{class_full_name}}::action_func_type> {{class_full_name}}::action_funcs_map;
 
 void {{class_full_name}}::init_action_funcs_map()
 {
     {{#behavior_actions}}
-    action_funcs_map[{{func_name}}] = &{{class_name}}::{{func_name}}_action_wrapper;
+    action_funcs_map["{{func_name}}"] = &{{class_name}}::{{func_name}}_action_wrapper;
     {{/behavior_actions}}
 }
 
@@ -23,7 +23,7 @@ std::optional<bool> {{class_full_name}}::{{func_name}}_action_wrapper(const meta
     }
     if(!meta::serialize::any_decode(data[{{arg_idx}}], tmp_{{arg_name}}))
     {
-        _logger->warn("fail to call action {{func_name}} when convert arg {{arg_idx}} with value {} to type {{{arg_type}}} fail", meta::serialize::encode(data[{{arg_idx}}]));
+        _logger->warn("fail to call action {{func_name}} when convert arg {{arg_idx}} with value {} to type {{{arg_type}}} fail", std::string(meta::serialize::encode(data[{{arg_idx}}])));
         notify_stop();
         return std::nullopt;
     }

@@ -23,7 +23,7 @@ using json = nlohmann::json;
 namespace meta::serialize
 {
 
-	bool decode(const json& data, float& dst)
+	static bool decode(const json& data, float& dst)
 	{
 		if (!data.is_number_float())
 		{
@@ -35,7 +35,7 @@ namespace meta::serialize
 			return true;
 		}
 	}
-	bool decode(const json& data, double& dst)
+	static bool decode(const json& data, double& dst)
 	{
 		if (!data.is_number_float())
 		{
@@ -47,7 +47,7 @@ namespace meta::serialize
 			return true;
 		}
 	}
-	bool decode(const json& data, bool& dst)
+	static bool decode(const json& data, bool& dst)
 	{
 		if (!data.is_boolean())
 		{
@@ -58,7 +58,7 @@ namespace meta::serialize
 			return true;
 		}
 	}
-	bool decode(const json& data, std::string& dst)
+	static bool decode(const json& data, std::string& dst)
 	{
 		if (!data.is_string())
 		{
@@ -393,7 +393,7 @@ bool decode(const json& data, MAP_TYPE<T1, T2>& dst)				\
 	{
 		return decode_multi_impl<Args...>(data, std::index_sequence_for<Args...>{}, dsts...);
 	}
-	bool decode_multi(const json& data)
+	static bool decode_multi(const json& data)
 	{
 		return true;
 	}

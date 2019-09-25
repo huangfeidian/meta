@@ -1,4 +1,5 @@
-﻿#include <vector>
+﻿#pragma once
+#include <vector>
 #include <meta/serialize/any_value.h>
 #include <fstream>
 #include <filesystem>
@@ -135,7 +136,7 @@ namespace behavior
 				nodes.push_back(new_node);
 			}
 
-
+			return true;
 		}
 	public:
 		btree_desc(const std::string& btree_file_path)

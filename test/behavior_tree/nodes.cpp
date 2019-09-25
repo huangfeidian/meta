@@ -1,6 +1,8 @@
 ﻿#include "nodes.h"
 namespace behavior
 {
+	std::mt19937 node::_generator;
+	std::uniform_int_distribution<std::uint32_t> node::_distribution;
 	void node::set_result(bool new_result)
 	{
 		if (node_state_is_forbid_enter())
@@ -121,8 +123,8 @@ namespace behavior
 	}
 	std::string node::debug_info() const
 	{
-		return fmt::format("btree {} node {} child_idx {} extra {}",
-			btree_config.tree_name, node_config.idx, next_child_idx, meta::serialize::encode(node_config.extra));
+		return fmt::format("btree {} node {} child_idx {}",
+			btree_config.tree_name, node_config.idx, next_child_idx);
 	}
 	void root::on_enter()
 	{
@@ -182,7 +184,7 @@ namespace behavior
 		if (_shuffle.empty())
 		{
 			_shuffle.reserve(children.size());
-			for (int i = 0; i < children.size(); i++)
+			for (std::size_t i = 0; i < children.size(); i++)
 			{
 				_shuffle.push_back(i);
 			}
@@ -275,7 +277,7 @@ namespace behavior
 		node_idx_type prob_sum = std::accumulate(_probilities.begin(), _probilities.end(), 0);
 		auto cur_choice = _distribution(_generator);
 		node_idx_type temp = cur_choice % prob_sum;
-		for (int i = 0; i < children.size(); i++)
+		for (std::size_t i = 0; i < children.size(); i++)
 		{
 			temp -= _probilities[0];
 			if (temp <= 0)
@@ -319,7 +321,7 @@ namespace behavior
 			set_result(children[2]->result);
 			break;
 		default:
-			_logger->warn("{} invalid state visit if else node ", debug_info);
+			_logger->warn("{} invalid state visit if else node ", debug_info());
 			break;
 		}
 	}
@@ -349,7 +351,7 @@ namespace behavior
 			visit_child(next_child_idx);
 			break;
 		default:
-			_logger->warn("{} invalid state visit while_node node ", debug_info);
+			_logger->warn("{} invalid state visit while_node node ", debug_info());
 			break;
 		}
 	}
@@ -422,7 +424,7 @@ namespace behavior
 	void parallel::on_enter()
 	{
 		node::on_enter();
-		for (int i = 0; i < children.size(); i++)
+		for (std::size_t i = 0; i < children.size(); i++)
 		{
 			visit_child(i);
 		}
@@ -448,7 +450,7 @@ namespace behavior
 		{
 			if (!load_action_config())
 			{
-				_logger->warn("{} fail to load action args with extra {}", debug_info(), encode(node_config.extra));
+				_logger->warn("{} fail to load action args with extra {}", debug_info(), std::string(encode(node_config.extra)));
 				_agent->notify_stop();
 				return;
 			}
@@ -552,7 +554,7 @@ namespace behavior
 			if (!event_iter->second.is_str())
 			{
 				_logger->warn("{} fail to load expected event form value {}", debug_info(), 
-					meta::serialize::encode(event_iter->second));
+					std::string(meta::serialize::encode(event_iter->second)));
 				_agent->notify_stop();
 				return;
 			}

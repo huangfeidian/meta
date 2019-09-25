@@ -12,30 +12,65 @@
 using json = nlohmann::json;
 
 #define ANY_NUMERIC_CAL(op_name, op_val) template<typename T>	\
-std::optional<T> numeric_cal_##op_name(const T& other_value)	\
+bool numeric_cal_##op_name(const T& other_value)	\
 {																\
-	const auto& cur_any_value = *this;							\
+	auto& cur_any_value = *this;								\
 	if (!cur_any_value.is_numeric())							\
 	{															\
-		return std::nullopt;									\
+		return false;									\
 	}															\
 	if (cur_any_value.is_float())								\
 	{															\
-		std::get<float>(cur_any_value) op_val add_value;		\
+		float& pre = std::get<float>(cur_any_value);			\
+		pre = static_cast<float>(pre op_val other_value);		\
+		return true;											\
 	}															\
 	else if (cur_any_value.is_double())							\
 	{															\
-		std::get<double>(cur_any_value) op_val add_value;		\
+		double& pre = std::get<double>(cur_any_value);			\
+		pre = static_cast<double>(pre op_val other_value);		\
+		return true;											\
 	}															\
 	else if (cur_any_value.is_int())							\
 	{															\
-		std::get<int>(cur_any_value) op_val add_value;			\
+		int& pre = std::get<int>(cur_any_value);			\
+		pre = static_cast<int>(pre op_val other_value);		\
+		return true;											\
 	}															\
 	else														\
 	{															\
-		std::get<std::int64_t>(cur_any_value) op_val add_value;	\
+		std::int64_t& pre = std::get<int64_t>(cur_any_value);			\
+		pre = static_cast<int64_t>(pre op_val other_value);		\
+		return true;											\
 	}															\
-	return numeric_value<T>();									\
+	return false;									\
+}																\
+
+#define ANY_NUMERIC_ANY_CAL(op_name)							\
+bool numeric_cal_##op_name(const any_value_type& other_value)	\
+{																\
+	auto& cur_any_value = *this;								\
+	if (!other_value.is_numeric())								\
+	{															\
+		return false;											\
+	}															\
+	if (other_value.is_float())									\
+	{															\
+		return numeric_cal_##op_name(std::get<float>(other_value));\
+	}															\
+	else if (other_value.is_int())								\
+	{															\
+		return numeric_cal_##op_name(std::get<int>(other_value));\
+	}															\
+	else if (other_value.is_double())							\
+	{															\
+		return numeric_cal_##op_name(std::get<double>(other_value)); \
+	}															\
+	else if (other_value.is_int64())							\
+	{															\
+		return numeric_cal_##op_name(std::get<std::int64_t>(other_value));\
+	}															\
+	return false;												\
 }																\
 
 namespace meta::serialize
@@ -122,7 +157,7 @@ namespace meta::serialize
 			{
 				return std::nullopt;
 			}
-			const auto& cur_value = std::get<T>(cur_any_value);
+			const auto& cur_raw_value = std::get<T>(cur_any_value);
 			if (other_value.is_double())
 			{
 				return cur_raw_value > std::get<double>(other_value);
@@ -199,11 +234,16 @@ namespace meta::serialize
 			}
 			return numeric_larger_than(other_value);
 		}
-ANY_NUMERIC_CAL(add, +=)
-ANY_NUMERIC_CAL(dec, -=)
-ANY_NUMERIC_CAL(multiply, *+)
-ANY_NUMERIC_CAL(div, /+)
+ANY_NUMERIC_CAL(add, +)
+ANY_NUMERIC_CAL(dec, -)
+ANY_NUMERIC_CAL(multiply, *)
+ANY_NUMERIC_CAL(div, /)
 		
+ANY_NUMERIC_ANY_CAL(add)
+ANY_NUMERIC_ANY_CAL(dec)
+ANY_NUMERIC_ANY_CAL(multiply)
+ANY_NUMERIC_ANY_CAL(div)
+	
 	};
 	template <typename T>
 	typename std::enable_if< std::is_constructible_v<any_value_type, T>, any_value_type>::type 
@@ -344,7 +384,7 @@ ANY_NUMERIC_CAL(div, /+)
 		return any_encode_tuple(_in_value, std::index_sequence_for<Args...>{});
 	}
 
-	any_value_type any_encode(const json& data)
+	static any_value_type any_encode(const json& data)
 	{
 		if (data.is_null())
 		{
@@ -387,6 +427,11 @@ ANY_NUMERIC_CAL(div, /+)
 			return result;
 		}
 		return any_value_type();
+	}
+	static bool any_decode(const any_value_type& data, any_value_type& dst)
+	{
+		dst = data;
+		return true;
 	}
 	template <typename T>
 	typename std::enable_if<std::is_constructible_v<any_value_type, T>, bool>::type
@@ -537,7 +582,7 @@ ANY_NUMERIC_CAL(div, /+)
 		return (any_decode(data[index], std::get<index>(dst)) && ...);
 	}
 
-	bool any_decode(const any_value_type& data, json& dst)
+	static bool any_decode(const any_value_type& data, json& dst)
 	{
 		if (data.is_bool())
 		{

@@ -110,7 +110,7 @@ namespace behavior
 			auto temp_callback = weak_closure.lock();
 			if (temp_callback)
 			{
-				temp_callback->operator();
+				temp_callback->operator()();
 			}
 		};
 		duration = std::max(0.5, duration);

@@ -10,7 +10,7 @@ using action_func_type = std::optional<bool> (action_agent::*)(const meta::seria
 
 static std::unordered_map<std::string, action_func_type> action_funcs_map;
 
-static void init_actions_func_map(); // called in _static_constructor_
+static void init_action_funcs_map(); // called in _static_constructor_
 
 std::optional<bool> has_key_action_wrapper(const meta::serialize::any_vector& data);
 std::optional<bool> has_key_value_action_wrapper(const meta::serialize::any_vector& data);

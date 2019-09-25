@@ -186,19 +186,19 @@ namespace meta::serialize
 	{
 		return data;
 	}
-	bool encode(bool data)
+	static bool encode(bool data)
 	{
 		return data;
 	}
-	double encode(const float& data)
+	static double encode(const float& data)
 	{
 		return double(data);
 	}
-	double encode(const double& data)
+	static double encode(const double& data)
 	{
 		return data;
 	}
-	std::string encode(const std::string& data)
+	static std::string encode(const std::string& data)
 	{
 		return data;
 	}

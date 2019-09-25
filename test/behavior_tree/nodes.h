@@ -42,23 +42,18 @@ namespace behavior
 		{
 
 		}
-		virtual void operator()() = 0;
-		virtual ~node_closure() = 0;
+		virtual void operator()()
+		{
+
+		}
+		virtual ~node_closure() 
+		{
+			_node = nullptr;
+		}
 	protected:
 		node* _node;
 	};
-	class timeout_closure : public node_closure
-	{
-		virtual void operator()()
-		{
-			_node->set_result(true);
 
-		}
-		virtual ~timeout_closure()
-		{
-
-		}
-	};
 	class node_creator;
 	class node
 	{
@@ -338,5 +333,23 @@ namespace behavior
 	public:
 		static node* create_node_by_idx(const btree_desc& btree_config, 
 			node_idx_type node_idx, node* parent);
+	};
+	class timeout_closure : public node_closure
+	{
+	public:
+		timeout_closure(node* cur_node) :
+			node_closure(cur_node)
+		{
+
+		}
+		virtual void operator()()
+		{
+			_node->set_result(true);
+
+		}
+		virtual ~timeout_closure()
+		{
+
+		}
 	};
 }
