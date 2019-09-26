@@ -120,12 +120,7 @@ namespace behavior
 	
 	class root :public node
 	{
-		root(node* in_parent, agent* in_agent, node_idx_type in_node_idx,
-			const btree_desc& in_btree, node_type in_type) :
-			node(in_parent, in_agent, in_node_idx, in_btree, in_type)
-		{
-
-		}
+		using node::node;
 	private:
 		void on_enter();
 		void on_revisit();
@@ -134,12 +129,7 @@ namespace behavior
 	class sequence :public node
 	{
 	protected:
-		sequence(node* in_parent, agent* in_agent, node_idx_type in_node_idx,
-			const btree_desc& in_btree, node_type in_type) :
-			node(in_parent, in_agent, in_node_idx, in_btree, in_type)
-		{
-
-		}
+		using node::node;
 	private:
 		void on_enter();
 		void on_revisit();
@@ -148,12 +138,7 @@ namespace behavior
 	class always_seq :public sequence
 	{
 	protected:
-		always_seq(node* in_parent, agent* in_agent, node_idx_type in_node_idx,
-			const btree_desc& in_btree, node_type in_type) :
-			sequence(in_parent, in_agent, in_node_idx, in_btree, in_type)
-		{
-
-		}
+		using sequence::sequence;
 	private:
 		void on_revisit();
 		friend class node_creator;
@@ -161,12 +146,7 @@ namespace behavior
 	class random_seq : public node
 	{
 	protected:
-		random_seq(node* in_parent, agent* in_agent, node_idx_type in_node_idx,
-			const btree_desc& in_btree, node_type in_type) :
-			node(in_parent, in_agent, in_node_idx, in_btree, in_type)
-		{
-
-		}
+		using node::node;
 	private:
 		std::vector<node_idx_type> _shuffle;
 		
@@ -178,12 +158,7 @@ namespace behavior
 	class select : public node
 	{
 	protected:
-		select(node* in_parent, agent* in_agent, node_idx_type in_node_idx,
-			const btree_desc& in_btree, node_type in_type) :
-			node(in_parent, in_agent, in_node_idx, in_btree, in_type)
-		{
-
-		}
+		using node::node;
 	private:
 		void on_enter();
 		void on_revisit();
@@ -191,12 +166,7 @@ namespace behavior
 	};
 	class probility : public node
 	{
-		probility(node* in_parent, agent* in_agent, node_idx_type in_node_idx,
-			const btree_desc& in_btree, node_type in_type) :
-			node(in_parent, in_agent, in_node_idx, in_btree, in_type)
-		{
-
-		}
+		using node::node;
 	private:
 		std::vector<std::uint32_t> _probilities;
 		
@@ -209,60 +179,35 @@ namespace behavior
 	};
 	class if_else : public node
 	{
-		if_else(node* in_parent, agent* in_agent, node_idx_type in_node_idx,
-			const btree_desc& in_btree, node_type in_type) :
-			node(in_parent, in_agent, in_node_idx, in_btree, in_type)
-		{
-
-		}
+		using node::node;
 		void on_enter();
 		void on_revisit();
 		friend class node_creator;
 	};
 	class while_loop : public node
 	{
-		while_loop(node* in_parent, agent* in_agent, node_idx_type in_node_idx,
-			const btree_desc& in_btree, node_type in_type) :
-			node(in_parent, in_agent, in_node_idx, in_btree, in_type)
-		{
-
-		}
+		using node::node;
 		void on_enter();
 		void on_revisit();
 		friend class node_creator;
 	};
 	class negative : public node
 	{
-		negative(node* in_parent, agent* in_agent, node_idx_type in_node_idx,
-			const btree_desc& in_btree, node_type in_type) :
-			node(in_parent, in_agent, in_node_idx, in_btree, in_type)
-		{
-
-		}
+		using node::node;
 		void on_enter();
 		void on_revisit();
 		friend class node_creator;
 	};
 	class always_true : public node
 	{
-		always_true(node* in_parent, agent* in_agent, node_idx_type in_node_idx,
-			const btree_desc& in_btree, node_type in_type) :
-			node(in_parent, in_agent, in_node_idx, in_btree, in_type)
-		{
-
-		}
+		using node::node;
 		void on_enter();
 		void on_revisit();
 		friend class node_creator;
 	};
 	class sub_tree : public node
 	{
-		sub_tree(node* in_parent, agent* in_agent, node_idx_type in_node_idx,
-			const btree_desc& in_btree, node_type in_type) :
-			node(in_parent, in_agent, in_node_idx, in_btree, in_type)
-		{
-
-		}
+		using node::node;
 		void on_enter();
 		bool create_sub_tree_node();
 		void on_revisit();
@@ -272,24 +217,14 @@ namespace behavior
 
 	class parallel : public node
 	{
-		parallel(node* in_parent, agent* in_agent, node_idx_type in_node_idx,
-			const btree_desc& in_btree, node_type in_type) :
-			node(in_parent, in_agent, in_node_idx, in_btree, in_type)
-		{
-
-		}
+		using node::node;
 		void on_enter();
 		void on_revisit();
 		friend class node_creator;
 	};
 	class action : public node
 	{
-		action(node* in_parent, agent* in_agent, node_idx_type in_node_idx,
-			const btree_desc& in_btree, node_type in_type) :
-			node(in_parent, in_agent, in_node_idx, in_btree, in_type)
-		{
-
-		}
+		using node::node;
 		std::string action_name;
 		meta::serialize::any_vector action_args;
 		void on_enter();
@@ -298,13 +233,9 @@ namespace behavior
 	};
 	class wait_event : public node
 	{
+	public:
 		event_type expetced_event;
-		wait_event(node* in_parent, agent* in_agent, node_idx_type in_node_idx,
-			const btree_desc& in_btree, node_type in_type) :
-			node(in_parent, in_agent, in_node_idx, in_btree, in_type)
-		{
-
-		}
+		using node::node;
 		void on_enter();
 		virtual bool handle_event(const event_type& cur_event)
 		{
@@ -314,6 +245,7 @@ namespace behavior
 	};
 	class reset : public node
 	{
+		using node::node;
 		reset(node* in_parent, agent* in_agent, node_idx_type in_node_idx,
 			const btree_desc& in_btree, node_type in_type) :
 			node(in_parent, in_agent, in_node_idx, in_btree, in_type)
