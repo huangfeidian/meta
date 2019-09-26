@@ -13,7 +13,7 @@ int main()
 	cur_agent.set_debug(true);
 	cur_agent.load_btree(test_btree_name);
 	cur_agent.enable(true);
-	for (int i = 0; i < 50; i++)
+	for (int i = 0; i < 10; i++)
 	{
 		this_thread::sleep_for(100ms);
 		timer_manager::instance().poll(std::chrono::system_clock::now());

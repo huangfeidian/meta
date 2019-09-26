@@ -22,11 +22,11 @@ namespace behavior
 			{
 				return;
 			}
-			if (!idx_iter->second.is_int())
+			if (!idx_iter->second.is_int64())
 			{
 				return;
 			}
-			idx = std::get<int>(idx_iter->second);
+			idx = static_cast<node_idx_type>(std::get<std::int64_t>(idx_iter->second));
 
 			auto children_iter = data.find("children");
 			if (children_iter == data.end())
@@ -39,11 +39,11 @@ namespace behavior
 			}
 			for (auto& one_child : std::get<meta::serialize::any_vector>(children_iter->second))
 			{
-				if (!one_child.is_int())
+				if (!one_child.is_int64())
 				{
 					return;
 				}
-				children.push_back(std::get<int>(one_child));
+				children.push_back(static_cast<node_idx_type>(std::get<std::int64_t>(one_child)));
 			}
 			auto extra_iter = data.find("extra");
 			if (extra_iter == data.end())
@@ -90,7 +90,7 @@ namespace behavior
 			{
 				return false;
 			}
-			if (tree_name_iter->second.is_str())
+			if (!tree_name_iter->second.is_str())
 			{
 				return false;
 			}
@@ -101,7 +101,7 @@ namespace behavior
 			{
 				return false;
 			}
-			if (extra_iter->second.is_str_map())
+			if (!extra_iter->second.is_str_map())
 			{
 				return false;
 			}

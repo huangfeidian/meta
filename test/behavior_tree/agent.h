@@ -24,7 +24,7 @@ namespace behavior
 	class agent
 	{
 	public:
-		
+		agent();
 		friend class node;
 	public:
 		bool poll(); // first handle events then handle fronts
@@ -36,7 +36,7 @@ namespace behavior
 		void notify_stop();
 		bool load_btree(const std::string& btree_name);
 	public:
-		bool during_poll;
+		bool during_poll = false;
 		std::vector<node*> _fronts; // node ready to run
 		std::vector<node*> pre_fronts;
 		std::vector<event_type> _events; // events to be handled;

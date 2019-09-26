@@ -12,57 +12,29 @@
 using json = nlohmann::json;
 
 #define ANY_NUMERIC_CAL(op_name, op_val) template<typename T>	\
-bool numeric_cal_##op_name(const T& other_value)	\
+bool numeric_cal_##op_name(const T& other_value)				\
 {																\
 	auto& cur_any_value = *this;								\
-	if (!cur_any_value.is_numeric())							\
+	if (cur_any_value.is_int64())								\
 	{															\
-		return false;									\
-	}															\
-	if (cur_any_value.is_float())								\
-	{															\
-		float& pre = std::get<float>(cur_any_value);			\
-		pre = static_cast<float>(pre op_val other_value);		\
+		std::int64_t& pre = std::get<std::int64_t>(cur_any_value);\
+		pre = static_cast<std::int64_t>(pre op_val other_value);\
 		return true;											\
 	}															\
-	else if (cur_any_value.is_double())							\
+	else														\
 	{															\
 		double& pre = std::get<double>(cur_any_value);			\
 		pre = static_cast<double>(pre op_val other_value);		\
 		return true;											\
 	}															\
-	else if (cur_any_value.is_int())							\
-	{															\
-		int& pre = std::get<int>(cur_any_value);			\
-		pre = static_cast<int>(pre op_val other_value);		\
-		return true;											\
-	}															\
-	else														\
-	{															\
-		std::int64_t& pre = std::get<int64_t>(cur_any_value);			\
-		pre = static_cast<int64_t>(pre op_val other_value);		\
-		return true;											\
-	}															\
-	return false;									\
+	return false;												\
 }																\
 
 #define ANY_NUMERIC_ANY_CAL(op_name)							\
 bool numeric_cal_##op_name(const any_value_type& other_value)	\
 {																\
 	auto& cur_any_value = *this;								\
-	if (!other_value.is_numeric())								\
-	{															\
-		return false;											\
-	}															\
-	if (other_value.is_float())									\
-	{															\
-		return numeric_cal_##op_name(std::get<float>(other_value));\
-	}															\
-	else if (other_value.is_int())								\
-	{															\
-		return numeric_cal_##op_name(std::get<int>(other_value));\
-	}															\
-	else if (other_value.is_double())							\
+	if (other_value.is_double())								\
 	{															\
 		return numeric_cal_##op_name(std::get<double>(other_value)); \
 	}															\
@@ -75,18 +47,62 @@ bool numeric_cal_##op_name(const any_value_type& other_value)	\
 
 namespace meta::serialize
 {
-    using any_key_type = std::variant<std::string, int>;
+    using any_key_type = std::variant<std::string, std::int64_t>;
     class any_value_type;
 	using any_vector = std::vector<any_value_type>;
-	using any_int_map = std::unordered_map<int, any_value_type>;
+	using any_int_map = std::unordered_map<std::int64_t, any_value_type>;
 	using any_str_map = std::unordered_map<std::string, any_value_type>;
-    class any_value_type: public std::variant<int, std::int64_t, float, double, bool, std::string, any_vector, any_int_map, any_str_map>
+    class any_value_type: public std::variant<std::int64_t, double, bool, std::string, any_vector, any_int_map, any_str_map>
     {
 	public:
-		using base = std::variant<int, std::int64_t, float, double, bool, std::string, any_vector, any_int_map, any_str_map>;
+		using base = std::variant<std::int64_t, double, bool, std::string, any_vector, any_int_map, any_str_map>;
         using base::base;
         using base::operator=;
-		
+		any_value_type() :
+			base()
+		{
+
+		}
+		any_value_type(const int& _in_value) :
+			base(static_cast<std::int64_t>(_in_value))
+		{
+
+		}
+		any_value_type(const std::uint32_t& _in_value) :
+			base(static_cast<std::int64_t>(_in_value))
+		{
+
+		}
+		any_value_type(const std::uint16_t& _in_value) :
+			base(static_cast<std::int64_t>(_in_value))
+		{
+
+		}
+		any_value_type(const std::uint8_t& _in_value) :
+			base(static_cast<std::int64_t>(_in_value))
+		{
+
+		}
+		any_value_type(const std::int8_t& _in_value) :
+			base(static_cast<std::int64_t>(_in_value))
+		{
+
+		}
+		any_value_type(const std::int16_t& _in_value) :
+			base(static_cast<std::int64_t>(_in_value))
+		{
+
+		}
+		any_value_type(const std::uint64_t& _in_value) :
+			base(static_cast<std::int64_t>(_in_value))
+		{
+
+		}
+		any_value_type(const float& _in_value) :
+			base(static_cast<double>(_in_value))
+		{
+
+		}
 		bool is_int_map() const
 		{
 			return std::holds_alternative<any_int_map>(*this);
@@ -95,17 +111,9 @@ namespace meta::serialize
 		{
 			return std::holds_alternative<any_str_map>(*this);
 		}
-		bool is_int() const
-		{
-			return std::holds_alternative<int>(*this);
-		}
 		bool is_int64() const
 		{
 			return std::holds_alternative<std::int64_t>(*this);
-		}
-		bool is_float() const
-		{
-			return std::holds_alternative<float>(*this);
 		}
 		bool is_double() const
 		{
@@ -125,25 +133,22 @@ namespace meta::serialize
 		}
 		bool is_numeric() const
 		{
-			return is_int() || is_int64() || is_float() || is_double();
+			return is_int64() || is_double();
 		}
 		template <typename T>
-		std::optional<T> numeric_value() const
+		bool numeric_value(T dst) const
 		{
-			if (!is_numeric())
+			if (is_int64())
 			{
-				return std::nullopt;
+				dst = static_cast<T>(std::get<std::int64_t>(*this));
+				return true;
 			}
-			else
+			if (is_double())
 			{
-				T result;
-				std::visit([&result](auto&& v)
-					{
-						result = static_cast<T>(v);
-					}, *this);
-				return result;
-
+				dst = static_cast<T>(std::get<double>(*this));
+				return true;
 			}
+			return false;
 		}
 		template <typename T>
 		std::optional<bool> numeric_larger_than_impl(const any_value_type& other_value) const
@@ -162,14 +167,6 @@ namespace meta::serialize
 			{
 				return cur_raw_value > std::get<double>(other_value);
 			}
-			else if (other_value.is_float())
-			{
-				return cur_raw_value > std::get<float>(other_value);
-			}
-			else if (other_value.is_int())
-			{
-				return cur_raw_value > std::get<int>(other_value);
-			}
 			else if (other_value.is_int64())
 			{
 				return cur_raw_value > std::get<std::int64_t>(other_value);
@@ -181,25 +178,22 @@ namespace meta::serialize
 		std::optional<bool> numeric_larger_than(const any_value_type& other_value) const
 		{
 			const auto& cur_any_value = *this;
-			if (!cur_any_value.is_numeric() || !other_value.is_numeric())
+			if (!other_value.is_numeric())
 			{
 				return std::nullopt;
 			}
-			if (cur_any_value.is_float())
+			
+			if(cur_any_value.is_int64())
 			{
-				return cur_any_value.numeric_larger_than_impl<float> (other_value);
+				return cur_any_value.numeric_larger_than_impl<std::int64_t>(other_value);
 			}
 			else if (cur_any_value.is_double())
 			{
 				return cur_any_value.numeric_larger_than_impl<double>(other_value);
 			}
-			else if (cur_any_value.is_int())
-			{
-				return cur_any_value.numeric_larger_than_impl<int>(other_value);
-			}
 			else
 			{
-				return cur_any_value.numeric_larger_than_impl<std::int64_t>(other_value);
+				return std::nullopt;
 			}
 			
 		}
@@ -245,6 +239,16 @@ ANY_NUMERIC_ANY_CAL(multiply)
 ANY_NUMERIC_ANY_CAL(div)
 	
 	};
+	//template <typename T>
+	//typename std::enable_if<std::is_integral_v<T> && !std::is_same_v<bool, T> && !std::is_same_v<std::int64_t, T>, any_value_type>::type 
+	//	any_encode(const T& _in_value)
+	//{
+	//	return any_value_type(static_cast<std::int64_t>(_in_value));
+	//}
+	//static any_value_type any_encode(const float& _in_value)
+	//{
+	//	return any_value_type(static_cast<double>(_in_value));
+	//}
 	template <typename T>
 	typename std::enable_if< std::is_constructible_v<any_value_type, T>, any_value_type>::type 
 		any_encode(const T& _in_value)
@@ -317,26 +321,37 @@ ANY_NUMERIC_ANY_CAL(div)
 		}
 		return result;
 	}
-
-	template <typename T>
-	typename std::enable_if< std::is_constructible_v<any_value_type, T>, any_value_type>::type 
-		any_encode(const std::unordered_map<int, T>& _in_value)
+	// 无法做下面的两个特化 只能统一采取encode
+	//template <typename T1, typename T2>
+	//typename std::enable_if< std::is_constructible_v<any_value_type, T2> && std::is_integral_v<T1>, any_value_type>::type 
+	//	any_encode(const std::unordered_map<T1, T2>& _in_value)
+	//{
+	//	any_int_map result;
+	//	for (const auto& one_item : _in_value)
+	//	{
+	//		result.emplace(static_cast<std::int64_t>(one_item.first), one_item.second);
+	//	}
+	//	return result;
+	//}
+	//template <typename T1, typename T2>
+	//typename std::enable_if< std::is_constructible_v<any_value_type, T2> && std::is_integral_v<T1>, any_value_type>::type
+	//	any_encode(const std::unordered_map<T1, T2>& _in_value)
+	//{
+	//	any_int_map result;
+	//	for (const auto& one_item : _in_value)
+	//	{
+	//		result.emplace(static_cast<std::int64_t>(one_item.first), any_encode(one_item.second));
+	//	}
+	//	return result;
+	//}
+	template <typename T1, typename T2>
+	typename std::enable_if<std::is_integral_v<T1>, any_value_type>::type
+		any_encode(const std::unordered_map<T1, T2>& _in_value)
 	{
 		any_int_map result;
 		for (const auto& one_item : _in_value)
 		{
-			result.emplace(one_item.first, one_item.second);
-		}
-		return result;
-	}
-	template <typename T>
-	typename std::enable_if< !std::is_constructible_v<any_value_type, T>, any_value_type>::type 
-		any_encode(const std::unordered_map<int, T>& _in_value)
-	{
-		any_int_map result;
-		for (const auto& one_item : _in_value)
-		{
-			result.emplace(one_item.first, any_encode(one_item.second));
+			result.emplace(static_cast<std::int64_t>(one_item.first), any_encode(one_item.second));
 		}
 		return result;
 	}
@@ -390,17 +405,21 @@ ANY_NUMERIC_ANY_CAL(div)
 		{
 			return any_value_type();
 		}
+		else if (data.is_string())
+		{
+			return data.get<std::string>();
+		}
 		else if (data.is_boolean())
 		{
 			return data.get<bool>();
 		}
 		else if (data.is_number_float())
 		{
-			return data.get<float>();
+			return double(data.get<float>());
 		}
 		else if (data.is_number_integer())
 		{
-			return data.get<int>();
+			return static_cast<std::int64_t>(data.get<int>());
 		}
 		else if (data.is_number_unsigned())
 		{
@@ -434,18 +453,22 @@ ANY_NUMERIC_ANY_CAL(div)
 		return true;
 	}
 	template <typename T>
-	typename std::enable_if<std::is_constructible_v<any_value_type, T>, bool>::type
+	typename std::enable_if<std::is_arithmetic_v<T>, bool>::type
 		any_decode(const any_value_type& data, T& dst)
 	{
-		if (std::holds_alternative<T>(data))
-		{
-			dst = std::get<T>(data);
-			return true;
-		}
-		else
+		return data.numeric_value(dst);
+	}
+	template <typename T>
+	typename std::enable_if<!std::is_arithmetic_v<T> &&
+		std::is_constructible_v<any_value_type, T>, bool>::type
+		any_decode(const any_value_type& data, T& dst)
+	{
+		if (!std::holds_alternative<T>(data))
 		{
 			return false;
 		}
+		dst = std::get<T>(data);
+		return true;
 	}
 	template <typename T>
 	bool any_decode(const any_value_type& data, std::vector<T>& dst)
@@ -518,20 +541,21 @@ ANY_NUMERIC_ANY_CAL(div)
 		}
 		return true;
 	}
-	template <typename T>
-	bool any_decode(const any_value_type& data, std::unordered_map<int, T>& dst)
+	template <typename T1, typename T2>
+	typename std::enable_if<std::is_integral_v<T1>, bool>::type 
+		any_decode(const any_value_type& data, std::unordered_map<T1, T2>& dst)
 	{
-		if (!std::holds_alternative<any_str_map>(data))
+		if (!std::holds_alternative<any_int_map>(data))
 		{
 			return false;
 		}
-		auto& cur_map = std::get<any_str_map>(data);
+		auto& cur_map = std::get<any_int_map>(data);
 		for (auto& one_item : cur_map)
 		{
-			T temp;
+			T2 temp;
 			if (any_decode(one_item.second, temp))
 			{
-				dst[one_item.first] = temp;
+				dst[static_cast<T1>(one_item.first)] = temp;
 			}
 			else
 			{
@@ -594,19 +618,9 @@ ANY_NUMERIC_ANY_CAL(div)
 			dst = std::get<std::string>(data);
 			return true;
 		}
-		else if (data.is_float())
-		{
-			dst = std::get<float>(data);
-			return true;
-		}
 		else if (data.is_double())
 		{
 			dst = std::get<double>(data);
-			return true;
-		}
-		else if (data.is_int())
-		{
-			dst = std::get<int>(data);
 			return true;
 		}
 		else if (data.is_int64())
@@ -643,7 +657,7 @@ ANY_NUMERIC_ANY_CAL(div)
 			{
 				json temp;
 				any_decode(one_item.second, temp);
-				dst[one_item.first] = temp;
+				dst[static_cast<std::int64_t>(one_item.first)] = temp;
 			}
 			return true;
 		}

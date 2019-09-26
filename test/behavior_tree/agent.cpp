@@ -4,6 +4,11 @@ namespace behavior
 {
 	std::unordered_map<std::string, const btree_desc*> btree_desc::tree_cache = {};
 	std::string btree_desc::btree_respository = "";
+	agent::agent():
+		_logger(std::move(meta::utils::logger_mgr::instance().create_logger("btree")))
+	{
+
+	}
 	bool agent::poll()
 	{
 		if (during_poll)
@@ -14,7 +19,7 @@ namespace behavior
 		std::size_t poll_count = 0;
 		if (_debug_on)
 		{
-			_logger->info("poll begins with fronts:");
+			_logger->info("agent {}: poll begins with fronts:", reinterpret_cast<intptr_t>(this));
 			for (const auto one_node : _fronts)
 			{
 				_logger->info("{}", one_node->debug_info());
@@ -45,6 +50,10 @@ namespace behavior
 			poll_count += 1;
 		}
 		during_poll = false;
+		if (_debug_on)
+		{
+			_logger->info("agent {}: poll end", reinterpret_cast<intptr_t>(this));
+		}
 		if (poll_count)
 		{
 			return true;
@@ -84,7 +93,7 @@ namespace behavior
 		int ready_count = 0;
 		for (const auto& one_node : pre_fronts)
 		{
-			if (one_node->ready())
+			if (one_node->node_state_is_ready())
 			{
 				ready_count++;
 				poll_node(one_node);
@@ -166,9 +175,10 @@ namespace behavior
 		const btree_desc* cur_btree = btree_desc::load(btree_name);
 		if (!cur_btree)
 		{
+			_logger->warn("fail to load btree {}", btree_name);
 			return false;
 		}
-		cur_root_node = node_creator::create_node_by_idx(*cur_btree, 0, nullptr);
+		cur_root_node = node_creator::create_node_by_idx(*cur_btree, 0, nullptr, this);
 		if (!cur_root_node)
 		{
 			return false;

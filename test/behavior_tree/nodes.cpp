@@ -54,7 +54,7 @@ namespace behavior
 			// 初始化所有的子节点
 			for (auto one_child_idx : node_config.children)
 			{
-				auto one_child = node_creator::create_node_by_idx(btree_config, one_child_idx, this);
+				auto one_child = node_creator::create_node_by_idx(btree_config, one_child_idx, this, _agent);
 				if (!one_child)
 				{
 					return;
@@ -107,6 +107,7 @@ namespace behavior
 			_agent->_fronts.push_back(this);
 			_state = node_state::awaken;
 		}
+		_agent->poll();
 	}
 	void node::interrupt()
 	{
@@ -264,11 +265,11 @@ namespace behavior
 		}
 		for (auto& one_prob : prob_vec)
 		{
-			if (!one_prob.is_int())
+			if (!one_prob.is_int64())
 			{
 				return false;
 			}
-			_probilities.push_back(std::get<int>(one_prob));
+			_probilities.push_back(std::get<std::int64_t>(one_prob));
 		}
 		return true;
 	}
@@ -409,7 +410,7 @@ namespace behavior
 
 			return false;
 		}
-		auto new_root = node_creator::create_node_by_idx(*cur_tree_desc, 0, this);
+		auto new_root = node_creator::create_node_by_idx(*cur_tree_desc, 0, this, _agent);
 		if (!new_root)
 		{
 			return false;
@@ -495,7 +496,7 @@ namespace behavior
 		{
 			return false;
 		}
-		const meta::serialize::any_vector& args_vec = std::get<meta::serialize::any_vector>(action_iter->second);
+		const meta::serialize::any_vector& args_vec = std::get<meta::serialize::any_vector>(action_args_iter->second);
 		for (auto& one_arg : args_vec)
 		{
 			if (!one_arg.is_vector())
@@ -569,7 +570,7 @@ namespace behavior
 		_agent->reset();
 
 	}
-	node* node_creator::create_node_by_idx(const btree_desc& btree_config, node_idx_type node_idx, node* parent)
+	node* node_creator::create_node_by_idx(const btree_desc& btree_config, node_idx_type node_idx, node* parent, agent* in_agent)
 	{
 		if (node_idx >= btree_config.nodes.size())
 		{
@@ -584,79 +585,79 @@ namespace behavior
 		auto& cur_node_desc = btree_config.nodes[node_idx];
 		if (cur_node_desc.type == "root")
 		{
-			auto temp_node = new root(parent, node_idx, 
+			auto temp_node = new root(parent, in_agent, node_idx,
 				btree_config, node_type::root);
 			return temp_node;
 		}
 		else if (cur_node_desc.type == "sequence")
 		{
-			auto temp_node = new sequence(parent, node_idx,
+			auto temp_node = new sequence(parent, in_agent, node_idx,
 				btree_config, node_type::sequence);
 			return temp_node;
 		}
 		else if (cur_node_desc.type == "always_seq")
 		{
-			auto temp_node = new always_seq(parent, node_idx,
+			auto temp_node = new always_seq(parent, in_agent, node_idx,
 				btree_config, node_type::always_seq);
 			return temp_node;
 		}
 		else if (cur_node_desc.type == "random_seq")
 		{
-			auto temp_node = new random_seq(parent, node_idx,
+			auto temp_node = new random_seq(parent, in_agent, node_idx,
 				btree_config, node_type::random_seq);
 			return temp_node;
 		}
 		else if (cur_node_desc.type == "if_else")
 		{
-			auto temp_node = new if_else(parent, node_idx,
+			auto temp_node = new if_else(parent, in_agent, node_idx,
 				btree_config, node_type::if_else);
 			return temp_node;
 		}
 		else if (cur_node_desc.type == "while_loop")
 		{
-			auto temp_node = new while_loop(parent, node_idx,
+			auto temp_node = new while_loop(parent, in_agent, node_idx,
 				btree_config, node_type::while_loop);
 			return temp_node;
 		}
 		else if (cur_node_desc.type == "negative")
 		{
-			auto temp_node = new negative(parent, node_idx,
+			auto temp_node = new negative(parent, in_agent, node_idx,
 				btree_config, node_type::negative);
 			return temp_node;
 		}
 		else if (cur_node_desc.type == "always_true")
 		{
-			auto temp_node = new always_true(parent, node_idx,
+			auto temp_node = new always_true(parent, in_agent, node_idx,
 				btree_config, node_type::always_true);
 			return temp_node;
 		}
 		else if (cur_node_desc.type == "while_loop")
 		{
-			auto temp_node = new while_loop(parent, node_idx,
+			auto temp_node = new while_loop(parent, in_agent, node_idx,
 				btree_config, node_type::while_loop);
 			return temp_node;
 		}
 		else if (cur_node_desc.type == "action")
 		{
-			auto temp_node = new action(parent, node_idx,
+			auto temp_node = new action(parent, in_agent, node_idx,
 				btree_config, node_type::action);
 			return temp_node;
 		}
 		else if (cur_node_desc.type == "wait_event")
 		{
-			auto temp_node = new wait_event(parent, node_idx,
+			auto temp_node = new wait_event(parent, in_agent, node_idx,
 				btree_config, node_type::wait_event);
 			return temp_node;
 		}
 		else if (cur_node_desc.type == "reset")
 		{
-			auto temp_node = new reset(parent, node_idx,
+			auto temp_node = new reset(parent, in_agent, node_idx,
 				btree_config, node_type::reset);
 			return temp_node;
 		}
 		else if (cur_node_desc.type == "sub_tree")
 		{
-			auto temp_node = new sub_tree(parent, node_idx,
+			auto temp_node = new sub_tree(parent, in_agent, node_idx,
 				btree_config, node_type::sub_tree);
 			return temp_node;
 		}

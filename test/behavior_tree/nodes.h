@@ -66,7 +66,6 @@ namespace behavior
 		std::vector<node*> children;
 		bool result = false;
 		bool running = false;
-		bool _ready = false;
 		node_state _state;
 		node_type _type;
 		std::uint8_t next_child_idx = 0;
@@ -77,14 +76,14 @@ namespace behavior
 		std::shared_ptr<node_closure> _closure;
 		std::shared_ptr<spdlog::logger> _logger;
 
-		node(node* in_parent, node_idx_type in_node_idx, 
+		node(node* in_parent, agent* in_agent, node_idx_type in_node_idx, 
 			const btree_desc& in_btree, node_type in_type) :
 			_parent(in_parent),
 			_node_idx(in_node_idx),
 			btree_config(in_btree),
 			_state(node_state::init),
 			next_child_idx(0),
-			_agent(in_parent->_agent),
+			_agent(in_agent),
 			_type(in_type),
 			node_config(in_btree.nodes[in_node_idx]),
 			_logger(std::move(meta::utils::logger_mgr::instance().create_logger("btree")))
@@ -104,10 +103,6 @@ namespace behavior
 		{
 			return false;
 		}
-		bool ready() const
-		{
-			return _ready;
-		}
 		void visit();
 		void create_children();
 		virtual void on_enter();
@@ -125,9 +120,9 @@ namespace behavior
 	
 	class root :public node
 	{
-		root(node* in_parent, node_idx_type in_node_idx, 
+		root(node* in_parent, agent* in_agent, node_idx_type in_node_idx,
 			const btree_desc& in_btree, node_type in_type) :
-			node(in_parent, in_node_idx, in_btree, in_type)
+			node(in_parent, in_agent, in_node_idx, in_btree, in_type)
 		{
 
 		}
@@ -139,9 +134,9 @@ namespace behavior
 	class sequence :public node
 	{
 	protected:
-		sequence(node* in_parent, node_idx_type in_node_idx, 
+		sequence(node* in_parent, agent* in_agent, node_idx_type in_node_idx,
 			const btree_desc& in_btree, node_type in_type) :
-			node(in_parent, in_node_idx, in_btree, in_type)
+			node(in_parent, in_agent, in_node_idx, in_btree, in_type)
 		{
 
 		}
@@ -153,9 +148,9 @@ namespace behavior
 	class always_seq :public sequence
 	{
 	protected:
-		always_seq(node* in_parent, node_idx_type in_node_idx, 
+		always_seq(node* in_parent, agent* in_agent, node_idx_type in_node_idx,
 			const btree_desc& in_btree, node_type in_type) :
-			sequence(in_parent, in_node_idx, in_btree, in_type)
+			sequence(in_parent, in_agent, in_node_idx, in_btree, in_type)
 		{
 
 		}
@@ -166,9 +161,9 @@ namespace behavior
 	class random_seq : public node
 	{
 	protected:
-		random_seq(node* in_parent, node_idx_type in_node_idx, 
+		random_seq(node* in_parent, agent* in_agent, node_idx_type in_node_idx,
 			const btree_desc& in_btree, node_type in_type) :
-			node(in_parent, in_node_idx, in_btree, in_type)
+			node(in_parent, in_agent, in_node_idx, in_btree, in_type)
 		{
 
 		}
@@ -183,9 +178,9 @@ namespace behavior
 	class select : public node
 	{
 	protected:
-		select(node* in_parent, node_idx_type in_node_idx, 
+		select(node* in_parent, agent* in_agent, node_idx_type in_node_idx,
 			const btree_desc& in_btree, node_type in_type) :
-			node(in_parent, in_node_idx, in_btree, in_type)
+			node(in_parent, in_agent, in_node_idx, in_btree, in_type)
 		{
 
 		}
@@ -196,9 +191,9 @@ namespace behavior
 	};
 	class probility : public node
 	{
-		probility(node* in_parent, node_idx_type in_node_idx, 
+		probility(node* in_parent, agent* in_agent, node_idx_type in_node_idx,
 			const btree_desc& in_btree, node_type in_type) :
-			node(in_parent, in_node_idx, in_btree, in_type)
+			node(in_parent, in_agent, in_node_idx, in_btree, in_type)
 		{
 
 		}
@@ -214,9 +209,9 @@ namespace behavior
 	};
 	class if_else : public node
 	{
-		if_else(node* in_parent, node_idx_type in_node_idx, 
+		if_else(node* in_parent, agent* in_agent, node_idx_type in_node_idx,
 			const btree_desc& in_btree, node_type in_type) :
-			node(in_parent, in_node_idx, in_btree, in_type)
+			node(in_parent, in_agent, in_node_idx, in_btree, in_type)
 		{
 
 		}
@@ -226,9 +221,9 @@ namespace behavior
 	};
 	class while_loop : public node
 	{
-		while_loop(node* in_parent, node_idx_type in_node_idx, 
+		while_loop(node* in_parent, agent* in_agent, node_idx_type in_node_idx,
 			const btree_desc& in_btree, node_type in_type) :
-			node(in_parent, in_node_idx, in_btree, in_type)
+			node(in_parent, in_agent, in_node_idx, in_btree, in_type)
 		{
 
 		}
@@ -238,9 +233,9 @@ namespace behavior
 	};
 	class negative : public node
 	{
-		negative(node* in_parent, node_idx_type in_node_idx, 
+		negative(node* in_parent, agent* in_agent, node_idx_type in_node_idx,
 			const btree_desc& in_btree, node_type in_type) :
-			node(in_parent, in_node_idx, in_btree, in_type)
+			node(in_parent, in_agent, in_node_idx, in_btree, in_type)
 		{
 
 		}
@@ -250,9 +245,9 @@ namespace behavior
 	};
 	class always_true : public node
 	{
-		always_true(node* in_parent, node_idx_type in_node_idx, 
+		always_true(node* in_parent, agent* in_agent, node_idx_type in_node_idx,
 			const btree_desc& in_btree, node_type in_type) :
-			node(in_parent, in_node_idx, in_btree, in_type)
+			node(in_parent, in_agent, in_node_idx, in_btree, in_type)
 		{
 
 		}
@@ -262,9 +257,9 @@ namespace behavior
 	};
 	class sub_tree : public node
 	{
-		sub_tree(node* in_parent, node_idx_type in_node_idx, 
+		sub_tree(node* in_parent, agent* in_agent, node_idx_type in_node_idx,
 			const btree_desc& in_btree, node_type in_type) :
-			node(in_parent, in_node_idx, in_btree, in_type)
+			node(in_parent, in_agent, in_node_idx, in_btree, in_type)
 		{
 
 		}
@@ -277,9 +272,9 @@ namespace behavior
 
 	class parallel : public node
 	{
-		parallel(node* in_parent, node_idx_type in_node_idx, 
+		parallel(node* in_parent, agent* in_agent, node_idx_type in_node_idx,
 			const btree_desc& in_btree, node_type in_type) :
-			node(in_parent, in_node_idx, in_btree, in_type)
+			node(in_parent, in_agent, in_node_idx, in_btree, in_type)
 		{
 
 		}
@@ -289,9 +284,9 @@ namespace behavior
 	};
 	class action : public node
 	{
-		action(node* in_parent, node_idx_type in_node_idx, 
+		action(node* in_parent, agent* in_agent, node_idx_type in_node_idx,
 			const btree_desc& in_btree, node_type in_type) :
-			node(in_parent, in_node_idx, in_btree, in_type)
+			node(in_parent, in_agent, in_node_idx, in_btree, in_type)
 		{
 
 		}
@@ -304,9 +299,9 @@ namespace behavior
 	class wait_event : public node
 	{
 		event_type expetced_event;
-		wait_event(node* in_parent, node_idx_type in_node_idx,
+		wait_event(node* in_parent, agent* in_agent, node_idx_type in_node_idx,
 			const btree_desc& in_btree, node_type in_type) :
-			node(in_parent, in_node_idx, in_btree, in_type)
+			node(in_parent, in_agent, in_node_idx, in_btree, in_type)
 		{
 
 		}
@@ -319,9 +314,9 @@ namespace behavior
 	};
 	class reset : public node
 	{
-		reset(node* in_parent, node_idx_type in_node_idx,
+		reset(node* in_parent, agent* in_agent, node_idx_type in_node_idx,
 			const btree_desc& in_btree, node_type in_type) :
-			node(in_parent, in_node_idx, in_btree, in_type)
+			node(in_parent, in_agent, in_node_idx, in_btree, in_type)
 		{
 
 		}
@@ -332,7 +327,7 @@ namespace behavior
 	{
 	public:
 		static node* create_node_by_idx(const btree_desc& btree_config, 
-			node_idx_type node_idx, node* parent);
+			node_idx_type node_idx, node* parent, agent* in_agent);
 	};
 	class timeout_closure : public node_closure
 	{
