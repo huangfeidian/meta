@@ -9,9 +9,13 @@ using namespace meta::serialize;
 class PropertyMap
 {
 public:
-	PropertyMap(const PropertyMap* _in_parent, var_prefix_idx_type _in_cur_depth) :
+	PropertyMap(const PropertyMap* _in_parent, 
+		var_prefix_idx_type _in_cur_depth, 
+		std::deque<mutate_msg>& _mutate_queue) :
 		_parent(_in_parent),
-		_cur_depth(_in_cur_depth)
+		_cur_depth(_in_cur_depth),
+		_dest_buffer(_mutate_queue),
+		_cmd_buffer(_dest_buffer, _cur_depth)
 	{
 
 	}
@@ -29,7 +33,7 @@ public:
 	}
 	prop_proxy<decltype(a)> a_mut()
 	{
-		return prop_proxy(a, _cmd_buffer, index_for_a, _cur_depth);
+		return prop_proxy(a, _cmd_buffer, index_for_a);
 	}
 	
 	const decltype(b)& b_ref() const
@@ -38,7 +42,7 @@ public:
 	}
 	prop_proxy<decltype(b)> b_mut()
 	{
-		return prop_proxy(b, _cmd_buffer, index_for_b, _cur_depth);
+		return prop_proxy(b, _cmd_buffer, index_for_b);
 	}
 	
 	const decltype(c)& c_ref() const
@@ -47,7 +51,7 @@ public:
 	}
 	prop_proxy<decltype(c)> c_mut()
 	{
-		return prop_proxy(c, _cmd_buffer, index_for_c, _cur_depth);
+		return prop_proxy(c, _cmd_buffer, index_for_c);
 	}
 	const decltype(d)& d_ref() const
 	{
@@ -55,7 +59,7 @@ public:
 	}
 	prop_proxy<decltype(d)> d_mut()
 	{
-		return prop_proxy(d, _cmd_buffer, index_for_d, _cur_depth);
+		return prop_proxy(d, _cmd_buffer, index_for_d);
 	}
 	const decltype(e)& e_ref() const
 	{
@@ -63,7 +67,7 @@ public:
 	}
 	prop_proxy<decltype(e)> e_mut()
 	{
-		return prop_proxy(e, _cmd_buffer, index_for_e, _cur_depth);
+		return prop_proxy(e, _cmd_buffer, index_for_e);
 	}
 	const decltype(f)& f_ref() const
 	{
@@ -71,7 +75,7 @@ public:
 	}
 	prop_proxy<decltype(f)> f_mut()
 	{
-		return prop_proxy(f, _cmd_buffer, index_for_f, _cur_depth);
+		return prop_proxy(f, _cmd_buffer, index_for_f);
 	}
 	
 	bool replay_mutate_msg(std::size_t field_index, var_mutate_cmd cmd, const json& data)
@@ -130,10 +134,12 @@ private:
 	const static var_idx_type index_for_e = 4;
 	const static var_idx_type index_for_f = 5;
 public:
-	std::deque<mutate_msg> _cmd_buffer;
+	std::deque<mutate_msg>& _dest_buffer;
+	msg_queue _cmd_buffer;
 };
 void test_property_mutate()
 {
+	std::deque<mutate_msg> msg_cmd_queue;
 	std::vector<std::uint8_t> depth = { 1,2,3 };
 	any_vector temp_any_vec;
 	temp_any_vec.push_back(1);
@@ -149,12 +155,12 @@ void test_property_mutate()
 	temp_any_int_map[3] = "hahhah";
 	temp_any_int_map[5] = temp_any_str_map;
 
-	PropertyMap test_a(nullptr, depth);
-	PropertyMap test_b(nullptr, depth);
+	PropertyMap test_a(nullptr, depth, msg_cmd_queue);
+	PropertyMap test_b(nullptr, depth, msg_cmd_queue);
 	mutate_msg msg;
 	test_a.a_mut().set(1);
-	msg = test_a._cmd_buffer.front();
-	test_a._cmd_buffer.pop_front();
+	msg = msg_cmd_queue.front();
+	msg_cmd_queue.pop_front();
 	test_b.replay_mutate_msg(std::get<1>(msg), std::get<2>(msg), std::get<3>(msg));
 	if (!(test_a == test_b))
 	{
@@ -163,8 +169,8 @@ void test_property_mutate()
 
 	auto mut_b = test_a.b_mut();
 	mut_b.set(std::vector<std::string>{"hehe", "hahah"});
-	msg = test_a._cmd_buffer.front();
-	test_a._cmd_buffer.pop_front();
+	msg = msg_cmd_queue.front();
+	msg_cmd_queue.pop_front();
 	test_b.replay_mutate_msg(std::get<1>(msg), std::get<2>(msg), std::get<3>(msg));
 	if (!(test_a == test_b))
 	{
@@ -172,8 +178,8 @@ void test_property_mutate()
 	}
 
 	mut_b.push_back("ee");
-	msg = test_a._cmd_buffer.front();
-	test_a._cmd_buffer.pop_front();
+	msg = msg_cmd_queue.front();
+	msg_cmd_queue.pop_front();
 	test_b.replay_mutate_msg(std::get<1>(msg), std::get<2>(msg), std::get<3>(msg));
 	if (!(test_a == test_b))
 	{
@@ -181,8 +187,8 @@ void test_property_mutate()
 	}
 
 	mut_b.pop_back();
-	msg = test_a._cmd_buffer.front();
-	test_a._cmd_buffer.pop_front();
+	msg = msg_cmd_queue.front();
+	msg_cmd_queue.pop_front();
 	test_b.replay_mutate_msg(std::get<1>(msg), std::get<2>(msg), std::get<3>(msg));
 	if (!(test_a == test_b))
 	{
@@ -192,8 +198,8 @@ void test_property_mutate()
 	auto mut_d = test_a.d_mut();
 
 	mut_d.set(any_vector{"hehe"s, "hahah"s});
-	msg = test_a._cmd_buffer.front();
-	test_a._cmd_buffer.pop_front();
+	msg = msg_cmd_queue.front();
+	msg_cmd_queue.pop_front();
 	test_b.replay_mutate_msg(std::get<1>(msg), std::get<2>(msg), std::get<3>(msg));
 	if (!(test_a == test_b))
 	{
@@ -205,8 +211,8 @@ void test_property_mutate()
 	// mut_c begin
 	auto mut_c = test_a.c_mut();
 	mut_c.insert(1, "eh");
-	msg = test_a._cmd_buffer.front();
-	test_a._cmd_buffer.pop_front();
+	msg = msg_cmd_queue.front();
+	msg_cmd_queue.pop_front();
 	test_b.replay_mutate_msg(std::get<1>(msg), std::get<2>(msg), std::get<3>(msg));
 	if (!(test_a == test_b))
 	{
@@ -214,24 +220,24 @@ void test_property_mutate()
 	}
 
 	mut_c.insert(1, "ahaha");
-	msg = test_a._cmd_buffer.front();
-	test_a._cmd_buffer.pop_front();
+	msg = msg_cmd_queue.front();
+	msg_cmd_queue.pop_front();
 	test_b.replay_mutate_msg(std::get<1>(msg), std::get<2>(msg), std::get<3>(msg));
 	if (!(test_a == test_b))
 	{
 		std::cout << "fail to relay " << __LINE__ << std::endl;
 	}
 	mut_c.clear();
-	msg = test_a._cmd_buffer.front();
-	test_a._cmd_buffer.pop_front();
+	msg = msg_cmd_queue.front();
+	msg_cmd_queue.pop_front();
 	test_b.replay_mutate_msg(std::get<1>(msg), std::get<2>(msg), std::get<3>(msg));
 	if (!(test_a == test_b))
 	{
 		std::cout << "fail to relay " << __LINE__ << std::endl;
 	}
 	mut_c.insert(3, "ahaha");
-	msg = test_a._cmd_buffer.front();
-	test_a._cmd_buffer.pop_front();
+	msg = msg_cmd_queue.front();
+	msg_cmd_queue.pop_front();
 	test_b.replay_mutate_msg(std::get<1>(msg), std::get<2>(msg), std::get<3>(msg));
 	if (!(test_a == test_b))
 	{
@@ -239,8 +245,8 @@ void test_property_mutate()
 	}
 
 	mut_c.erase(3);
-	msg = test_a._cmd_buffer.front();
-	test_a._cmd_buffer.pop_front();
+	msg = msg_cmd_queue.front();
+	msg_cmd_queue.pop_front();
 	test_b.replay_mutate_msg(std::get<1>(msg), std::get<2>(msg), std::get<3>(msg));
 	if (!(test_a == test_b))
 	{
@@ -249,16 +255,16 @@ void test_property_mutate()
 
 	// mutate d begin
 	mut_d.push_back(any_encode("ee"));
-	msg = test_a._cmd_buffer.front();
-	test_a._cmd_buffer.pop_front();
+	msg = msg_cmd_queue.front();
+	msg_cmd_queue.pop_front();
 	test_b.replay_mutate_msg(std::get<1>(msg), std::get<2>(msg), std::get<3>(msg));
 	if (!(test_a == test_b))
 	{
 		std::cout << "fail to relay " << __LINE__ << std::endl;
 	}
 	mut_d.push_back(any_encode(1));
-	msg = test_a._cmd_buffer.front();
-	test_a._cmd_buffer.pop_front();
+	msg = msg_cmd_queue.front();
+	msg_cmd_queue.pop_front();
 	test_b.replay_mutate_msg(std::get<1>(msg), std::get<2>(msg), std::get<3>(msg));
 	if (!(test_a == test_b))
 	{
@@ -266,8 +272,8 @@ void test_property_mutate()
 	}
 
 	mut_d.push_back(temp_any_str_map);
-	msg = test_a._cmd_buffer.front();
-	test_a._cmd_buffer.pop_front();
+	msg = msg_cmd_queue.front();
+	msg_cmd_queue.pop_front();
 	test_b.replay_mutate_msg(std::get<1>(msg), std::get<2>(msg), std::get<3>(msg));
 	if (!(test_a == test_b))
 	{
@@ -277,8 +283,8 @@ void test_property_mutate()
 
 
 	mut_d.pop_back();
-	msg = test_a._cmd_buffer.front();
-	test_a._cmd_buffer.pop_front();
+	msg = msg_cmd_queue.front();
+	msg_cmd_queue.pop_front();
 	test_b.replay_mutate_msg(std::get<1>(msg), std::get<2>(msg), std::get<3>(msg));
 	if (!(test_a == test_b))
 	{
@@ -286,8 +292,8 @@ void test_property_mutate()
 	}
 
 	mut_d.pop_back();
-	msg = test_a._cmd_buffer.front();
-	test_a._cmd_buffer.pop_front();
+	msg = msg_cmd_queue.front();
+	msg_cmd_queue.pop_front();
 	test_b.replay_mutate_msg(std::get<1>(msg), std::get<2>(msg), std::get<3>(msg));
 	if (!(test_a == test_b))
 	{
@@ -297,8 +303,8 @@ void test_property_mutate()
 	// mutate e begin
 	auto mut_e = test_a.e_mut();
 	mut_e.insert(1, "eh");
-	msg = test_a._cmd_buffer.front();
-	test_a._cmd_buffer.pop_front();
+	msg = msg_cmd_queue.front();
+	msg_cmd_queue.pop_front();
 	test_b.replay_mutate_msg(std::get<1>(msg), std::get<2>(msg), std::get<3>(msg));
 	if (!(test_a == test_b))
 	{
@@ -306,24 +312,24 @@ void test_property_mutate()
 	}
 
 	mut_e.insert(1, "ahaha");
-	msg = test_a._cmd_buffer.front();
-	test_a._cmd_buffer.pop_front();
+	msg = msg_cmd_queue.front();
+	msg_cmd_queue.pop_front();
 	test_b.replay_mutate_msg(std::get<1>(msg), std::get<2>(msg), std::get<3>(msg));
 	if (!(test_a == test_b))
 	{
 		std::cout << "fail to relay " << __LINE__ << std::endl;
 	}
 	mut_e.clear();
-	msg = test_a._cmd_buffer.front();
-	test_a._cmd_buffer.pop_front();
+	msg = msg_cmd_queue.front();
+	msg_cmd_queue.pop_front();
 	test_b.replay_mutate_msg(std::get<1>(msg), std::get<2>(msg), std::get<3>(msg));
 	if (!(test_a == test_b))
 	{
 		std::cout << "fail to relay " << __LINE__ << std::endl;
 	}
 	mut_e.insert(3, 4);
-	msg = test_a._cmd_buffer.front();
-	test_a._cmd_buffer.pop_front();
+	msg = msg_cmd_queue.front();
+	msg_cmd_queue.pop_front();
 	test_b.replay_mutate_msg(std::get<1>(msg), std::get<2>(msg), std::get<3>(msg));
 	if (!(test_a == test_b))
 	{
@@ -331,8 +337,8 @@ void test_property_mutate()
 	}
 
 	mut_e.erase(3);
-	msg = test_a._cmd_buffer.front();
-	test_a._cmd_buffer.pop_front();
+	msg = msg_cmd_queue.front();
+	msg_cmd_queue.pop_front();
 	test_b.replay_mutate_msg(std::get<1>(msg), std::get<2>(msg), std::get<3>(msg));
 	if (!(test_a == test_b))
 	{
@@ -340,8 +346,8 @@ void test_property_mutate()
 	}
 	
 	mut_e.insert(5, temp_any_int_map);
-	msg = test_a._cmd_buffer.front();
-	test_a._cmd_buffer.pop_front();
+	msg = msg_cmd_queue.front();
+	msg_cmd_queue.pop_front();
 	test_b.replay_mutate_msg(std::get<1>(msg), std::get<2>(msg), std::get<3>(msg));
 	if (!(test_a == test_b))
 	{
