@@ -269,7 +269,9 @@ namespace meta::serialize
 		{
 			cur_array.push_back(std::make_pair<json, json>(encode(i.first), encode(i.second)));
 		}
-		return cur_array;
+		json cur_result;
+		cur_result["__map__"] = std::move(cur_array);
+		return cur_result;
 	}
 	template <typename T1, typename T2>
 	json encode(const std::unordered_map<T1, T2>& data)
@@ -279,7 +281,9 @@ namespace meta::serialize
 		{
 			cur_array.push_back(std::make_pair<json, json>(encode(i.first), encode(i.second)));
 		}
-		return cur_array;
+		json cur_result;
+		cur_result["__map__"] = std::move(cur_array);
+		return cur_result;
 	}
 	template <typename T1, typename T2>
 	json encode(const std::multimap<T1, T2>& data)
@@ -289,7 +293,9 @@ namespace meta::serialize
 		{
 			cur_array.push_back(std::make_pair<json, json>(encode(i.first), encode(i.second)));
 		}
-		return cur_array;
+		json cur_result;
+		cur_result["__map__"] = std::move(cur_array);
+		return cur_result;
 	}
 	template <typename T1, typename T2>
 	json encode(const std::unordered_multimap<T1, T2>& data)
@@ -299,7 +305,9 @@ namespace meta::serialize
 		{
 			cur_array.push_back(std::make_pair<json, json>(encode(i.first), encode(i.second)));
 		}
-		return cur_array;
+		json cur_result;
+		cur_result["__map__"] = std::move(cur_array);
+		return cur_result;
 	}
 
 	template <typename T1>
@@ -310,7 +318,9 @@ namespace meta::serialize
 		{
 			cur_array.push_back(encode(i));
 		}
-		return cur_array;
+		json cur_result;
+		cur_result["__set__"] = std::move(cur_array);
+		return cur_result;
 	}
 	template <typename T1>
 	json encode(const std::unordered_set<T1>& data)
@@ -320,7 +330,9 @@ namespace meta::serialize
 		{
 			cur_array.push_back(encode(i));
 		}
-		return cur_array;
+		json cur_result;
+		cur_result["__set__"] = std::move(cur_array);
+		return cur_result;
 	}
 	template <typename T1>
 	json encode(const std::multiset<T1>& data)
@@ -330,7 +342,9 @@ namespace meta::serialize
 		{
 			cur_array.push_back(encode(i));
 		}
-		return cur_array;
+		json cur_result;
+		cur_result["__set__"] = std::move(cur_array);
+		return cur_result;
 	}
 	template <typename T1>
 	json encode(const std::unordered_multiset<T1>& data)
@@ -340,7 +354,9 @@ namespace meta::serialize
 		{
 			cur_array.push_back(encode(i));
 		}
-		return cur_array;
+		json cur_result;
+		cur_result["__set__"] = std::move(cur_array);
+		return cur_result;
 	}
 	template <typename T1, std::size_t T2>
 	json encode(const T1(&data)[T2])

@@ -1,7 +1,11 @@
 ﻿#include "decode.h"
+#include "any_value.h"
+
 namespace meta::serialize
 {
-	using var_idx_type = std::uint8_t;// 每个变量在当前定义内只能是uint8的整数索引 所以一个类里面只能定义255个变量 0号变量保留不使用 以后可以扩充为std::uint16_t 或者与var_mutate_cmd合并为一个std::uint16_t 
+	// 每个变量在当前定义内只能是uint8的整数索引 所以一个类里面只能定义255个变量 
+	// 0号变量保留不使用 以后可以扩充为std::uint16_t 或者与var_mutate_cmd合并为一个std::uint16_t 
+	using var_idx_type = std::uint8_t;
 	using var_cmd_type = std::uint8_t;// 对于变量的改变操作类型 全量赋值 清空 等等
 	const static std::uint8_t depth_max = 8;
 	using var_prefix_idx_type = std::vector<var_idx_type>;
@@ -32,7 +36,11 @@ namespace meta::serialize
     class prop_proxy
     {
     public:
-        prop_proxy(T& _in_data, std::deque<mutate_msg>& _in_msg_queue, var_idx_type _in_var_idx, const var_prefix_idx_type& in_parent_idxes, notify_kind in_notify_kind = notify_kind::self_notify):
+        prop_proxy(T& _in_data, 
+			std::deque<mutate_msg>& _in_msg_queue, 
+			var_idx_type _in_var_idx, 
+			const var_prefix_idx_type& in_parent_idxes, 
+			notify_kind in_notify_kind = notify_kind::self_notify):
         _data(_in_data),
 		_msg_queue(_in_msg_queue),
 		_var_idx(_in_var_idx),
@@ -54,7 +62,8 @@ namespace meta::serialize
 			_data = _in_data;
 			if (_notify_kind != notify_kind::no_notify)
 			{
-				_msg_queue.emplace_back(_parent_idxes, _var_idx, var_mutate_cmd::set, encode(_data));
+				_msg_queue.emplace_back(_parent_idxes, _var_idx, 
+					var_mutate_cmd::set, encode(_data));
 			}
 			
 		}
@@ -64,7 +73,8 @@ namespace meta::serialize
 			_data = {};
 			if (_notify_kind != notify_kind::no_notify)
 			{
-				_msg_queue.emplace_back(_parent_idxes, _var_idx, var_mutate_cmd::clear, json());
+				_msg_queue.emplace_back(_parent_idxes, _var_idx, 
+					var_mutate_cmd::clear, json());
 			}
 		}
 		
@@ -101,7 +111,10 @@ namespace meta::serialize
 	class prop_proxy<std::vector<T>>
 	{
 	public:
-		prop_proxy(std::vector<T>& _in_data, std::deque<mutate_msg>& _in_msg_queue, var_idx_type _in_var_idx, const var_prefix_idx_type& in_parent_idxes) :
+		prop_proxy(std::vector<T>& _in_data, 
+			std::deque<mutate_msg>& _in_msg_queue, 
+			var_idx_type _in_var_idx, 
+			const var_prefix_idx_type& in_parent_idxes) :
 			_data(_in_data),
 			_msg_queue(_in_msg_queue),
 			_var_idx(_in_var_idx),
@@ -120,19 +133,22 @@ namespace meta::serialize
 		void set(const std::vector<T>& _in_data)
 		{
 			_data = _in_data;
-			_msg_queue.emplace_back(_parent_idxes, _var_idx, var_mutate_cmd::set, encode(_data));
+			_msg_queue.emplace_back(_parent_idxes, _var_idx, 
+				var_mutate_cmd::set, encode(_data));
 		}
 		
 		void clear()
 		{
 			_data.clear();
-			_msg_queue.emplace_back(_parent_idxes, _var_idx, var_mutate_cmd::clear, json());
+			_msg_queue.emplace_back(_parent_idxes, _var_idx, 
+				var_mutate_cmd::clear, json());
 		}
 		
 		void push_back(const T& _new_data)
 		{
 			_data.push_back(_new_data);
-			_msg_queue.emplace_back(_parent_idxes, _var_idx, var_mutate_cmd::vector_push_back, encode(_new_data));
+			_msg_queue.emplace_back(_parent_idxes, _var_idx, 
+				var_mutate_cmd::vector_push_back, encode(_new_data));
 		}
 		
 		void pop_back()
@@ -141,7 +157,8 @@ namespace meta::serialize
 			{
 				_data.pop_back();
 			}
-			_msg_queue.emplace_back(_parent_idxes, _var_idx, var_mutate_cmd::vector_pop_back, json());
+			_msg_queue.emplace_back(_parent_idxes, _var_idx, 
+				var_mutate_cmd::vector_pop_back, json());
 		}
 		
 		void idx_mutate(std::size_t idx, const T& _new_data)
@@ -150,7 +167,8 @@ namespace meta::serialize
 			{
 				_data[idx] = _new_data;
 			}
-			_msg_queue.emplace_back(_parent_idxes, _var_idx, var_mutate_cmd::vector_idx_mutate, encode_multi(idx, _new_data));
+			_msg_queue.emplace_back(_parent_idxes, _var_idx, 
+				var_mutate_cmd::vector_idx_mutate, encode_multi(idx, _new_data));
 		}
 		
 		void idx_delete(std::size_t idx)
@@ -159,7 +177,8 @@ namespace meta::serialize
 			{
 				_data.erase(_data.begin() + idx);
 			}
-			_msg_queue.emplace_back(_parent_idxes, _var_idx, var_mutate_cmd::vector_idx_mutate, encode(idx));
+			_msg_queue.emplace_back(_parent_idxes, _var_idx, 
+				var_mutate_cmd::vector_idx_mutate, encode(idx));
 		}
 		
 		bool replay(var_mutate_cmd _cmd, const json& j_data)
@@ -251,7 +270,10 @@ namespace meta::serialize
 	class prop_proxy<std::unordered_map<T1, T2>>
 	{
 	public:
-		prop_proxy(std::unordered_map<T1, T2>& _in_data, std::deque<mutate_msg>& _in_msg_queue, var_idx_type _in_var_idx, const var_prefix_idx_type& in_parent_idxes) :
+		prop_proxy(std::unordered_map<T1, T2>& _in_data, 
+			std::deque<mutate_msg>& _in_msg_queue, 
+			var_idx_type _in_var_idx, 
+			const var_prefix_idx_type& in_parent_idxes) :
 			_data(_in_data),
 			_msg_queue(_in_msg_queue),
 			_var_idx(_in_var_idx),
@@ -270,25 +292,29 @@ namespace meta::serialize
 		void set(const std::unordered_map<T1, T2>& _in_data)
 		{
 			_data = _in_data;
-			_msg_queue.emplace_back(_parent_idxes, _var_idx, var_mutate_cmd::set, encode(_data));
+			_msg_queue.emplace_back(_parent_idxes, _var_idx, 
+				var_mutate_cmd::set, encode(_data));
 		}
 
 		void clear()
 		{
 			_data.clear();
-			_msg_queue.emplace_back(_parent_idxes, _var_idx, var_mutate_cmd::clear, json());
+			_msg_queue.emplace_back(_parent_idxes, _var_idx, 
+				var_mutate_cmd::clear, json());
 		}
 
 		void insert(const T1& key, const T2& value)
 		{
 			_data[key] = value;
-			_msg_queue.emplace_back(_parent_idxes, _var_idx, var_mutate_cmd::map_insert, encode_multi(key, value));
+			_msg_queue.emplace_back(_parent_idxes, _var_idx, 
+				var_mutate_cmd::map_insert, encode_multi(key, value));
 		}
 
 		void erase(const T1& key)
 		{
 			_data.erase(key);
-			_msg_queue.emplace_back(_parent_idxes, _var_idx, var_mutate_cmd::map_erase, encode(key));
+			_msg_queue.emplace_back(_parent_idxes, _var_idx, 
+				var_mutate_cmd::map_erase, encode(key));
 		}
 
 		bool replay(var_mutate_cmd _cmd, const json& j_data)

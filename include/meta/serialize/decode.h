@@ -220,8 +220,22 @@ namespace meta::serialize
 	}
 
 #define DECODE_FOR_SET(SET_TYPE) template<typename T>\
-bool decode(const json& data, SET_TYPE<T>& dst)\
+bool decode(const json& pre_data, SET_TYPE<T>& dst)\
 {												\
+	if (!pre_data.is_object())					\
+	{											\
+		return false;							\
+	}											\
+	if(pre_data.size() != 1)					\
+	{											\
+		return false;							\
+	}											\
+	auto data_iter = pre_data.find("__set__");	\
+	if (data_iter == pre_data.end())			\
+	{											\
+		return false;							\
+	}											\
+	const json& data = *data_iter;				\
 	if (!data.is_array())						\
 	{											\
 		return false;							\
@@ -251,8 +265,22 @@ bool decode(const json& data, SET_TYPE<T>& dst)\
 		DECODE_FOR_SET(std::unordered_multiset)
 
 #define DECODE_FOR_MAP(MAP_TYPE) template <typename T1, typename T2>\
-bool decode(const json& data, MAP_TYPE<T1, T2>& dst)				\
+bool decode(const json& pre_data, MAP_TYPE<T1, T2>& dst)				\
 {																	\
+	if (!pre_data.is_object())										\
+	{																\
+		return false;												\
+	}																\
+	if(pre_data.size() != 1)										\
+	{																\
+		return false;												\
+	}																\
+	auto data_iter = pre_data.find("__map__");						\
+	if (data_iter == pre_data.end())								\
+	{																\
+		return false;												\
+	}																\
+	const json& data = *data_iter;									\
 	if (!data.is_array())											\
 	{																\
 		return false;												\
@@ -335,7 +363,8 @@ bool decode(const json& data, MAP_TYPE<T1, T2>& dst)				\
 		else
 		{
 			//constexpr auto next_value = std::integral_constant<bool, N + 1 == std::tuple_size_v<std::tuple<Args...>>>{};
-			return decode_for_variant_2<N + 1, Args...>(data, dst, std::conditional<N + 1 == std::tuple_size_v<std::tuple<Args...>>, std::false_type, std::true_type>::type());
+			return decode_for_variant_2<N + 1, Args...>(data, dst, 
+				std::conditional<N + 1 == std::tuple_size_v<std::tuple<Args...>>, std::false_type, std::true_type>::type());
 		}
 	}
 	template <std::size_t N, typename... Args>
@@ -363,7 +392,8 @@ bool decode(const json& data, MAP_TYPE<T1, T2>& dst)				\
 	template <typename T>
 	using encode_type = decltype(std::declval<T>.encode());
 	template<typename T1>
-	typename std::enable_if<!std::is_same<encode_type<T1>, json>::value&&encodable<encode_type<T1>>::value, bool>::type decode(const json& data, T1& dst)
+	typename std::enable_if<!std::is_same<encode_type<T1>, json>::value && 
+		encodable<encode_type<T1>>::value, bool>::type decode(const json& data, T1& dst)
 	{
 		encode_type<T1> temp;
 		if (decode(data, temp))

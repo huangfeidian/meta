@@ -71,6 +71,10 @@ void decode_test_std_container()
 	decode_test_print(data_17);
 	std::unordered_multimap<int, int> data_18 = { {1,2}, {3, 4}, {5, 6} };
 	decode_test_print(data_18);
+
+	std::unordered_set<int> data_20 = { 1, 2, 3, 4 };
+	decode_test_print(data_20);
+
 }
 struct c_1
 {

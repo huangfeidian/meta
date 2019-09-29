@@ -52,10 +52,10 @@ namespace meta::serialize
 	using any_vector = std::vector<any_value_type>;
 	using any_int_map = std::unordered_map<std::int64_t, any_value_type>;
 	using any_str_map = std::unordered_map<std::string, any_value_type>;
-    class any_value_type: public std::variant<std::int64_t, double, bool, std::string, any_vector, any_int_map, any_str_map>
+    class any_value_type: public std::variant<std::int64_t, double, std::string, any_vector, any_int_map, any_str_map>
     {
 	public:
-		using base = std::variant<std::int64_t, double, bool, std::string, any_vector, any_int_map, any_str_map>;
+		using base = std::variant<std::int64_t, double, std::string, any_vector, any_int_map, any_str_map>;
         using base::base;
         using base::operator=;
 		any_value_type() :
@@ -118,10 +118,6 @@ namespace meta::serialize
 		bool is_double() const
 		{
 			return std::holds_alternative<double>(*this);
-		}
-		bool is_bool() const
-		{
-			return std::holds_alternative<bool>(*this);
 		}
 		bool is_str() const
 		{
@@ -411,7 +407,7 @@ ANY_NUMERIC_ANY_CAL(div)
 		}
 		else if (data.is_boolean())
 		{
-			return data.get<bool>();
+			return static_cast<std::int64_t>(data.get<bool>());
 		}
 		else if (data.is_number_float())
 		{
@@ -608,12 +604,7 @@ ANY_NUMERIC_ANY_CAL(div)
 
 	static bool any_decode(const any_value_type& data, json& dst)
 	{
-		if (data.is_bool())
-		{
-			dst = std::get<bool>(data);
-			return true;
-		}
-		else if (data.is_str())
+		if (data.is_str())
 		{
 			dst = std::get<std::string>(data);
 			return true;

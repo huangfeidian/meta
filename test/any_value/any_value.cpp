@@ -15,10 +15,6 @@ void debug_show(const any_value_type& cur_value)
 	{
 		cout << "type is is_double" << endl;
 	}
-	if (cur_value.is_bool())
-	{
-		cout << "type is is_bool" << endl;
-	}
 	if (cur_value.is_str())
 	{
 		cout << "type is is_str" << endl;
