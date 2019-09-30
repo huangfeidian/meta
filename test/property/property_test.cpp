@@ -127,16 +127,18 @@ public:
 private:
 	const PropertyMap* _parent;
 	const var_prefix_idx_type _cur_depth;
-	const static var_idx_type index_for_a = 0;
-	const static var_idx_type index_for_b = 1;
-	const static var_idx_type index_for_c = 2;
-	const static var_idx_type index_for_d = 3;
-	const static var_idx_type index_for_e = 4;
-	const static var_idx_type index_for_f = 5;
+	const static var_idx_type index_for_item = 0;
+	const static var_idx_type index_for_a = 1;
+	const static var_idx_type index_for_b = 2;
+	const static var_idx_type index_for_c = 3;
+	const static var_idx_type index_for_d = 4;
+	const static var_idx_type index_for_e = 5;
+	const static var_idx_type index_for_f = 6;
 public:
 	std::deque<mutate_msg>& _dest_buffer;
 	msg_queue _cmd_buffer;
 };
+
 void test_property_mutate()
 {
 	std::deque<mutate_msg> msg_cmd_queue;
@@ -355,10 +357,64 @@ void test_property_mutate()
 	}
 	// mutate f begin
 
+	auto mut_f = test_a.f_mut();
+	mut_f.insert("1", "eh");
+	msg = msg_cmd_queue.front();
+	msg_cmd_queue.pop_front();
+	test_b.replay_mutate_msg(std::get<1>(msg), std::get<2>(msg), std::get<3>(msg));
+	if (!(test_a == test_b))
+	{
+		std::cout << "fail to relay " << __LINE__ << std::endl;
+	}
+
+	mut_f.insert("1", "ahaha");
+	msg = msg_cmd_queue.front();
+	msg_cmd_queue.pop_front();
+	test_b.replay_mutate_msg(std::get<1>(msg), std::get<2>(msg), std::get<3>(msg));
+	if (!(test_a == test_b))
+	{
+		std::cout << "fail to relay " << __LINE__ << std::endl;
+	}
+	mut_f.clear();
+	msg = msg_cmd_queue.front();
+	msg_cmd_queue.pop_front();
+	test_b.replay_mutate_msg(std::get<1>(msg), std::get<2>(msg), std::get<3>(msg));
+	if (!(test_a == test_b))
+	{
+		std::cout << "fail to relay " << __LINE__ << std::endl;
+	}
+	mut_f.insert("3", 4);
+	msg = msg_cmd_queue.front();
+	msg_cmd_queue.pop_front();
+	test_b.replay_mutate_msg(std::get<1>(msg), std::get<2>(msg), std::get<3>(msg));
+	if (!(test_a == test_b))
+	{
+		std::cout << "fail to relay " << __LINE__ << std::endl;
+	}
+
+	mut_f.erase("3");
+	msg = msg_cmd_queue.front();
+	msg_cmd_queue.pop_front();
+	test_b.replay_mutate_msg(std::get<1>(msg), std::get<2>(msg), std::get<3>(msg));
+	if (!(test_a == test_b))
+	{
+		std::cout << "fail to relay " << __LINE__ << std::endl;
+	}
+
+	mut_f.insert("5", temp_any_int_map);
+	msg = msg_cmd_queue.front();
+	msg_cmd_queue.pop_front();
+	test_b.replay_mutate_msg(std::get<1>(msg), std::get<2>(msg), std::get<3>(msg));
+	if (!(test_a == test_b))
+	{
+		std::cout << "fail to relay " << __LINE__ << std::endl;
+	}
+
 	std::cout << "test a is " << test_a.encode() << std::endl;
 	std::cout << "test b is " << test_b.encode() << std::endl;
 
 }
+
 int main()
 {
 	test_property_mutate();
