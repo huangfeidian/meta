@@ -52,6 +52,7 @@ namespace meta::serialize
 	using any_vector = std::vector<any_value_type>;
 	using any_int_map = std::unordered_map<std::int64_t, any_value_type>;
 	using any_str_map = std::unordered_map<std::string, any_value_type>;
+	// we dont add bool to this variant because const char* would be deduced to bool instead of string
     class any_value_type: public std::variant<std::int64_t, double, std::string, any_vector, any_int_map, any_str_map>
     {
 	public:
