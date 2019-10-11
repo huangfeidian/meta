@@ -5,17 +5,112 @@
 using namespace std;
 using namespace meta::serialize;
 
+class simple_item : public property_item<int>
+{
+public:
+	int a = 0;
+	using base = property_item<int>;
+	using base::base;
+	const static var_idx_type index_for_item = 0;
+	const static var_idx_type index_for_a = 1;
+	const decltype(a)& a_ref() const
+	{
+		return a;
+	}
+	prop_proxy<decltype(a)> a_mut()
+	{
+		return prop_proxy(a, _cmd_buffer, index_for_a);
+	}
+	bool replay_mutate_msg(std::size_t field_index, var_mutate_cmd cmd, const json& data)
+	{
+		switch (field_index)
+		{
+		case index_for_a:
+		{
+			auto temp_proxy = a_mut();
+			return temp_proxy.replay(cmd, data);
+		}
+		default:
+			break;
+		}
+	}
+	bool operator==(const simple_item& other)
+	{
+		return _id == other._id && a == other.a;
+	}
+	json encode() const
+	{
+		auto result = base::encode();
+		result["a"] = a;
+		return result;
+	}
+	bool decode(const json& data)
+	{
+		if (!base::decode(data))
+		{
+			return false;
+		}
+		auto iter = data.find("a");
+		if (iter == data.end())
+		{
+			return false;
+		}
+		if (!::decode(*iter, a))
+		{
+			return false;
+		}
+		return true;
+	}
+};
 
-class PropertyMap
+class simple_bag : public property_bag<int, simple_item>
+{
+public:
+	using base = property_bag<int, simple_item>;
+	using base::base;
+	const std::string& type_name() const
+	{
+		static std::string name = "simple_bag";
+		return name;
+	}
+	bool replay_mutate_msg(std::size_t field_index,
+		var_mutate_cmd cmd, const json& data)
+	{
+		switch (field_index)
+		{
+		case index_for_item:
+			return true;
+		default:
+			break;
+		}
+		return true;
+	}
+	bool operator==(const simple_bag& other)
+	{
+		return base::operator==(other);
+	}
+	json encode() const
+	{
+		return base::encode();
+	}
+	bool decode(const json& data)
+	{
+		return base::decode(data);
+	}
+	const static var_idx_type index_for_item = 0;
+};
+class PropertyMap: public property_bag_base
 {
 public:
 	PropertyMap(const PropertyMap* _in_parent, 
 		var_prefix_idx_type _in_cur_depth, 
 		std::deque<mutate_msg>& _mutate_queue) :
+		property_bag_base(_cur_depth,_mutate_queue),
 		_parent(_in_parent),
 		_cur_depth(_in_cur_depth),
 		_dest_buffer(_mutate_queue),
-		_cmd_buffer(_dest_buffer, _cur_depth)
+		_cmd_buffer(_dest_buffer, _cur_depth),
+		g(concat_prefix(_cur_depth, index_for_g), _dest_buffer)
 	{
 
 	}
@@ -26,7 +121,12 @@ public:
 	any_vector d;
 	any_int_map e;
 	any_str_map f;
-
+	simple_bag g;
+	const std::string& type_name() const
+	{
+		static std::string name = "PropertyMap";
+		return name;
+	}
 	const decltype(a)& a_ref() const
 	{
 		return a;
@@ -112,17 +212,36 @@ public:
 			auto temp_proxy = f_mut();
 			return temp_proxy.replay(cmd, data);
 		}
+		case index_for_g:
+		{
+
+		}
 		default:
 			return false;
 		}
 	}
 	bool operator==(const PropertyMap& other)
 	{
-		return a == other.a && b == other.b && c == other.c && d == other.d && f ==other.f && e == other.e;
+		return a == other.a && b == other.b &&
+			c == other.c && d == other.d 
+			&& f ==other.f && e == other.e
+			&& g == other.g;
 	}
 	json encode() const
 	{
-		return encode_multi(a, b, c, d, e, f);
+		json result;
+		result["a"] = ::encode(a);
+		result["b"] = ::encode(b);
+		result["c"] = ::encode(c);
+		result["d"] = ::encode(d);
+		result["e"] = ::encode(e);
+		result["f"] = ::encode(f);
+		result["g"] = ::encode(g);
+		return result;
+	}
+	bool decode(const json& data)
+	{
+
 	}
 private:
 	const PropertyMap* _parent;
@@ -134,6 +253,7 @@ private:
 	const static var_idx_type index_for_d = 4;
 	const static var_idx_type index_for_e = 5;
 	const static var_idx_type index_for_f = 6;
+	const static var_idx_type index_for_g = 7;
 public:
 	std::deque<mutate_msg>& _dest_buffer;
 	msg_queue _cmd_buffer;

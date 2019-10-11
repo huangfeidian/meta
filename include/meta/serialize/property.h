@@ -10,6 +10,13 @@ namespace meta::serialize
 	using var_cmd_type = std::uint8_t;// 对于变量的改变操作类型 全量赋值 清空 等等
 	const static std::uint8_t depth_max = 8;
 	using var_prefix_idx_type = std::vector<var_idx_type>;
+	static var_prefix_idx_type concat_prefix(const var_prefix_idx_type pre, 
+		var_idx_type offset)
+	{
+		auto temp = pre;
+		temp.push_back(offset);
+		return temp;
+	}
 	enum class var_mutate_cmd : var_cmd_type
 	{
 		clear = 0,
@@ -61,7 +68,7 @@ namespace meta::serialize
 
 	};
 	template <typename T>
-	class item_msg_queue : msg_queue_base
+	class item_msg_queue : public msg_queue_base
 	{
 		std::deque<mutate_msg>& _queue;
 		const var_prefix_idx_type& parent_idxes;
@@ -426,10 +433,10 @@ namespace meta::serialize
 	class property_bag_base
 	{
 	public:
-		const var_prefix_idx_type _depth;
+		var_prefix_idx_type _depth;
 		virtual json encode() const = 0;
 		virtual bool decode(const json& data) = 0;
-		virtual std::string type_name() = 0;
+		virtual const std::string& type_name() const = 0;
 		std::deque<mutate_msg>& _dest_buffer;
 		property_bag_base(var_prefix_idx_type _in_depth,
 			std::deque<mutate_msg>& _in_cmd_queue) :
@@ -445,10 +452,10 @@ namespace meta::serialize
 	template <typename T>
 	class property_item : public property_item_base
 	{
-	private:
+	protected:
 		T _id;
 	public:
-		const T& ref_id() const
+		const T& id() const
 		{
 			return _id;
 		}
@@ -491,6 +498,8 @@ namespace meta::serialize
 	template <typename K, typename Item>
 	class property_bag:public property_bag_base
 	{
+		static_assert(std::is_base_of<property_item<K>, Item>::value,
+			"item should be derived from property_item<K>");
 		std::vector<Item> _data;
 		std::unordered_map<K, std::size_t> _index;
 		std::shared_ptr<spdlog::logger> _logger;
@@ -553,6 +562,10 @@ namespace meta::serialize
 			_index[temp_item.ref_id()] = _data.size();
 			_data.emplace_back(std::move(temp_item));
 			return _data.back();
+		}
+		bool operator==(const property_bag& other)
+		{
+			return _data == other._data;
 		}
 		void clear()
 		{
