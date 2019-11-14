@@ -91,8 +91,12 @@ namespace meta::serialize
 			return;
 		}
 	};
-    template <typename T>
-    class prop_proxy
+    template <typename T, typename B = void>
+	class prop_proxy;
+	template <typename T>
+    class prop_proxy<T, std::enable_if_t<
+		std::is_pod_v<T> || std::is_same_v<T, std::string>, void>
+	>
     {
     public:
         prop_proxy(T& _in_data, 
@@ -164,6 +168,7 @@ namespace meta::serialize
 		const var_idx_type& _offset;
 		const notify_kind _notify_kind;
 	};
+
 	template<typename T>
 	class prop_proxy<std::vector<T>>
 	{
@@ -459,9 +464,9 @@ namespace meta::serialize
 		{
 			return _id;
 		}
-		property_item(property_bag_base* _in_container, 
-			const T& _in_id,
-			std::deque<mutate_msg>& _dest_queue):
+		property_item(property_bag_base* _in_container,
+			std::deque<mutate_msg>& _dest_queue,
+			const T& _in_id):
 			property_item_base(_in_container),
 			_id(_in_id),
 			_cmd_buffer(_dest_queue, _in_container->_depth, _id)
@@ -498,18 +503,36 @@ namespace meta::serialize
 	template <typename K, typename Item>
 	class property_bag:public property_bag_base
 	{
+
 		static_assert(std::is_base_of<property_item<K>, Item>::value,
 			"item should be derived from property_item<K>");
 		std::vector<Item> _data;
 		std::unordered_map<K, std::size_t> _index;
 		std::shared_ptr<spdlog::logger> _logger;
 	public:
-		using property_bag_base::property_bag_base;
+		using key_type = K;
+		using value_type = Item;
+		property_bag(var_prefix_idx_type _in_depth,
+			std::deque<mutate_msg>& _in_cmd_queue) :
+			property_bag_base(_in_depth, _in_cmd_queue)
+		{
+
+		}
+		property_bag& operator=(const property_bag& other)
+		{
+			_data.clear();
+			for (const auto& one_item : other._data)
+			{
+				insert(one_item.encode());
+			}
+			_data.shrink_to_fit();
+			return *this;
+		}
 		using item_type = Item;
 		using key_type = K;
 		json encode() const
 		{
-			return encode(_data);
+			return ::encode(_data);
 		}
 		bool decode(const json& in_data)
 		{
@@ -519,17 +542,28 @@ namespace meta::serialize
 					in_data.dump(), type_name());
 				return false;
 			}
-			if (!::decode(in_data, _data))
+			json::array_t temp_array;
+			if (!in_data.is_array())
 			{
-				_logger->error("fail to decode data {} to property_bag {}",
-					in_data.dump(), type_name());
 				return false;
+			}
+			_data.reserve(in_data.size());
+			temp_array = in_data.get<json::array_t>();
+			for (const auto& one_json_item : temp_array)
+			{
+				item_type temp_item(this, _dest_buffer, K());
+				if (!temp_item.decode(one_json_item))
+				{
+					_data.clear();
+					return false;
+				}
+				_data.push_back(temp_item);
 			}
 			for (std::size_t i = 0; i < _data.size(); i++)
 			{
 				_index[_data[i].id()] = i;
 			}
-			return ::decode(in_data, _data);
+			return true;
 		}
 		bool has_item(const K& _key) const
 		{
@@ -545,7 +579,7 @@ namespace meta::serialize
 		}
 		bool create(const json& data)
 		{
-			Item temp_item(this, _dest_buffer, T());
+			Item temp_item(this, _dest_buffer, K());
 			if (!::decode(data, temp_item))
 			{
 				_logger->error("property_bag {} fail to create item with data {}", 
@@ -591,7 +625,8 @@ namespace meta::serialize
 					auto pre_index = cur_iter->second;
 					_index.erase(cur_iter);
 					_index[_data[pre_index].id()] = pre_index;
-					std::swap(_data[cur_iter->second], _data.back());
+					_data[cur_iter->second].swap(_data.back());
+					_data.pop_back();
 				}
 				return true;
 			}
@@ -621,18 +656,23 @@ namespace meta::serialize
 			}
 		}
 	};
-	template <typename K, typename Item>
-	class prop_proxy<property_bag<K, Item>>
+	template <typename T>
+	class prop_proxy<T, 
+		std::enable_if_t<std::is_base_of_v<property_bag_base, T>, void>>
 	{
-		property_bag<K, Item>& _data;
+
+		T& _data;
 	public:
-		prop_proxy(property_bag<K, Item>& _in_data,
+		using key_type = typename T::key_type;
+		using value_type = typename T::value_type;
+		prop_proxy(T& _in_data,
 			msg_queue_base& _in_msg_queue,
 			const var_idx_type& _in_offset)
+			:_data(_in_data)
 		{
 
 		}
-		operator const std::vector<Item>&() const
+		operator const std::vector<value_type>&() const
 		{
 			return _data._data;
 		}
@@ -641,9 +681,9 @@ namespace meta::serialize
 			_data.clear();
 			_msg_queue.add(_offset, var_mutate_cmd::clear, json());
 		}
-		std::vector<K> keys() const
+		std::vector<key_type> keys() const
 		{
-			std::vector<K> result;
+			std::vector<key_type> result;
 			result.reserve(_data._data.size());
 			for (const auto& one_item : _data._data)
 			{
@@ -651,7 +691,7 @@ namespace meta::serialize
 			}
 			return result;
 		}
-		void insert(const K& key, const json& value)
+		void insert(const key_type& key, const json& value)
 		{
 			if (_data.create(value))
 			{
@@ -661,7 +701,7 @@ namespace meta::serialize
 			
 		}
 
-		void erase(const K& key)
+		void erase(const key_type& key)
 		{
 			if (_data.erase(key))
 			{
@@ -669,7 +709,31 @@ namespace meta::serialize
 			}
 			
 		}
-
+		bool replay_insert(const json& j_data)
+		{
+			key_type cur_k;
+			json cur_value;
+			if (!decode_multi(j_data, cur_k, cur_value))
+			{
+				return false;
+			}
+			return _data.create(cur_value);
+			
+		}
+		bool replay_clear(const json& j_data)
+		{
+			_data.clear();
+			return true;
+		}
+		bool replay_erase(const json& j_data)
+		{
+			key_type cur_k;
+			if (!decode(j_data, cur_k))
+			{
+				return false;
+			}
+			return _data.erase(cur_k);
+		}
 		bool replay(var_mutate_cmd _cmd, const json& j_data)
 		{
 			switch (_cmd)
@@ -686,5 +750,12 @@ namespace meta::serialize
 		}
 	};
 
+	template <typename T>
+	prop_proxy<T, void> make_proxy(T& _in_data,
+		msg_queue_base& _in_msg_queue,
+		const var_idx_type& _in_offset)
+	{
+		return prop_proxy<T, void>(_in_data, _in_msg_queue, _in_offset);
+	}
 
 }

@@ -203,6 +203,10 @@ namespace meta::serialize
 		return data;
 	}
 
+	static json encode(const json& data)
+	{
+		return data;
+	}
 	template <typename T>
 	json encode(const std::optional<T>& data)
 	{

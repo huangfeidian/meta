@@ -17,9 +17,13 @@ public:
 	{
 		return a;
 	}
+	const decltype(a) ref_id() const
+	{
+		return a;
+	}
 	prop_proxy<decltype(a)> a_mut()
 	{
-		return prop_proxy(a, _cmd_buffer, index_for_a);
+		return make_proxy(a, _cmd_buffer, index_for_a);
 	}
 	bool replay_mutate_msg(std::size_t field_index, var_mutate_cmd cmd, const json& data)
 	{
@@ -31,10 +35,10 @@ public:
 			return temp_proxy.replay(cmd, data);
 		}
 		default:
-			break;
+			return false;
 		}
 	}
-	bool operator==(const simple_item& other)
+	bool operator==(const simple_item& other) const
 	{
 		return _id == other._id && a == other.a;
 	}
@@ -60,6 +64,14 @@ public:
 			return false;
 		}
 		return true;
+	}
+	void swap(simple_item& other)
+	{
+		std::swap(a, other.a);
+	}
+	std::string type_name()
+	{
+		return "simple_item";
 	}
 };
 
@@ -133,7 +145,7 @@ public:
 	}
 	prop_proxy<decltype(a)> a_mut()
 	{
-		return prop_proxy(a, _cmd_buffer, index_for_a);
+		return make_proxy(a, _cmd_buffer, index_for_a);
 	}
 	
 	const decltype(b)& b_ref() const
@@ -142,7 +154,7 @@ public:
 	}
 	prop_proxy<decltype(b)> b_mut()
 	{
-		return prop_proxy(b, _cmd_buffer, index_for_b);
+		return make_proxy(b, _cmd_buffer, index_for_b);
 	}
 	
 	const decltype(c)& c_ref() const
@@ -151,7 +163,7 @@ public:
 	}
 	prop_proxy<decltype(c)> c_mut()
 	{
-		return prop_proxy(c, _cmd_buffer, index_for_c);
+		return make_proxy(c, _cmd_buffer, index_for_c);
 	}
 	const decltype(d)& d_ref() const
 	{
@@ -159,7 +171,7 @@ public:
 	}
 	prop_proxy<decltype(d)> d_mut()
 	{
-		return prop_proxy(d, _cmd_buffer, index_for_d);
+		return make_proxy(d, _cmd_buffer, index_for_d);
 	}
 	const decltype(e)& e_ref() const
 	{
@@ -167,7 +179,7 @@ public:
 	}
 	prop_proxy<decltype(e)> e_mut()
 	{
-		return prop_proxy(e, _cmd_buffer, index_for_e);
+		return make_proxy(e, _cmd_buffer, index_for_e);
 	}
 	const decltype(f)& f_ref() const
 	{
@@ -175,7 +187,15 @@ public:
 	}
 	prop_proxy<decltype(f)> f_mut()
 	{
-		return prop_proxy(f, _cmd_buffer, index_for_f);
+		return make_proxy(f, _cmd_buffer, index_for_f);
+	}
+	const decltype(g)& g_ref() const
+	{
+		return g;
+	}
+	prop_proxy<decltype(g)> g_mut()
+	{
+		return make_proxy(g, _cmd_buffer, index_for_g);
 	}
 	
 	bool replay_mutate_msg(std::size_t field_index, var_mutate_cmd cmd, const json& data)
@@ -214,7 +234,8 @@ public:
 		}
 		case index_for_g:
 		{
-
+			auto temp_proxy = g_mut();
+			return temp_proxy.replay(cmd, data);
 		}
 		default:
 			return false;
@@ -241,7 +262,73 @@ public:
 	}
 	bool decode(const json& data)
 	{
+		decltype(data.end()) iter;
+		iter = data.find("a");
+		if (iter == data.end())
+		{
+			return false;
+		}
+		if (!::decode(*iter, a))
+		{
+			return false;
+		}
+		iter = data.find("b");
+		if (iter == data.end())
+		{
+			return false;
+		}
+		if (!::decode(*iter, b))
+		{
+			return false;
+		}
+		iter = data.find("c");
+		if (iter == data.end())
+		{
+			return false;
+		}
+		if (!::decode(*iter, c))
+		{
+			return false;
+		}
+		iter = data.find("d");
+		if (iter == data.end())
+		{
+			return false;
+		}
+		if (!::decode(*iter, d))
+		{
+			return false;
+		}
+		iter = data.find("e");
+		if (iter == data.end())
+		{
+			return false;
+		}
+		if (!::decode(*iter, e))
+		{
+			return false;
+		}
+		iter = data.find("f");
+		if (iter == data.end())
+		{
+			return false;
+		}
+		if (!::decode(*iter, f))
+		{
+			return false;
+		}
+		iter = data.find("g");
+		if (iter == data.end())
+		{
+			return false;
+		}
+		if (!::decode(*iter, g))
+		{
+			return false;
+		}
 
+		return true;
+		
 	}
 private:
 	const PropertyMap* _parent;
@@ -529,6 +616,7 @@ void test_property_mutate()
 	{
 		std::cout << "fail to relay " << __LINE__ << std::endl;
 	}
+	// test g begin
 
 	std::cout << "test a is " << test_a.encode() << std::endl;
 	std::cout << "test b is " << test_b.encode() << std::endl;

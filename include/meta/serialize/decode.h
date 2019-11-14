@@ -47,6 +47,11 @@ namespace meta::serialize
 			return true;
 		}
 	}
+	static bool decode(const json& data, json& dst)
+	{
+		dst = data;
+		return true;
+	}
 	static bool decode(const json& data, bool& dst)
 	{
 		if (!data.is_boolean())
