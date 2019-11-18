@@ -508,7 +508,6 @@ namespace meta::serialize
 			"item should be derived from property_item<K>");
 		std::vector<Item> _data;
 		std::unordered_map<K, std::size_t> _index;
-		std::shared_ptr<spdlog::logger> _logger;
 	public:
 		using key_type = K;
 		using value_type = Item;
@@ -538,8 +537,8 @@ namespace meta::serialize
 		{
 			if (_data.size())
 			{
-				_logger->error("the bag is not empty while decode data {} to property_bag {}",
-					in_data.dump(), type_name());
+				std::cout<<fmt::format("the bag is not empty while decode data {} to property_bag {}",
+					in_data.dump(), type_name())<<std::endl;
 				return false;
 			}
 			json::array_t temp_array;
@@ -582,18 +581,18 @@ namespace meta::serialize
 			Item temp_item(this, _dest_buffer, K());
 			if (!::decode(data, temp_item))
 			{
-				_logger->error("property_bag {} fail to create item with data {}", 
-					type_name(), data.dump());
+				std::cout<<fmt::format("property_bag {} fail to create item with data {}", 
+					type_name(), data.dump())<<std::endl;
 				return false;
 			}
-			_index[temp_item.ref_id()] = _data.size();
+			_index[temp_item.id()] = _data.size();
 			_data.emplace_back(std::move(temp_item));
 			return true;
 		}
 		Item& create(const K& key)
 		{
 			Item temp_item(this, _dest_buffer, key);
-			_index[temp_item.ref_id()] = _data.size();
+			_index[temp_item.id()] = _data.size();
 			_data.emplace_back(std::move(temp_item));
 			return _data.back();
 		}
@@ -625,7 +624,7 @@ namespace meta::serialize
 					auto pre_index = cur_iter->second;
 					_index.erase(cur_iter);
 					_index[_data[pre_index].id()] = pre_index;
-					_data[cur_iter->second].swap(_data.back());
+					_data[pre_index].swap(_data.back());
 					_data.pop_back();
 				}
 				return true;
@@ -669,6 +668,8 @@ namespace meta::serialize
 			msg_queue_base& _in_msg_queue,
 			const var_idx_type& _in_offset)
 			:_data(_in_data)
+			,_msg_queue(_in_msg_queue)
+			,_offset(_in_offset)
 		{
 
 		}
@@ -691,12 +692,12 @@ namespace meta::serialize
 			}
 			return result;
 		}
-		void insert(const key_type& key, const json& value)
+		void insert(const json& value)
 		{
 			if (_data.create(value))
 			{
 				_msg_queue.add(_offset, var_mutate_cmd::map_insert, 
-					encode_multi(key, value));
+					::encode(value));
 			}
 			
 		}
@@ -711,9 +712,9 @@ namespace meta::serialize
 		}
 		bool replay_insert(const json& j_data)
 		{
-			key_type cur_k;
+			
 			json cur_value;
-			if (!decode_multi(j_data, cur_k, cur_value))
+			if (!::decode(j_data, cur_value))
 			{
 				return false;
 			}
@@ -748,6 +749,9 @@ namespace meta::serialize
 				return false;
 			}
 		}
+	private:
+		msg_queue_base& _msg_queue;
+		const var_idx_type _offset;
 	};
 
 	template <typename T>

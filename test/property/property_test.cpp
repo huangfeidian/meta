@@ -17,10 +17,7 @@ public:
 	{
 		return a;
 	}
-	const decltype(a) ref_id() const
-	{
-		return a;
-	}
+
 	prop_proxy<decltype(a)> a_mut()
 	{
 		return make_proxy(a, _cmd_buffer, index_for_a);
@@ -617,6 +614,26 @@ void test_property_mutate()
 		std::cout << "fail to relay " << __LINE__ << std::endl;
 	}
 	// test g begin
+	auto mut_g = test_a.g_mut();
+	json test_data;
+	test_data["a"] = 1;
+	test_data["id"] = 2;
+	mut_g.insert(test_data);
+	msg = msg_cmd_queue.front();
+	msg_cmd_queue.pop_front();
+	test_b.replay_mutate_msg(std::get<1>(msg), std::get<2>(msg), std::get<3>(msg));
+	if (!(test_a == test_b))
+	{
+		std::cout << "fail to relay " << __LINE__ << std::endl;
+	}
+	mut_g.erase(2);
+	msg = msg_cmd_queue.front();
+	msg_cmd_queue.pop_front();
+	test_b.replay_mutate_msg(std::get<1>(msg), std::get<2>(msg), std::get<3>(msg));
+	if (!(test_a == test_b))
+	{
+		std::cout << "fail to relay " << __LINE__ << std::endl;
+	}
 
 	std::cout << "test a is " << test_a.encode() << std::endl;
 	std::cout << "test b is " << test_b.encode() << std::endl;
