@@ -17,6 +17,11 @@ using namespace std;
 namespace A
 {
     //struct s_1
+    //struct s_1 line 2
+    /* struct s_1 line 3 */
+    /* 
+    struct s_1 line 4 
+    */
     struct s_1
     {
         

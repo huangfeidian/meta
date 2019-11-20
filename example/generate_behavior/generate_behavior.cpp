@@ -75,9 +75,10 @@ std::unordered_map<std::string, std::string> generate_behavior_actions()
 	}
 	return result;
 }
-int main()
+int main(int argc, const char** argv)
 {
 	auto& the_logger = utils::get_logger();
+	std::string file_path = argv[1];
 	CXIndex m_index;
 	CXTranslationUnit m_translationUnit;
 	std::vector<std::string> arguments;
@@ -85,8 +86,11 @@ int main()
 	arguments.push_back("c++");
 	arguments.push_back("-std=c++17");
 	arguments.push_back("-D__meta_parse__");
-	arguments.push_back("-ID:/usr/include/");
-	arguments.push_back("-I../include/");
+	arguments.push_back("-fparse-all-comments");
+	for (int i = 2; i < argc; i++)
+	{
+		arguments.push_back(argv[i]);
+	}
 	std::vector<const char *> cstr_arguments;
 
 	for (const auto& i : arguments)
@@ -96,7 +100,7 @@ int main()
 
 	bool display_diag = true;
 	m_index = clang_createIndex(true, display_diag);
-	std::string file_path = "../test/behavior_tree/action_agent.cpp";
+	
 	//std::string file_path = "sima.cpp";
 	m_translationUnit = clang_createTranslationUnitFromSourceFile(m_index, file_path.c_str(), static_cast<int>(cstr_arguments.size()), cstr_arguments.data(), 0, nullptr);
 	auto cursor = clang_getTranslationUnitCursor(m_translationUnit);
