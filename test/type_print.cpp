@@ -253,6 +253,8 @@ void recursive_build_class_node_under_namespace(const std::string& ns_name)
 		case CXCursor_ClassDecl:
 		case CXCursor_StructDecl:
 		{
+			auto cur_comment = clang_Cursor_getRawCommentText(_node->get_cursor());
+			
 			if (clang_isCursorDefinition(_node->get_cursor()))
 			{
 				auto temp_node = new language::class_node(_node);
@@ -357,7 +359,7 @@ int main(int argc, char* argv[])
 	arguments.push_back("-std=c++17");
 	arguments.push_back("-D__meta_parse__");
 	arguments.push_back("-ID:/usr/include/");
-
+	arguments.push_back("-fparse-all-comments");
 	std::vector<const char *> cstr_arguments;
 
 	for (const auto& i : arguments)

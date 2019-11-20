@@ -19,6 +19,7 @@ namespace meta::language
 		, name(meta::utils::to_string(clang_getCursorDisplayName(in_cursor)))
 		, qualified_name(utils::full_name(in_cursor))
 	{
+		comment = utils::to_string(clang_Cursor_getRawCommentText(in_cursor));
 		if (in_cursor.kind == CXCursorKind::CXCursor_TranslationUnit)
 		{
 			_parent = nullptr;

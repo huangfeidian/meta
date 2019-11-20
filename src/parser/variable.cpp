@@ -47,6 +47,11 @@ namespace meta::language
 		result["node_type"] = "variable";
 		result["var_type"] = _decl_type->name();
 		result["with_default"] = _has_default_value;
+		if (!comment().empty())
+		{
+			result["comment"] = comment();
+		}
+		
 		// result["location"] = get_node()->get_position();
 		if (!_annotation.empty())
 		{

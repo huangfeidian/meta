@@ -13,21 +13,27 @@ using namespace std;
     #define Meta(...) 
 #endif
 
+//namespace A
 namespace A
 {
+    //struct s_1
     struct s_1
     {
+        
         optional<int> a = 0;
         pair<int, optional<float>> b;
         tuple<int, float, string> c;
     };
+    //class s_2
     class s_2:public enable_shared_from_this<s_2>
     {
+        
         variant<int, float, string> d;
     };
-    
+    //class MyString
     class MyString: private string 
     {
+        
         public:
         MyString(string s = ""):string(s)
         {
@@ -40,6 +46,7 @@ namespace A
         }
     }Meta(xxx,bb(ccc));
     class s_3;
+    // class s_3
     class s_3:public variant<bool, uint32_t, double, string, std::vector<s_3>>
     {
         public:
@@ -48,6 +55,7 @@ namespace A
         using base::operator=;
     };
     
+    //class s_4
     template <typename T, typename B = std::vector<T>>
     struct s_4
     {

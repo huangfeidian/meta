@@ -43,6 +43,10 @@ namespace meta::language
 		{
 			return _node->get_brief_name();
 		}
+		const std::string& comment() const
+		{
+			return _node->comment;
+		}
 		const node* get_node() const
 		{
 			return _node;
@@ -82,6 +86,11 @@ namespace meta::language
 			if (!_annotation.empty())
 			{
 				result["annotation"] = _annotation;
+			}
+			auto& temp_comment = comment();
+			if (!temp_comment.empty())
+			{
+				result["comment"] = temp_comment;
 			}
 			return result;
 		}

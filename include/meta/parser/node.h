@@ -21,6 +21,7 @@ namespace meta::language
 	{
 	public:
 		std::string name;	
+		std::string comment;
 		const std::string& qualified_name;
 		node* _parent;
 		CXCursorKind _kind;

@@ -105,6 +105,10 @@ namespace meta::language
 		result["is_class_method"] = is_class_method();
 		result["is_static_method"] = is_static_method();
 		result["is_public_method"] = is_public_method();
+		if (!comment().empty())
+		{
+			result["comment"] = comment();
+		}
 		json arg_type_json;
 		for (const auto i : _args)
 		{

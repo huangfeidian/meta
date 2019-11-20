@@ -106,6 +106,10 @@ namespace meta::language
 		result["name"] = name();
 		result["qualified_name"] = qualified_name();
 		result["node_type"] = "enum";
+		if (!comment().empty())
+		{
+			result["comment"] = comment();
+		}
 		json values;
 		for (std::size_t i = 0; i < _keys.size(); i++)
 		{

@@ -287,6 +287,10 @@ namespace meta::language
 		result["name"] = name();
 		result["qualified_name"] = qualified_name();
 		result["node_type"] = "class";
+		if (!comment().empty())
+		{
+			result["comment"] = comment();
+		}
 		json static_fields_json;
 		for (const auto i : _static_fields)
 		{
