@@ -1,4 +1,5 @@
-﻿#include <meta/serialize/container.h>
+﻿#include <meta/serialize/any_value.h>
+#include <meta/serialize/decode.h>
 #include <iostream>
 #include <iomanip>
 
@@ -13,8 +14,8 @@ void container_size_print()
 	size_print(any_key_type);
 	size_print(any_value_type);
 	size_print(string);
-	size_print(any_list);
-	size_print(any_map);
+	size_print(any_vector);
+	size_print(any_str_map);
 	size_print(any_int_map);
 	size_print(any_str_map);
 	using str_map = unordered_map<string, string>;
@@ -45,7 +46,7 @@ void container_encode_print()
 	any_value_type data_8 = 3.0;
 	any_value_type data_9 = "4.0";
 	any_value_type data_10 = std::vector<any_value_type>({ data_5, data_6, data_7 });
-	any_value_type data_11 = any_map({ { 1, data_6 }, { "4.0", data_7 } });
+	any_value_type data_11 = any_int_map({ { 1, data_6 }, { 4, data_7 } });
 	decode_test_print(data_5);
 	decode_test_print(data_6);
 	decode_test_print(data_7);
