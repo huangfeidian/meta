@@ -14,6 +14,7 @@ namespace meta::utils
 	std::string to_string(CXTypeKind _in_kind);
 	const std::string& full_name(CXCursor in_cursor);
 	std::string join(const std::vector<std::string>& param, const std::string& sep);
+	std::string join(const std::vector<std::string_view>& param, const std::string_view& sep);
 	const std::string& to_string(CXCursorKind _in_kind);
 	spdlog::logger& get_logger();
 	class cursor_hash

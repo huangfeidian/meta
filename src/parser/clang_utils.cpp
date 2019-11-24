@@ -122,6 +122,30 @@ namespace meta::utils
 		}
 		return result;
 	}
+	std::string join(const std::vector<std::string_view>& param, const std::string_view& sep)
+	{
+		std::string result = "";
+		std::uint32_t total_size = 0;
+		for (const auto& i : param)
+		{
+			total_size += i.size();
+		}
+		total_size += sep.size() * (std::max(param.size(), 1u) - 1);
+		result.reserve(total_size);
+		for (const auto& one_str : param)
+		{
+			if (!result.empty())
+			{
+				result += sep;
+				result += one_str;
+			}
+			else
+			{
+				result = one_str;
+			}
+		}
+		return result;
+	}
 	spdlog::logger & get_logger()
 	{
 		static std::shared_ptr<spdlog::logger> _logger = create_logger();
