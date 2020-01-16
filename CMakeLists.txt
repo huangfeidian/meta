@@ -23,6 +23,7 @@ find_package(nlohmann_json CONFIG REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
 INCLUDE_DIRECTORIES(${spdlog_include_dirs})
 
+
 link_directories(${LLVM_LIBRARY_DIR})
 
 # statically link with  LibClang and json
@@ -33,6 +34,7 @@ set(META_TEST_DIR ${CMAKE_SOURCE_DIR}/test)
 set(META_EXAMPLE_DIR ${CMAKE_SOURCE_DIR}/example)
 
 include_directories(${META_INCLUDE_DIR})
+include_directories(${META_ANY_INCLUDE_DIR})
 
 FILE(GLOB_RECURSE META_SRC_LISTS ${META_SOURCE_DIR}/*.cpp)
 
