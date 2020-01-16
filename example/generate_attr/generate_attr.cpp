@@ -18,7 +18,7 @@
 #include <meta/parser/generator.h>
 
 using namespace std;
-using namespace meta;
+using namespace spiritsaway::meta;
 
 
 

@@ -1,7 +1,7 @@
 ﻿#pragma once
 #include "variable.h"
 
-namespace meta::language
+namespace spiritsaway::meta::language
 {
     class callable_node: public node_base
     {

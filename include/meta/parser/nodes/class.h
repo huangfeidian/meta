@@ -3,7 +3,7 @@
 #include "forward.h"
 
 
-namespace meta::language
+namespace spiritsaway::meta::language
 {
     class class_node: public node_base
     {

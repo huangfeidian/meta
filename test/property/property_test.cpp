@@ -3,7 +3,7 @@
 #include <iomanip>
 #include <meta/serialize/property.h>
 using namespace std;
-using namespace meta::serialize;
+using namespace spiritsaway::meta::serialize;
 
 class simple_item : public property_item<int>
 {

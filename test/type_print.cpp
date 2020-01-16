@@ -11,7 +11,7 @@
 #include <cstdint>
 
 using namespace std;
-using namespace meta;
+using namespace spiritsaway::meta;
 using json = nlohmann::json;
 bool interested_kind(CXCursorKind _cur_kind)
 {

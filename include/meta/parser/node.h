@@ -8,7 +8,7 @@
 #include <queue>
 #include <meta/parser/clang_utils.h>
 
-namespace meta::language
+namespace spiritsaway::meta::language
 {
 	enum class node_visit_result
 	{

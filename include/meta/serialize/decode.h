@@ -20,7 +20,7 @@
 
 using json = nlohmann::json;
 
-namespace meta::serialize
+namespace spiritsaway::meta::serialize
 {
 
 	static bool decode(const json& data, float& dst)

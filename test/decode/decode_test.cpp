@@ -2,7 +2,7 @@
 #include <iomanip>
 #include <meta/serialize/decode.h>
 #include <meta/serialize/encode.h>
-using namespace meta::serialize;
+using namespace spiritsaway::meta::serialize;
 template <typename T>
 void decode_test_print(const T& data)
 {
@@ -85,8 +85,8 @@ struct c_1
 	{
 		json result = json::array();
 		result.push_back(a);
-		result.push_back(meta::serialize::encode(b));
-		result.push_back(meta::serialize::encode(c));
+		result.push_back(spiritsaway::meta::serialize::encode(b));
+		result.push_back(spiritsaway::meta::serialize::encode(c));
 		return result;
 	}
 	bool decode(const json& data)
@@ -99,15 +99,15 @@ struct c_1
 		{
 			return false;
 		}
-		if (!meta::serialize::decode(data[0], a))
+		if (!spiritsaway::meta::serialize::decode(data[0], a))
 		{
 			return false;
 		}
-		if (!meta::serialize::decode(data[1], b))
+		if (!spiritsaway::meta::serialize::decode(data[1], b))
 		{
 			return false;
 		}
-		if (!meta::serialize::decode(data[2], c))
+		if (!spiritsaway::meta::serialize::decode(data[2], c))
 		{
 			return false;
 		}

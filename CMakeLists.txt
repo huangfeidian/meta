@@ -40,42 +40,11 @@ add_library(meta ${META_SRC_LISTS})
 target_link_libraries(meta PUBLIC ${LIBCLANG_LIBRARY})
 target_link_libraries(meta PUBLIC nlohmann_json::nlohmann_json)
 
-add_executable(type_print ${META_TEST_DIR}/type_print.cpp)
-target_link_libraries(type_print meta)
+add_subdirectory(test)
 
-add_executable(generate_encode ${META_EXAMPLE_DIR}/generate_encode/generate_encode.cpp)
-target_link_libraries(generate_encode PRIVATE meta)
-
-add_executable(encode_test ${META_TEST_DIR}/encode/encode_test.cpp)
-
-add_executable(decode_test ${META_TEST_DIR}/decode/decode_test.cpp)
-add_executable(container_test ${META_TEST_DIR}/container/container.cpp)
-add_executable(property_test ${META_TEST_DIR}/property/property_test.cpp)
-add_executable(attr_test ${META_TEST_DIR}/attr/attr_test.cpp)
-
-add_executable(annotation_test ${META_TEST_DIR}/annotation/annotation_test.cpp)
-target_link_libraries(annotation_test PRIVATE meta)
-
-add_executable(generate_decode ${META_EXAMPLE_DIR}/generate_decode/generate_decode.cpp)
-target_link_libraries(generate_decode PRIVATE meta)
-
-add_executable(generate_property ${META_EXAMPLE_DIR}/generate_property/generate_property.cpp)
-target_link_libraries(generate_property PRIVATE meta)
-
-add_executable(generate_rpc ${META_EXAMPLE_DIR}/generate_rpc/generate_rpc.cpp)
-target_link_libraries(generate_rpc PRIVATE meta)
-
-add_executable(generate_attr ${META_EXAMPLE_DIR}/generate_attr/generate_attr.cpp)
-target_link_libraries(generate_attr PRIVATE meta)
-
-add_executable(generate_component ${META_EXAMPLE_DIR}/generate_component/generate_component.cpp)
-target_link_libraries(generate_component PRIVATE meta)
-
-add_executable(generate_enum ${META_EXAMPLE_DIR}/generate_enum/generate_enum.cpp)
-target_link_libraries(generate_enum PRIVATE meta)
-
-add_executable(generate_behavior ${META_EXAMPLE_DIR}/generate_behavior/generate_behavior.cpp)
-target_link_libraries(generate_behavior PRIVATE meta)
+add_subdirectory(example)
 
 
-add_executable(any_value_test ${META_TEST_DIR}/any_value/any_value.cpp)
+
+
+

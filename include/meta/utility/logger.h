@@ -5,7 +5,7 @@
 #include <memory>
 #include <string>
 
-namespace meta::utils
+namespace spiritsaway::meta::utils
 {
     class logger_mgr
     {

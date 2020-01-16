@@ -1,6 +1,6 @@
 ﻿#include <meta/parser/nodes/callable.h>
 
-namespace meta::language
+namespace spiritsaway::meta::language
 {
 	callable_node::callable_node(const node* _in_node) :
 		node_base(_in_node)

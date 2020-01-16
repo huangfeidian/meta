@@ -45,7 +45,7 @@ bool numeric_cal_##op_name(const any_value_type& other_value)	\
 	return false;												\
 }																\
 
-namespace meta::serialize
+namespace spiritsaway::meta::serialize
 {
     using any_key_type = std::variant<std::string, std::int64_t>;
     class any_value_type;

@@ -13,8 +13,8 @@
 #include <meta/serialize/encode.h>
 
 using namespace std;
-using namespace meta;
-using namespace meta::serialize;
+using namespace spiritsaway::meta;
+using namespace spiritsaway::meta::serialize;
 template <typename T>
 void print_encode_result(const T& data)
 {

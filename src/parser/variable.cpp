@@ -1,6 +1,6 @@
 ﻿#include <meta/parser/nodes/variable.h>
 
-namespace meta::language
+namespace spiritsaway::meta::language
 {
 	variable_node::variable_node(const node* _in_node):
 		node_base(_in_node),

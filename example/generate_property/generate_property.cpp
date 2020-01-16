@@ -19,7 +19,7 @@
 
 
 using namespace std;
-using namespace meta;
+using namespace spiritsaway::meta;
 
 
 

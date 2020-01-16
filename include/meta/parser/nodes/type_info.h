@@ -5,7 +5,7 @@
 #include "../name_space.h"
 #include "forward.h"
 using json = nlohmann::json;
-namespace meta::language
+namespace spiritsaway::meta::language
 {
 	class type_info
 	{

@@ -11,8 +11,8 @@
 #include "nodes/enum.h"
 #include "clang_utils.h"
 namespace mustache = kainjow::mustache;
-using namespace meta::language;
-namespace meta::generator
+using namespace spiritsaway::meta::language;
+namespace spiritsaway::meta::generator
 {
 	template<typename T>
 	bool sort_by_unqualified_name(const T* a, const T* b)
