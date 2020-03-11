@@ -8,7 +8,7 @@
 #include <type_traits>
 #include <string_view>
 #include <regex>
-namespace meta::utils
+namespace spiritsaway::meta::utils
 {
 	class string_utils
 	{

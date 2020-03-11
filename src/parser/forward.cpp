@@ -4,7 +4,7 @@
 #include <meta/parser/nodes/class.h>
 #include <meta/parser/nodes/enum.h>
 
-namespace meta::language
+namespace spiritsaway::meta::language
 {
 	void to_json(json& j, const class_node& cur_node)
 	{

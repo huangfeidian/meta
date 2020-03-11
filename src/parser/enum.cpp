@@ -1,6 +1,6 @@
 ﻿#include <meta/parser/nodes/enum.h>
 
-namespace meta::language
+namespace spiritsaway::meta::language
 {
 	enum_node::enum_node(const node* _in_node):
 		node_base(_in_node)

@@ -5,7 +5,7 @@
 #include <vector>
 #include "node.h"
 
-namespace meta::language
+namespace spiritsaway::meta::language
 {
 	class name_space
 	{

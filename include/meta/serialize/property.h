@@ -2,7 +2,7 @@
 #include "any_value.h"
 #include "../utility/logger.h"
 
-namespace meta::serialize
+namespace spiritsaway::meta::serialize
 {
 	// 每个变量在当前定义内只能是uint8的整数索引 所以一个类里面只能定义255个变量 
 	// 0号变量保留不使用 以后可以扩充为std::uint16_t 或者与var_mutate_cmd合并为一个std::uint16_t 

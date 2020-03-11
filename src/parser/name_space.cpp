@@ -1,6 +1,6 @@
 ﻿#include <meta/parser/name_space.h>
 
-namespace meta::language
+namespace spiritsaway::meta::language
 {
 	std::unordered_map<std::string, name_space*>  name_space::name_space_db = {};
 	name_space::name_space(node* _in_node)

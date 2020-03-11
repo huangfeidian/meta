@@ -13,14 +13,14 @@
 #include <meta/parser/nodes/class.h>
 #include <meta/parser/clang_utils.h>
 
-#include <meta/serialize/decode.h>
+//#include <meta/serialize/decode.h>
 #include <meta/parser/generator.h>
 
 
 #include <mustache.hpp>
 
 using namespace std;
-using namespace meta;
+using namespace spiritsaway::meta;
 
 
 

@@ -6,7 +6,7 @@
 #include <atomic>
 #include <optional>
 #include <type_traits>
-namespace meta::utils
+namespace spiritsaway::meta::utils
 {
     template <typename V>
     class type_map 

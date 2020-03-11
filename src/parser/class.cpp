@@ -2,7 +2,7 @@
 #include <meta/parser/nodes/variable.h>
 #include <meta/parser/nodes/callable.h>
 
-namespace meta::language
+namespace spiritsaway::meta::language
 {
 	class_node::class_node(const node* _in_node):
 		node_base(_in_node)

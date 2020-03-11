@@ -23,7 +23,7 @@ namespace
 
 }
 
-namespace meta::utils
+namespace spiritsaway::meta::utils
 {
 	std::string to_string(const CXCursor& _in_cursor)
 	{

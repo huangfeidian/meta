@@ -6,7 +6,7 @@
 #include <meta/utility/type_map.h>
 
 using namespace std;
-using namespace meta;
+using namespace spiritsaway::meta;
 class test_a
 {
     public:
@@ -107,9 +107,9 @@ class test_a
 	static unordered_map<std::string, std::pair<const_attr_func_type, std::vector<int>>> attr_const_func_map;
 	static void register_attr_funcs()
 	{
-		auto func_1_arg_require = meta::utils::func_arg_type_ids<std::string, utils::function_arguments<decltype(&test_a::func_1)>::type>::result();
-		auto func_2_arg_require = meta::utils::func_arg_type_ids<std::string, utils::function_arguments<decltype(&test_a::func_2)>::type>::result();
-		auto func_3_arg_require = meta::utils::func_arg_type_ids<std::string, utils::function_arguments<decltype(&test_a::func_3)>::type>::result();
+		auto func_1_arg_require = spiritsaway::meta::utils::func_arg_type_ids<std::string, utils::function_arguments<decltype(&test_a::func_1)>::type>::result();
+		auto func_2_arg_require = spiritsaway::meta::utils::func_arg_type_ids<std::string, utils::function_arguments<decltype(&test_a::func_2)>::type>::result();
+		auto func_3_arg_require = spiritsaway::meta::utils::func_arg_type_ids<std::string, utils::function_arguments<decltype(&test_a::func_3)>::type>::result();
 		attr_func_map["func_1"] = std::make_pair(&test_a::wrapper_for_func1, func_1_arg_require);
 		attr_func_map["func_2"] = std::make_pair(&test_a::wrapper_for_func2, func_2_arg_require);
 		attr_const_func_map["func_3"] = std::make_pair(&test_a::wrapper_for_func3, func_3_arg_require);

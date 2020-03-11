@@ -54,7 +54,7 @@ bool is_alias(CXType _cur_type)
 }
 
 } // namespace
-namespace meta::language
+namespace spiritsaway::meta::language
 {
 type_info::type_info(const std::string &_in_name, enum CXTypeKind _in_kind) : 
 	_kind(_in_kind),
@@ -681,4 +681,4 @@ void type_db::create_from_translate_unit(CXCursor _tu_cursor)
 type_db::type_db()
 {
 }
-} // namespace meta::language
+} // namespace spiritsaway::meta::language

@@ -2,7 +2,7 @@
 #include <nlohmann/json.hpp>
 #include <meta/utility/string_utils.h>
 using json = nlohmann::json;
-namespace meta::language
+namespace spiritsaway::meta::language
 {
     class variable_node;
     class class_node;

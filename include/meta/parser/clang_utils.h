@@ -4,7 +4,7 @@
 #include <clang-c/Index.h>
 #include <optional>
 
-namespace meta::utils
+namespace spiritsaway::meta::utils
 {
 	std::string to_string(const CXCursor& _in_cursor);
 	std::string to_string(const CXString &str);

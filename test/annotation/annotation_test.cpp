@@ -3,7 +3,7 @@
 #include <iostream>
 #include <unordered_map>
 #include <meta/utility/string_utils.h>
-using namespace meta;
+using namespace spiritsaway::meta;
 using json = nlohmann::json;
 using namespace std;
 void encode_test_print(const std::string& data)

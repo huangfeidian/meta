@@ -2,7 +2,7 @@
 #include "type_info.h"
 #include "forward.h"
 
-namespace meta::language
+namespace spiritsaway::meta::language
 {
     class variable_node: public node_base
     {

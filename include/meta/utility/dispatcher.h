@@ -3,7 +3,7 @@
 #include <unordered_map>
 #include <vector>
 #include <deque>
-namespace meta::utils
+namespace spiritsaway::meta::utils
 {
 	template <typename E, typename F>
 	class dispatcher

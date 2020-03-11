@@ -6,11 +6,11 @@
 namespace 
 {
 	
-	using namespace meta::language;
+	using namespace spiritsaway::meta::language;
 
 }
 
-namespace meta::language
+namespace spiritsaway::meta::language
 {
 
 	node::node(CXCursor in_cursor)

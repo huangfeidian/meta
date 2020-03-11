@@ -3,7 +3,7 @@
 #include "forward.h"
 
 
-namespace meta::language
+namespace spiritsaway::meta::language
 {
     class enum_node: public node_base
     {
