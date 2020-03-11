@@ -127,7 +127,7 @@ public:
 	int a;
 	std::vector<std::string> b;
 	std::unordered_map<int, std::string> c;
-	any_vector d;
+	std::vector<json> d;
 	any_int_map e;
 	any_str_map f;
 	simple_bag g;
@@ -347,7 +347,7 @@ void test_property_mutate()
 {
 	std::deque<mutate_msg> msg_cmd_queue;
 	std::vector<std::uint8_t> depth = { 1,2,3 };
-	any_vector temp_any_vec;
+	std::vector<json> temp_any_vec;
 	temp_any_vec.push_back(1);
 	temp_any_vec.push_back("hehe"s);
 
@@ -403,7 +403,7 @@ void test_property_mutate()
 
 	auto mut_d = test_a.d_mut();
 
-	mut_d.set(any_vector{"hehe"s, "hahah"s});
+	mut_d.set(std::vector<json>{"hehe"s, "hahah"s});
 	msg = msg_cmd_queue.front();
 	msg_cmd_queue.pop_front();
 	test_b.replay_mutate_msg(std::get<1>(msg), std::get<2>(msg), std::get<3>(msg));

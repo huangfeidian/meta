@@ -149,7 +149,7 @@ unordered_map<string_view, vector<string_view>> parse_doxygen(vector<std::string
 	}
 	return result;
 }
-func_doc parse_func_doc(const meta::language::callable_node& cur_func)
+func_doc parse_func_doc(const language::callable_node& cur_func)
 {
 	const std::string& comment = cur_func.comment();
 	auto doxygen_comment = parse_doxygen(split_lines(comment));
@@ -158,17 +158,17 @@ func_doc parse_func_doc(const meta::language::callable_node& cur_func)
 	{
 		if (cur_key == "brief")
 		{
-			cur_func_doc.brief_info = meta::utils::join(cur_value, "");
+			cur_func_doc.brief_info = utils::join(cur_value, "");
 			continue;
 		}
 		if (cur_key == "return")
 		{
-			cur_func_doc.return_info = meta::utils::join(cur_value, "");
+			cur_func_doc.return_info = utils::join(cur_value, "");
 			continue;
 		}
 		if (cur_key.find("param") == 0)
 		{
-			cur_func_doc.param_info[std::string(remove_prefix_empty(cur_key.substr(5)))] = meta::utils::join(cur_value, "");
+			cur_func_doc.param_info[std::string(remove_prefix_empty(cur_key.substr(5)))] = utils::join(cur_value, "");
 		}
 	}
 	
@@ -319,7 +319,7 @@ int main(int argc, const char** argv)
 	cur_type_db.create_from_translate_unit(cursor);
 	//recursive_print_decl_under_namespace("A");
 	cur_type_db.build_class_under_namespace("std");
-	cur_type_db.build_class_under_namespace("behavior_tree");
+	cur_type_db.build_class_under_namespace("spiritsaway::behavior_tree");
 	//recursive_print_func_under_namespace("A");
 	//recursive_print_class_under_namespace("A");
 	json result = language::type_db::instance().to_json();

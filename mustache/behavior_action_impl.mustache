@@ -11,7 +11,7 @@ void {{class_full_name}}::init_action_funcs_map()
 
 {{#behavior_actions}}
 {{^is_inherited}}
-std::optional<bool> {{class_full_name}}::{{func_name}}_action_wrapper(const meta::serialize::any_vector& data)
+std::optional<bool> {{class_full_name}}::{{func_name}}_action_wrapper(const std::vector<json>& data)
 {
 	{{#func_args}}
     std::remove_const_t<std::remove_reference_t<{{{arg_type}}}>> tmp_{{arg_name}};
