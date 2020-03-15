@@ -5,12 +5,12 @@ json encode() const
 
 	//begin base encode
 	{{#bases}}
-	result.push_back(meta::serialize::encode(static_cast<const {{base_type}}&>(*this)));
+	result.push_back(spiritsaway::serialize::encode(static_cast<const {{base_type}}&>(*this)));
 	{{/bases}}
 
 	//begin encode_fields encode
 	{{#encode_fields}}
-	result.push_back(meta::serialize::encode({{field_name}}));
+	result.push_back(spiritsaway::serialize::encode({{field_name}}));
 	{{/encode_fields}}
 	return result;
 }

@@ -14,7 +14,7 @@ bool decode(const json& data)
 	{
 		return false;
 	}
-	if(!meta::serialize::decode(data[index], static_cast<{{base_type}}&>(*this)))
+	if(!spiritsaway::serialize::decode(data[index], static_cast<{{base_type}}&>(*this)))
 	{
 		return false;
 	}
@@ -28,7 +28,7 @@ bool decode(const json& data)
 	{
 		return false;
 	}
-	if(!meta::serialize::decode(data[index], {{field_name}}))
+	if(!spiritsaway::serialize::decode(data[index], {{field_name}}))
 	{
 		return false;
 	}
