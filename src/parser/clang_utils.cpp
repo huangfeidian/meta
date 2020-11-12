@@ -130,7 +130,7 @@ namespace spiritsaway::meta::utils
 		{
 			total_size += i.size();
 		}
-		total_size += sep.size() * (std::max(param.size(), 1u) - 1);
+		total_size += sep.size() * (std::max<std::size_t>(param.size(), 1u) - 1);
 		result.reserve(total_size);
 		for (const auto& one_str : param)
 		{
