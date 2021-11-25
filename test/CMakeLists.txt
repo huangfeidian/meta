@@ -28,4 +28,4 @@ add_executable(annotation_test ${CMAKE_CURRENT_SOURCE_DIR}/annotation/annotation
 target_link_libraries(annotation_test PRIVATE meta)
 
 add_executable(type_print ${CMAKE_CURRENT_SOURCE_DIR}/type_print.cpp)
-target_link_libraries(type_print meta)
+target_link_libraries(type_print meta ${LIBCLANG_LIBRARY})

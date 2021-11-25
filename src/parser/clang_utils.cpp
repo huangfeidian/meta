@@ -102,7 +102,7 @@ namespace spiritsaway::meta::utils
 	std::string join(const std::vector<std::string>& param, const std::string& sep)
 	{
 		std::string result = "";
-		std::uint32_t total_size = 0;
+		std::size_t total_size = 0;
 		for (const auto& i : param)
 		{
 			total_size += i.size();
@@ -125,12 +125,12 @@ namespace spiritsaway::meta::utils
 	std::string join(const std::vector<std::string_view>& param, const std::string_view& sep)
 	{
 		std::string result = "";
-		std::uint32_t total_size = 0;
+		std::size_t total_size = 0;
 		for (const auto& i : param)
 		{
 			total_size += i.size();
 		}
-		total_size += sep.size() * (std::max<std::size_t>(param.size(), 1u) - 1);
+		total_size += sep.size() * (std::max<std::size_t>(param.size(), 1) - 1);
 		result.reserve(total_size);
 		for (const auto& one_str : param)
 		{

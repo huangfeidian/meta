@@ -4,7 +4,7 @@
 ## 编译依赖
 
 1. c++ 17
-2. libclang  用来parse c++代码 windows下载链接  http://llvm.org/builds/  linux下载链接  https://apt.llvm.org/ 
+2. libclang  用来parse c++代码 windows下载链接  http://llvm.org/builds/  linux下载链接  https://apt.llvm.org/ sudo apt install llvm libclang-dev
 3. json  https://github.com/nlohmann/json   用来导出数据
 4. spdlog  https://github.com/gabime/spdlog 用来打log
 5. mustache  https://github.com/kainjow/Mustache  用做代码模板来生成代码

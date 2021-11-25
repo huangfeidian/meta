@@ -163,8 +163,8 @@ namespace spiritsaway::meta::utils
 		}
 		static std::string_view strip_blank(std::string_view input)
 		{
-			int left = 0;
-			int right = input.size();
+			std::size_t left = 0;
+			std::size_t right = input.size();
 			while (left < right)
 			{
 				auto cur_char = input[left];
