@@ -302,7 +302,7 @@ namespace spiritsaway::meta::utils
 	public:
 		static std::vector<int> result()
 		{
-			auto& cur_type_map = type_map<V>();
+			auto cur_type_map = type_map<V>();
 			std::vector<int> result;
 			(result.push_back(cur_type_map.template get_type_id<Args>()), ...);
 			return result;
@@ -315,7 +315,7 @@ namespace spiritsaway::meta::utils
 	public:
 		static std::vector<int> result()
 		{
-			auto& cur_type_map = type_map<V>();
+			auto cur_type_map = type_map<V>();
 			std::vector<int> result;
 			(result.push_back(cur_type_map.template get_type_id<Args>()), ...);
 			return result;

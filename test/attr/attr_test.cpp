@@ -37,7 +37,7 @@ class test_a
     template <typename... Args>
     bool attr_call_func(const std::string& func_name, Args&... args) const
     {
-		auto& cur_type_map = utils::type_map<std::string>();
+		auto cur_type_map = utils::type_map<std::string>();
 		
         auto cur_iter = attr_const_func_map.find(func_name);
         if(cur_iter == attr_const_func_map.end())
@@ -64,7 +64,7 @@ class test_a
 	template <typename... Args>
 	bool attr_call_func_mut(const std::string& func_name, Args&... args)
 	{
-		auto& cur_type_map = utils::type_map<std::string>();
+		auto cur_type_map = utils::type_map<std::string>();
 		if (attr_call_func(func_name, args...))
 		{
 			return true;
@@ -93,7 +93,7 @@ class test_a
 	}
 	static void register_types()
 	{
-		auto& cur_type_map = utils::type_map<std::string>();
+		auto cur_type_map = utils::type_map<std::string>();
 		cur_type_map.register_type<int>("int");
 		cur_type_map.register_type<int&>("int&");
 		cur_type_map.register_type<const int&>("const int&");
@@ -131,7 +131,7 @@ public:
 	static unordered_map<std::string, std::pair<int, int>> attr_var_map;
 	static void register_attr_vars()
 	{
-		auto& cur_type_map = utils::type_map<std::string>();
+		auto cur_type_map = utils::type_map<std::string>();
 		attr_var_map["a"] = std::make_pair(0, cur_type_map.get_type_id<decltype(test_a::a)>());
 		attr_var_map["b"] = std::make_pair(1, cur_type_map.get_type_id<decltype(test_a::b)>());
 		attr_var_map["c"] = std::make_pair(2, cur_type_map.get_type_id<decltype(test_a::c)>());
@@ -141,7 +141,7 @@ public:
 	template <typename T>
 	std::optional<std::reference_wrapper<T>> attr_get_var(const std::string& var_name) const
 	{
-		auto& cur_type_map = utils::type_map<std::string>();
+		auto cur_type_map = utils::type_map<std::string>();
 		auto[result_p, type_idx] = var_address_for_name(var_name);
 		if (!result_p)
 		{
@@ -196,7 +196,7 @@ public:
 template <typename T1, typename T2>
 void convert_test_case()
 {
-	auto& cur_type_map = utils::type_map<std::string>();
+	auto cur_type_map = utils::type_map<std::string>();
 	auto T1_name = cur_type_map.find<T1>();
 	auto T2_name = cur_type_map.find<T2>();
 	auto convert_result_1 = cur_type_map.can_convert_to<T1>(cur_type_map.get_type_id<T2>());
@@ -230,7 +230,7 @@ void convert_test_multiple_cases()
 }
 void convert_test()
 {
-	auto& cur_type_map = utils::type_map<std::string>();
+	auto cur_type_map = utils::type_map<std::string>();
 	cur_type_map.register_type<int>("int");
 	cur_type_map.register_type<int&>("int&");
 	cur_type_map.register_type<const int&>("const int&");

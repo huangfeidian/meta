@@ -12,10 +12,21 @@ if(MSVC)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /std:c++latest")
 endif(MSVC)
 
-find_package(LLVM REQUIRED)
+# find_package(LLVM REQUIRED)
 
 # add LLVM includes
+# include_directories(${LLVM_INCLUDE_DIRS})
+# link_directories(${LLVM_LIBRARY_DIR})
+
+include_directories(${CMAKE_SOURCE_DIR}/third_party/Mustache)
+
+find_package(Clang REQUIRED)
 include_directories(${LLVM_INCLUDE_DIRS})
+include_directories(${CLANG_INCLUDE_DIRS})
+link_directories(${CLANG_LIBRARY_DIR})
+add_definitions(${LLVM_DEFINITIONS})
+add_definitions(${CLANG_DEFINITIONS})
+
 # add json support
 find_package(nlohmann_json CONFIG REQUIRED)
 
@@ -24,7 +35,7 @@ find_package(spdlog CONFIG REQUIRED)
 INCLUDE_DIRECTORIES(${spdlog_include_dirs})
 
 
-link_directories(${LLVM_LIBRARY_DIR})
+
 
 # statically link with  LibClang and json
 
@@ -39,7 +50,7 @@ include_directories(${META_ANY_INCLUDE_DIR})
 FILE(GLOB_RECURSE META_SRC_LISTS ${META_SOURCE_DIR}/*.cpp)
 
 add_library(meta ${META_SRC_LISTS})
-target_link_libraries(meta PUBLIC ${LIBCLANG_LIBRARY})
+target_link_libraries(meta PUBLIC ${LIBCLANG_LIBRARY} libclang)
 target_link_libraries(meta PUBLIC nlohmann_json::nlohmann_json)
 
 add_subdirectory(test)

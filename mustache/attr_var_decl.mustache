@@ -14,7 +14,7 @@ static bool has_attr_var_with_type(const std::string& var_name)
 	}
 	else
 	{
-		auto & cur_type_map = meta::utils::type_map<std::string>();
+		auto cur_type_map = meta::utils::type_map<std::string>();
 		return cur_type_map.can_convert_from<T>(cur_iter->second.second);
 	}
 }
