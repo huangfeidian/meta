@@ -22,7 +22,24 @@
 using namespace std;
 using namespace spiritsaway::meta;
 
+using namespace spiritsaway::meta::generator;
 
+mustache::data generate_encode_field_for_class(const class_node* one_class)
+{
+
+	std::unordered_map<std::string, std::string> field_encode_value = {};
+	auto encode_fields = one_class->query_fields_with_pred([&field_encode_value](const variable_node& _cur_node)
+		{
+			return filter_with_annotation_value<variable_node>("encode", field_encode_value, _cur_node);
+		});
+	std::sort(encode_fields.begin(), encode_fields.end(), sort_by_unqualified_name<language::variable_node>);
+	mustache::data field_list{ mustache::data::type::list };
+	for (auto one_field : encode_fields)
+	{
+		field_list << mustache::data{ "field_name", one_field->unqualified_name() };
+	}
+	return field_list;
+}
 
 std::unordered_map<std::string, std::string> generate_encode_decode()
 {
@@ -59,7 +76,7 @@ std::unordered_map<std::string, std::string> generate_encode_decode()
 		render_args.set("class_name", one_class->unqualified_name());
 		render_args.set("class_full_name", one_class->qualified_name());
 		render_args.set("bases", generator::generate_base_for_class(one_class));
-		render_args.set("encode_fields", generator::generate_encode_field_for_class(one_class));
+		render_args.set("encode_fields", generate_encode_field_for_class(one_class));
 		generator::append_output_to_stream(result, new_h_file_path.string(), encode_func_mustache_tempalte.render(render_args));
 		generator::append_output_to_stream(result, new_h_file_path.string(), decode_func_mustache_tempalte.render(render_args));
 		

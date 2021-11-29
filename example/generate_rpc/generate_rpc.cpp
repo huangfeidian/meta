@@ -19,8 +19,57 @@
 
 using namespace std;
 using namespace spiritsaway::meta;
+using namespace spiritsaway::meta::generator;
 
 
+mustache::data generate_rpc_call_for_class(const class_node* one_class)
+{
+	std::unordered_map<std::string, std::string> rpc_call_annotate_value = {};
+	auto func_pred = [&rpc_call_annotate_value](const callable_node& _cur_node)
+	{
+		return filter_with_annotation_value<callable_node>("rpc", rpc_call_annotate_value, _cur_node);
+	};
+
+
+	auto rpc_methods = one_class->query_method_with_pred_recursive(func_pred);
+	std::sort(rpc_methods.begin(), rpc_methods.end(), sort_by_unqualified_name<language::callable_node>);
+	std::uint16_t rpc_method_idx = 0;
+	std::size_t total_rpc_method_size = rpc_methods.size();
+	mustache::data method_list{ mustache::data::type::list };
+	for (auto one_method : rpc_methods)
+	{
+		mustache::data cur_method_data;
+		cur_method_data.set("rpc_index", std::to_string(rpc_method_idx));
+		cur_method_data.set("rpc_name", one_method->func_name());
+		if (rpc_method_idx + 1 == total_rpc_method_size)
+		{
+			cur_method_data.set("last_rpc", true);
+		}
+		const auto& method_args = one_method->args_type();
+		std::size_t arg_size = method_args.size();
+		mustache::data arg_list{ mustache::data::type::list };
+		std::size_t arg_idx = 0;
+		for (auto one_arg : method_args)
+		{
+			mustache::data cur_arg_data;
+			cur_arg_data.set("arg_idx", std::to_string(arg_idx));
+			cur_arg_data.set("arg_type", one_arg->decl_type()->pretty_name());
+			cur_arg_data.set("arg_name", one_arg->unqualified_name());
+			if (arg_idx + 1 == arg_size)
+			{
+				cur_arg_data.set("last_idx", true);
+			}
+			arg_list << cur_arg_data;
+			arg_idx += 1;
+
+		}
+		cur_method_data.set("rpc_args", arg_list);
+		rpc_method_idx += 1;
+		method_list << cur_method_data;
+	}
+
+	return method_list;
+}
 
 
 std::unordered_map<std::string, std::string> generate_rpc()
@@ -47,7 +96,7 @@ std::unordered_map<std::string, std::string> generate_rpc()
 		mustache::data render_args;
 		render_args.set("class_name", one_class->unqualified_name());
 		render_args.set("class_full_name", one_class->qualified_name());
-		render_args.set("rpc_methods", generator::generate_rpc_call_for_class(one_class));
+		render_args.set("rpc_methods", generate_rpc_call_for_class(one_class));
 		generator::append_output_to_stream(result, new_h_file_path.string(), rpc_call_mustache_tempalte.render(render_args));
 	}
 	return result;

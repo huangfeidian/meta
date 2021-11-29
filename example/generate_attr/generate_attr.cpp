@@ -19,9 +19,44 @@
 
 using namespace std;
 using namespace spiritsaway::meta;
+using namespace spiritsaway::meta::generator;
 
 
-
+mustache::data generate_register_types_for_class(const class_node* one_class)
+{
+	mustache::data var_list{ mustache::data::type::list };
+	std::unordered_set<std::string> base_type_set;
+	auto field_pred = [](const variable_node& _cur_node)
+	{
+		return filter_with_annotation<variable_node>("attr", _cur_node);
+	};
+	auto func_pred = [](const callable_node& _cur_node)
+	{
+		return filter_with_annotation<callable_node>("attr", _cur_node);
+	};
+	auto all_attr_fields = one_class->query_fields_with_pred_recursive(field_pred);
+	for (auto one_var : all_attr_fields)
+	{
+		base_type_set.insert(std::string(utils::string_utils::remove_cvr(one_var->decl_type()->pretty_name())));
+	}
+	const auto& attr_funcs_info = one_class->query_method_with_pred_recursive(func_pred);
+	for (auto one_method : attr_funcs_info)
+	{
+		const auto& method_args = one_method->args_type();
+		for (auto one_arg : method_args)
+		{
+			base_type_set.insert(std::string(utils::string_utils::remove_cvr(one_arg->decl_type()->pretty_name())));
+		}
+	}
+	base_type_set.insert(one_class->qualified_name());
+	for (const auto& one_type : base_type_set)
+	{
+		mustache::data temp_type;
+		temp_type.set("type_name", one_type);
+		var_list << temp_type;
+	}
+	return var_list;
+}
 
 std::unordered_map<std::string, std::string> generate_attr()
 {
@@ -61,7 +96,7 @@ std::unordered_map<std::string, std::string> generate_attr()
 		mustache::data render_args;
 		auto attr_func_args = generator::generate_funcs_for_class_with_pred(one_class, func_pred);
 		auto attr_var_args = generator::generate_fields_for_class_with_pred(one_class, field_pred);
-		auto base_types = generator::generate_register_types_for_class(one_class);
+		auto base_types = generate_register_types_for_class(one_class);
 		render_args.set("attr_funcs", attr_func_args);
 		render_args.set("attr_vars", attr_var_args);
 		render_args.set("register_base_types", base_types);

@@ -14,9 +14,6 @@ endif(MSVC)
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/../include)
 
 
-add_executable(generate_encode ${CMAKE_CURRENT_SOURCE_DIR}/generate_encode/generate_encode.cpp)
-target_link_libraries(generate_encode PRIVATE meta)
-
 
 
 

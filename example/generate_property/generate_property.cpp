@@ -20,8 +20,53 @@
 
 using namespace std;
 using namespace spiritsaway::meta;
+using namespace spiritsaway::meta::generator;
 
+mustache::data generate_property_func_for_class(const class_node* one_class)
+{
+	// 生成一个类的所有property信息
+	auto& the_logger = utils::get_logger();
+	std::unordered_map<std::string, std::string> property_annotate_value;
+	auto property_fields = one_class->query_fields_with_pred([&property_annotate_value](const variable_node& _cur_node)
+		{
+			return filter_with_annotation_value<variable_node>("property", property_annotate_value, _cur_node);
+		});
+	auto property_fields_with_base = one_class->query_fields_with_pred_recursive([&property_annotate_value](const variable_node& _cur_node)
+		{
+			return filter_with_annotation_value<variable_node>("property", property_annotate_value, _cur_node);
+		});
+	std::sort(property_fields.begin(), property_fields.end(), sort_by_unqualified_name<language::variable_node>);
+	std::size_t field_begin_index = property_fields_with_base.size() - property_fields.size();
+	std::ostringstream h_stream;
+	std::ostringstream cpp_stream;
+	std::string cur_class_name = one_class->qualified_name();
+	auto base_classes = one_class->base_classes();
+	if (base_classes.size() > 1)
+	{
+		the_logger.error("cant generate property for class {} with {} base classes", cur_class_name, base_classes.size());
+		return "";
+	}
+	mustache::data render_args;
+	if (base_classes.size() == 1)
+	{
+		render_args.set("base_class", true);
+		render_args.set("base_type", base_classes[0]->unqualified_name());
+		render_args.set("base_idx", std::to_string(field_begin_index));
+	}
+	mustache::data field_list{ mustache::data::type::list };
+	for (auto one_field : property_fields)
+	{
+		mustache::data cur_field_render_arg;
+		auto cur_field_name = one_field->unqualified_name();
+		auto cur_field_type_name = one_field->decl_type()->name();
+		cur_field_render_arg.set("field_name", cur_field_name);
+		cur_field_render_arg.set("field_idx", std::to_string(field_begin_index));
+		field_list << cur_field_render_arg;
+		field_begin_index++;
+	}
+	return field_list;
 
+}
 
 
 std::unordered_map<std::string, std::string> generate_property()
@@ -48,7 +93,7 @@ std::unordered_map<std::string, std::string> generate_property()
 		auto _cur_parent_path = file_path.parent_path();
 		auto generated_h_file_name = one_class->unqualified_name() + ".generated_h";
 		auto new_h_file_path = _cur_parent_path / generated_h_file_name;
-		auto property_func_args = generator::generate_property_func_for_class(one_class);
+		auto property_func_args = generate_property_func_for_class(one_class);
 		mustache::data render_args;
 		render_args.set("class_name", one_class->unqualified_name());
 		render_args.set("class_full_name", one_class->qualified_name());
