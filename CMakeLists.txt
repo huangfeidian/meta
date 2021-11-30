@@ -58,6 +58,7 @@ FILE(GLOB_RECURSE META_SRC_LISTS ${META_SOURCE_DIR}/*.cpp)
 add_library(${CMAKE_PROJECT_NAME} ${META_SRC_LISTS})
 target_link_libraries(${CMAKE_PROJECT_NAME} PUBLIC ${LIBCLANG_LIBRARY})
 target_link_libraries(${CMAKE_PROJECT_NAME} PUBLIC nlohmann_json::nlohmann_json)
+target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC ${LLVM_INCLUDE_DIRS} ${CLANG_INCLUDE_DIRS})
 
 foreach(p LIB BIN INCLUDE)
 	set(var CMAKE_INSTALL_${p}DIR)
