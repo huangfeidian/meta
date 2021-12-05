@@ -36,7 +36,7 @@ namespace spiritsaway::meta::language
 		parse();
 		if (!type_db::instance().add_class(this))
 		{
-			the_logger.warn("fail to add class {} to type_db", name());
+			the_logger.debug("fail to add class {} to type_db", name());
 		}
 		
 	}

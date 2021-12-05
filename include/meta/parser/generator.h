@@ -46,7 +46,7 @@ namespace spiritsaway::meta::generator
 		{
 			if (!std::filesystem::exists(file_name))
 			{
-				the_logger.error("fail to write to no exist file {}", file_name);
+				the_logger.error("fail to write to no exist file {} current_path {}", file_name, std::filesystem::current_path().string());
 				continue;
 			}
 			the_logger.info("write generate file {}", file_name);
