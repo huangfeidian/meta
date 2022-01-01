@@ -1,45 +1,45 @@
-public:
-bool rpc_call(std::uint16_t rpc_index, const std::string& args)
+class rpc_helper_{{class_name}}
 {
-    json json_arg;
-    if(args.size())
+    {{#rpc_methods}}
+    static bool {{rpc_name}}({{class_name}}* rpc_owner, const spiritsaway::msg::rpc_msg& cur_rpc)
     {
-        json_arg = json::parse(args);
-    }
-    switch(rpc_index)
-    {
-        {{#rpc_methods}}
-        case {{rpc_index}}:
+        {{#rpc_args}}
+        {{{arg_type}}} {{arg_name}};
+        {{/rpc_args}}
+        if(!spiritsaway::serialize::decode_multi(cur_rpc.args, {{#rpc_args}} {{arg_name}} {{^last_idx}},{{last_idx}}{{/rpc_args}}))
         {
-            {{#rpc_args}}
-            std::remove_const_t<std::remove_reference_t<{{{arg_type}}}>> {{arg_name}};
-            {{/rpc_args}}
-            bool decode_result = meta::serialize::decode_multi(json_arg{{#rpc_args}}, {{arg_name}}{{/rpc_args}});
-            if(decode_result)
-            {
-                {{rpc_name}}({{#rpc_args}}{{arg_name}}{{^last_idx}}, {{/last_idx}}{{/rpc_args}});
-            }
-            else
-            {
-                //the_logger.warn("fail to decode args {} for rpc {{rpc_name}} index {}", args,  cur_rpc_index);
-            }
-            return decode_result;
-        }
-        {{/rpc_methods}}
-        default:
-            //the_logger.warn("cant find rpc_name with rpc_index {} args {}", rpc_index, args);
+            rpc_owner()->get_logger()->error("fail to prase args for cmd {} with args {}", cur_rpc.cmd, cur_rpc.args);
             return false;
+        }
+        rpc_owner()->{{rpc_name}}({{#rpc_args}} {{arg_name}} {{^last_idx}},{{last_idx}}{{/rpc_args}});
+        return true;
     }
-	
+    {{/rpc_methods}}
+    public:
+    static const std::unordered_map<std::string, std::uint32_t>& get_rpc_map()
+    {
+        static std::unordered_map<std::string, std::uint32_t> cur_rpc_map = {
+            {{#rpc_methods}}
+            { {{rpc_name}}, {{rpc_index}} } {{^last_rpc}},{{/last_rpc}}
+            {{/rpc_methods}}
+        }
+    }
+    static bool rpc_call({{class_name}}* rpc_owner, const spiritsaway::msg::rpc_msg& cur_rpc)
+    {
+        auto& cur_rpc_map = get_rpc_map();
+        auto cur_iter = cur_rpc_map.find(cur_rpc.cmd);
+        if(cur_iter == cur_rpc_map.end())
+        {
+            return false;
+        }
+        switch(cur_iter->second)
+        {
+            {{#rpc_methods}}
+            case {{rpc_index}}:
+                return {{rpc_name}}(rpc_owner, cur_rpc);
+            {{/rpc_methods}}
+            default:
+                return false;
+        }
+    }
 }
-
-static const std::unordered_map<std::string, std::uint16_t>& rpc_indexes()
-{
-    static std::unordered_map<std::string, std::uint16_t> rpc_index_map = {
-        {{#rpc_methods}}
-        { "{{rpc_name}}", {{rpc_index}} }{{^last_rpc}},{{/last_rpc}}
-        {{/rpc_methods}}
-    };
-    return rpc_index_map;
-}
-private:

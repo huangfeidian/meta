@@ -7,7 +7,7 @@
 using json = nlohmann::json;
 namespace test
 {
-class test_class
+class Meta(rpc) test_class
 {
     Meta(rpc) void rpc_1(int a, std::string b)
     {
@@ -17,6 +17,5 @@ class test_class
     {
         return 1;
     }
-#include "test_class.generated_h"
-}Meta(rpc);
+};
 }
