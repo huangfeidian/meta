@@ -44,11 +44,11 @@ namespace spiritsaway::meta::generator
 		auto& the_logger = utils::get_logger();
 		for (const auto&[file_name, file_content] : file_buffer)
 		{
-			if (!std::filesystem::exists(file_name))
-			{
-				the_logger.error("fail to write to no exist file {} current_path {}", file_name, std::filesystem::current_path().string());
-				continue;
-			}
+			//if (!std::filesystem::exists(file_name))
+			//{
+			//	the_logger.error("fail to write to no exist file {} current_path {}", file_name, std::filesystem::current_path().string());
+			//	continue;
+			//}
 			the_logger.info("write generate file {}", file_name);
 			auto pre_file = std::ifstream(file_name);
 			std::string pre_str = std::string(std::istreambuf_iterator<char>(pre_file), std::istreambuf_iterator<char>());
