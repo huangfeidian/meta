@@ -120,7 +120,7 @@ mustache::data generate_rpc_call_for_class(const class_node* one_class)
 }
 
 
-std::unordered_map<std::string, std::string> generate_rpc()
+std::unordered_map<std::string, std::string> generate_rpc(const std::string& mustache_folder, const std::string& generate_folder)
 {
 	auto& the_logger = utils::get_logger();
 	std::unordered_map<std::string, std::string> _annotation_value = { };
@@ -129,18 +129,17 @@ std::unordered_map<std::string, std::string> generate_rpc()
 			return language::filter_with_annotation_value<language::class_node>("rpc", _annotation_value, _cur_node);
 		});
 	std::unordered_map<std::string, std::string> result;
-	auto rpc_call_mustache_file = std::ifstream("../mustache/rpc_call.mustache");
+	std::filesystem::path mustache_folder_path(mustache_folder);
+	auto rpc_call_mustache_file = std::ifstream((mustache_folder_path / "rpc_call.mustache").string());
 	std::string rpc_call_template_str = std::string(std::istreambuf_iterator<char>(rpc_call_mustache_file), std::istreambuf_iterator<char>());
 	mustache::mustache rpc_call_mustache_tempalte(rpc_call_template_str);
 
-
+	auto generate_folder_path = std::filesystem::path(generate_folder);
 	for (auto one_class : all_property_classes)
 	{
-		auto cur_file_path_str = one_class->file();
-		std::filesystem::path file_path(cur_file_path_str);
-		auto _cur_parent_path = file_path.parent_path();
+
 		auto generated_cpp_file_name = one_class->unqualified_name() + ".generated.incpp";
-		auto new_cpp_file_path = _cur_parent_path / generated_cpp_file_name;
+		auto new_cpp_file_path = generate_folder_path / generated_cpp_file_name;
 		mustache::data render_args;
 		render_args.set("class_name", one_class->unqualified_name());
 		render_args.set("class_full_name", one_class->qualified_name());
@@ -295,7 +294,7 @@ int main(int argc, const char** argv)
 	json_out << setw(4) << result << endl;
 	std::unordered_map<std::string, std::string> file_content;
 	//utils::merge_file_content(file_content, generate_encode_decode());
-	generator::merge_file_content(file_content, generate_rpc());
+	generator::merge_file_content(file_content, generate_rpc(mustache_folder, generated_folder));
 	generator::write_content_to_file(file_content);
 	clang_disposeTranslationUnit(m_translationUnit);
 
