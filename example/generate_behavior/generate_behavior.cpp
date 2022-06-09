@@ -35,15 +35,16 @@ std::vector<string_view> split_lines(std::string_view text)
 	{
 		if (end != start)
 		{
-			auto temp_end = end - 1;
-			while (text[temp_end] == '\t')
-			{
-				temp_end -= 1;
-				if (temp_end <= start)
-				{
-					break;
-				}
-			}
+			auto temp_end = end;
+			// auto cur_temp_token = text.substr(start, temp_end - start);
+			// while (text[temp_end] == '\t')
+			// {
+			// 	temp_end -= 1;
+			// 	if (temp_end <= start)
+			// 	{
+			// 		break;
+			// 	}
+			// }
 			tokens.push_back(text.substr(start, temp_end - start));
 			
 		}
@@ -152,7 +153,9 @@ unordered_map<string_view, vector<string_view>> parse_doxygen(vector<std::string
 func_doc parse_func_doc(const language::callable_node& cur_func)
 {
 	const std::string& comment = cur_func.comment();
-	auto doxygen_comment = parse_doxygen(split_lines(comment));
+	auto comment_lines = split_lines(comment);
+
+	auto doxygen_comment = parse_doxygen(comment_lines);
 	func_doc cur_func_doc;
 	for (const auto&[cur_key, cur_value] : doxygen_comment)
 	{
@@ -281,7 +284,7 @@ void dump_behavior_actions()
 		agent_actions[one_class->unqualified_name()] = cur_class_actions;
 	}
 	std::ofstream action_file = std::ofstream("actions.json");
-	action_file << agent_actions.dump(1, '\t')<<std::endl;
+	action_file << agent_actions.dump(1, '\t', true)<<std::endl;
 	action_file.close();
 
 }
