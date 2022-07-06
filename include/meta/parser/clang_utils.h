@@ -7,6 +7,8 @@
 namespace spiritsaway::meta::utils
 {
 	std::string to_string(const CXCursor& _in_cursor);
+	// remove blank after ,
+	std::string remove_blank_in_type(const std::string& name);
 	std::string to_string(const CXString &str);
 	std::string to_string(const CXType& _in_type);
 	std::string full_name(const CXType& _in_type);

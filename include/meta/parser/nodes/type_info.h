@@ -76,6 +76,11 @@ namespace spiritsaway::meta::language
 		std::vector<const enum_node*> get_enum_with_pred(T _pred) const;
 		void build_class_under_namespace(const std::string& _ns_name);
 		void create_from_translate_unit(CXCursor _tu_cursor);
+		void add_alternate_name(CXType _in_type, const std::string& annotated_typename);
+		const std::unordered_map<std::string, std::string>& annotated_typenames() const
+		{
+			return m_annotated_typenames;
+		}
 	private:
 		type_info* get_type_for_const(CXType _in_type);
 		type_info* get_type_for_pointee(CXType _in_type);
@@ -84,6 +89,7 @@ namespace spiritsaway::meta::language
 		type_info* get_base_type_for_template(CXType _in_type);
 
 	private:
+		std::unordered_map<std::string, std::string> m_annotated_typenames; // from long name to short name
 		std::unordered_map<std::string, type_info*> _type_data; // qualified name to type_info
 		std::unordered_map<std::string, class_node*> _class_data;// qualified name to class_node
 		std::unordered_map<std::string, enum_node*> _enum_data;// qualified name to enum class

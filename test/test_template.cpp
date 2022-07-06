@@ -5,6 +5,8 @@
 #include <optional>
 #include <string>
 #include <vector>
+#include <nlohmann/json.hpp>
+using json = nlohmann::json;
 using namespace std;
 
 #if defined(__clang__)
@@ -28,6 +30,8 @@ namespace A
         optional<int> a = 0;
         pair<int, optional<float>> b;
         tuple<int, float, string> c;
+        Meta(typename(json)) json d;
+        Meta(typename(std::string)) std::string e;
     };
     //class s_2
     class s_2:public enable_shared_from_this<s_2>

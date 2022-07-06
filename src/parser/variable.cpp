@@ -11,6 +11,15 @@ namespace spiritsaway::meta::language
 		if (_decl_type)
 		{
 			the_logger.info("get_type {} fullname {} canocial type {} for variable {}", _decl_type->name(), utils::full_name(clang_getCursorType(_in_node->get_cursor())), utils::full_name(clang_getCanonicalType(clang_getCursorType(_in_node->get_cursor()))), _in_node->get_name());
+			auto typename_iter = _annotation.find("typename");
+			if (typename_iter != _annotation.end())
+			{
+				if (!typename_iter->second.empty())
+				{
+					type_db::instance().add_alternate_name(_decl_type->type(), typename_iter->second.begin()->first);
+					the_logger.info("add alternate name {} for type {} ", typename_iter->second.begin()->first, _decl_type->name());
+				}
+			}
 		}
 		else
 		{
@@ -24,6 +33,7 @@ namespace spiritsaway::meta::language
 				_has_default_value = true;
 			}
 		}
+		
 		
 	}
 	const type_info* variable_node::decl_type() const

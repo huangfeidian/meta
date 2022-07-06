@@ -27,7 +27,39 @@ namespace spiritsaway::meta::utils
 {
 	std::string to_string(const CXCursor& _in_cursor)
 	{
-		return to_string(clang_getCursorSpelling(_in_cursor));
+		return remove_blank_in_type(to_string(clang_getCursorSpelling(_in_cursor)));
+	}
+	std::string remove_blank_in_type(const std::string& name)
+	{
+		std::string result;
+		result.reserve(name.size());
+		std::size_t start = 0, end = 0;
+		char sep = ' ';
+		std::string_view text = name;
+		std::string_view pre_token;
+		while ((end = text.find(sep, start)) != std::string::npos) {
+			if (end != start) {
+				auto cur_token = text.substr(start, end - start);
+				if (pre_token == "const")
+				{
+					result += ' ';
+					
+				}
+				result += cur_token;
+				pre_token = cur_token;
+			}
+			start = end + 1;
+		}
+		if (end != start) {
+			auto cur_token = text.substr(start);
+			if (pre_token == "const")
+			{
+				result += ' ';
+
+			}
+			result += cur_token;
+		}
+		return result;
 	}
 	std::string to_string(const CXString &str)
 	{
@@ -71,7 +103,7 @@ namespace spiritsaway::meta::utils
 				arg_names.push_back(to_string(temp_arg_type));
 
 			}
-			return template_full_name + "<" + join(arg_names, ",") + ">";
+			return remove_blank_in_type(template_full_name + "<" + join(arg_names, ",") + ">");
 		}
 		auto canonical_type = clang_getCanonicalType(_in_type);
 		if (!clang_equalTypes(canonical_type, _in_type))
@@ -80,7 +112,7 @@ namespace spiritsaway::meta::utils
 		}
 		else
 		{
-			return to_string(clang_getTypeSpelling(_in_type));
+			return remove_blank_in_type(to_string(clang_getTypeSpelling(_in_type)));
 		}
 		
 	}
@@ -88,7 +120,7 @@ namespace spiritsaway::meta::utils
 	{
 		auto decl_cursor = clang_getTypeDeclaration(_in_type);
 
-		auto& result = full_name(decl_cursor);
+		auto result = remove_blank_in_type(full_name(decl_cursor));
 		if (result.empty())
 		{
 			return utils::to_string(_in_type);
