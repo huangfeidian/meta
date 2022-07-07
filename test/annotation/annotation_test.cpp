@@ -22,6 +22,7 @@ void encode_test()
 	encode_test_print("a(b, c)");
 	encode_test_print("a(b, c), d(e, f)");
 	encode_test_print("a(b=f, c=e), d(e=c, f=d)");
+	encode_test_print("typename(const json&)");
 }
 int main()
 {

@@ -284,7 +284,7 @@ void dump_behavior_actions()
 		agent_actions[one_class->unqualified_name()] = cur_class_actions;
 	}
 	std::ofstream action_file = std::ofstream("actions.json");
-	action_file << agent_actions.dump(1, '\t', true)<<std::endl;
+	action_file << agent_actions.dump(1, '\t', false)<<std::endl;
 	action_file.close();
 
 }

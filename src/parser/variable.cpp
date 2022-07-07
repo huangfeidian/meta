@@ -12,12 +12,18 @@ namespace spiritsaway::meta::language
 		{
 			the_logger.info("get_type {} fullname {} canocial type {} for variable {}", _decl_type->name(), utils::full_name(clang_getCursorType(_in_node->get_cursor())), utils::full_name(clang_getCanonicalType(clang_getCursorType(_in_node->get_cursor()))), _in_node->get_name());
 			auto typename_iter = _annotation.find("typename");
+			// typename(xxx) 形式
 			if (typename_iter != _annotation.end())
 			{
 				if (!typename_iter->second.empty())
 				{
-					type_db::instance().add_alternate_name(_decl_type->type(), typename_iter->second.begin()->first);
-					the_logger.info("add alternate name {} for type {} ", typename_iter->second.begin()->first, _decl_type->name());
+					std::string temp_prefix = "typename(";
+					auto temp_begin_pos = m_annotation_str.find(temp_prefix);
+					temp_begin_pos += temp_prefix.size();
+					auto temp_end_pos = m_annotation_str.find(')', temp_begin_pos);
+					std::string cur_alter_name = m_annotation_str.substr(temp_begin_pos, temp_end_pos - temp_begin_pos);
+					type_db::instance().add_alternate_name(_decl_type->type(), cur_alter_name);
+					the_logger.info("add alternate name {} for type {} ", cur_alter_name, _decl_type->name());
 				}
 			}
 		}

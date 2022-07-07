@@ -31,34 +31,34 @@ namespace spiritsaway::meta::utils
 	}
 	std::string remove_blank_in_type(const std::string& name)
 	{
+		static std::array<std::uint8_t, 256> char_masks = { 0 };
 		std::string result;
 		result.reserve(name.size());
 		std::size_t start = 0, end = 0;
 		char sep = ' ';
-		std::string_view text = name;
-		std::string_view pre_token;
-		while ((end = text.find(sep, start)) != std::string::npos) {
-			if (end != start) {
-				auto cur_token = text.substr(start, end - start);
-				if (pre_token == "const")
-				{
-					result += ' ';
-					
-				}
-				result += cur_token;
-				pre_token = cur_token;
-			}
-			start = end + 1;
-		}
-		if (end != start) {
-			auto cur_token = text.substr(start);
-			if (pre_token == "const")
+		char pre_c = ',';
+		
+		char_masks['&'] = 1;
+		char_masks[','] = 1;
+		char_masks['<'] = 1;
+		char_masks['>'] = 1;
+		char_masks[' '] = 1;
+		for (std::size_t i = 0; i + 1 < name.size(); i++)
+		{
+			auto next_c = name[i + 1];
+			if (!(name[i] == ' ' && ((char_masks[pre_c]== 1) || (char_masks[next_c]==1))))
 			{
-				result += ' ';
-
+				result.push_back(name[i]);
 			}
-			result += cur_token;
+			
+			pre_c = name[i];
+			
 		}
+		if (!name.empty() && name.back() != ' ')
+		{
+			result.push_back(name.back());
+		}
+		
 		return result;
 	}
 	std::string to_string(const CXString &str)

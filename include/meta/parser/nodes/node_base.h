@@ -27,6 +27,7 @@ namespace spiritsaway::meta::language
 				if (i.kind == CXCursor_AnnotateAttr)
 				{
 					_annotation = utils::string_utils::parse_annotation(utils::to_string(i));
+					m_annotation_str = utils::to_string(i);
 				}
 			}
 
@@ -99,6 +100,7 @@ namespace spiritsaway::meta::language
         const node* _node;
 	protected:
 		annotation_map _annotation;
+		std::string m_annotation_str;
 
 	};
 	template <typename T>

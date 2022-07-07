@@ -100,6 +100,8 @@ const std::string& type_info::pretty_name() const
 					replace_begin = _pretty_name.find(one_name_pair.first);
 				}
 			}
+			auto& the_logger = utils::get_logger();
+			the_logger.info("type {} set pretty name {}", _name, _pretty_name);
 			return _pretty_name;
 		}
 	}
@@ -291,7 +293,6 @@ json type_info::to_json() const
 {
 	json result;
 	result["name"] = _name;
-	result["pretty_name"] = pretty_name();
 	result["kind"] = static_cast<std::uint32_t>(_kind);
 	result["kind_name"] = utils::to_string(_kind);
 	result["is_const"] = is_const();
@@ -687,6 +688,15 @@ void type_db::add_alternate_name(CXType _in_type, const std::string& annotated_t
 {
 	auto cur_type_info = get_type(_in_type);
 	cur_type_info->_pretty_name = annotated_typename;
-	m_annotated_typenames[cur_type_info->name()] = annotated_typename;
+	for (int i = 0; i < m_annotated_typenames.size(); i++)
+	{
+		if (cur_type_info->name().size() > m_annotated_typenames[i].first.size())
+		{
+			m_annotated_typenames.insert(m_annotated_typenames.begin() + i, std::make_pair(cur_type_info->name(), annotated_typename));
+			return;
+		}
+	}
+	m_annotated_typenames.emplace_back(cur_type_info->name(), annotated_typename);
+	return;
 }
 } // namespace spiritsaway::meta::language

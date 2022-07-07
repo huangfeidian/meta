@@ -32,6 +32,7 @@ namespace A
         tuple<int, float, string> c;
         Meta(typename(json)) json d;
         Meta(typename(std::string)) std::string e;
+        Meta(typename(const json&)) const json& f;
     };
     //class s_2
     class s_2:public enable_shared_from_this<s_2>
