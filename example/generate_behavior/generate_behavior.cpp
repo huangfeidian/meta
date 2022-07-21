@@ -330,8 +330,8 @@ int main(int argc, const char** argv)
 	json_out << setw(4) << result << endl;
 	std::unordered_map<std::string, std::string> file_content;
 	//utils::merge_file_content(file_content, generate_encode_decode());
-	generator::merge_file_content(file_content, generate_behavior_actions());
-	generator::write_content_to_file(file_content);
+	//generator::merge_file_content(file_content, generate_behavior_actions());
+	//generator::write_content_to_file(file_content);
 	dump_behavior_actions();
 	clang_disposeTranslationUnit(m_translationUnit);
 
