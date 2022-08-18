@@ -3,14 +3,14 @@
 namespace spiritsaway::meta::language
 {
 	std::unordered_map<std::string, name_space*>  name_space::name_space_db = {};
-	name_space::name_space(node* _in_node)
+	name_space::name_space(const node* _in_node)
 		: qualified_name(_in_node->get_qualified_name())
 		, name(_in_node->get_name())
 	{
 		name_space_db[qualified_name] = this;
 		add_synonymous(_in_node);
 	}
-	bool name_space::add_synonymous(node* in_node)
+	bool name_space::add_synonymous(const node* in_node)
 	{
 		auto cur_iter = synonymouses.insert(in_node);
 		return cur_iter.second;
@@ -33,7 +33,7 @@ namespace spiritsaway::meta::language
 		}
 
 	}
-	name_space* name_space::get_name_space_for_node(node* _in_node)
+	name_space* name_space::get_name_space_for_node(const node* _in_node)
 	{
 		if(!_in_node)
 		{

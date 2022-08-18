@@ -123,7 +123,7 @@ void recursive_print_anything_under_cursor(CXCursor _in_cursor)
 }
 void recursive_print_decl_under_namespace(const std::string& ns_name)
 {
-	std::queue<language::node*> tasks;
+	std::queue<const language::node*> tasks;
 	auto& all_ns_nodes = language::name_space::get_synonymous_name_spaces(ns_name);
 	for (const auto& one_node : all_ns_nodes)
 	{

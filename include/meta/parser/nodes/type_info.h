@@ -91,9 +91,9 @@ namespace spiritsaway::meta::language
 	private:
 		// 原始名字越长的放在前面
 		std::vector<std::pair<std::string, std::string>> m_annotated_typenames; // from long name to short name
-		std::unordered_map<std::string, type_info*> _type_data; // qualified name to type_info
-		std::unordered_map<std::string, class_node*> _class_data;// qualified name to class_node
-		std::unordered_map<std::string, enum_node*> _enum_data;// qualified name to enum class
+		std::unordered_map<std::string, type_info*> m_type_data; // qualified name to type_info
+		std::unordered_map<std::string, class_node*> m_class_data;// qualified name to class_node
+		std::unordered_map<std::string, enum_node*> m_enum_data;// qualified name to enum class
 		type_db();
 
 	};
@@ -101,7 +101,7 @@ namespace spiritsaway::meta::language
 	std::vector<const class_node*> type_db::get_class_with_pred(T _pred) const
 	{
 		std::vector<const class_node*> result;
-		for (const auto& i : _class_data)
+		for (const auto& i : m_class_data)
 		{
 			if (!i.second)
 			{
@@ -118,7 +118,7 @@ namespace spiritsaway::meta::language
 	std::vector<const enum_node*> type_db::get_enum_with_pred(T _pred) const
 	{
 		std::vector<const enum_node*> result;
-		for (const auto& i : _enum_data)
+		for (const auto& i : m_enum_data)
 		{
 			if (!i.second)
 			{

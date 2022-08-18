@@ -54,7 +54,7 @@ namespace spiritsaway::meta::language
 		}
 		const name_space* get_resident_ns() const
 		{
-			return nullptr;
+			return name_space::get_name_space_for_node(m_node);
 		}
 		const annotation_map& annotations() const
 		{
@@ -84,6 +84,7 @@ namespace spiritsaway::meta::language
 			json result;
 			result["name"] = m_node->get_qualified_name();
 			result["location"] = m_node->get_position();
+			result["namespace"] = get_resident_ns()->name;
 			if (!m_annotation.empty())
 			{
 				result["annotation"] = m_annotation;

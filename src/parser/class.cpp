@@ -287,6 +287,7 @@ namespace spiritsaway::meta::language
 		result["name"] = name();
 		result["qualified_name"] = qualified_name();
 		result["node_type"] = "class";
+		result["namespace"] = get_resident_ns()->qualified_name;
 		if (!comment().empty())
 		{
 			result["comment"] = comment();

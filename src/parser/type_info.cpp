@@ -335,12 +335,12 @@ type_info *type_db::get_type_for_const(CXType _in_type)
 			// for example const int
 			auto non_const_name = full_name.substr(6); // "const int" -> "int"
 			type_info *non_const_type;
-			auto non_const_type_iter = _type_data.find(non_const_name);
+			auto non_const_type_iter = m_type_data.find(non_const_name);
 
-			if (non_const_type_iter == _type_data.end())
+			if (non_const_type_iter == m_type_data.end())
 			{
 				non_const_type = new type_info(non_const_name, cur_kind);
-				_type_data[non_const_name] = non_const_type;
+				m_type_data[non_const_name] = non_const_type;
 			}
 			else
 			{
@@ -348,7 +348,7 @@ type_info *type_db::get_type_for_const(CXType _in_type)
 			}
 
 			auto final_result = new type_info(full_name, _in_type, non_const_type);
-			_type_data[full_name] = final_result;
+			m_type_data[full_name] = final_result;
 			return final_result;
 		}
 		else
@@ -363,8 +363,8 @@ type_info *type_db::get_type_for_const(CXType _in_type)
 				const auto &temp_name = pointee_type->name();
 				std::string pointer_to_type_name = temp_name + " *";
 				type_info *temp_result = nullptr;
-				auto temp_iter = _type_data.find(pointer_to_type_name);
-				if (temp_iter == _type_data.end())
+				auto temp_iter = m_type_data.find(pointer_to_type_name);
+				if (temp_iter == m_type_data.end())
 				{
 					temp_result = new type_info(pointer_to_type_name, _in_type, pointee_type);
 				}
@@ -374,14 +374,14 @@ type_info *type_db::get_type_for_const(CXType _in_type)
 				}
 				auto final_result = new type_info(full_name, _in_type, temp_result);
 
-				_type_data[full_name] = final_result;
+				m_type_data[full_name] = final_result;
 				return final_result;
 			}
 			else
 			{
 				// some error case I cant handle
 				auto final_result = new type_info(full_name, _in_type, nullptr);
-				_type_data[full_name] = final_result;
+				m_type_data[full_name] = final_result;
 				return final_result;
 			}
 		}
@@ -392,7 +392,7 @@ type_info *type_db::get_type_for_const(CXType _in_type)
 		auto decl_type = clang_getCursorType(decl_cursor);
 		auto decl_type_info = get_type(decl_type);
 		auto final_type = new type_info(full_name, _in_type, decl_type_info);
-		_type_data[full_name] = final_type;
+		m_type_data[full_name] = final_type;
 		return final_type;
 	}
 }
@@ -406,7 +406,7 @@ type_info *type_db::get_type_for_pointee(CXType _in_type)
 	auto pointer_to_type = clang_getPointeeType(_in_type);
 	auto pointee_type = get_type(pointer_to_type);
 	auto final_result = new type_info(full_name, _in_type, pointee_type);
-	_type_data[full_name] = final_result;
+	m_type_data[full_name] = final_result;
 	return final_result;
 }
 type_info *type_db::get_type_for_template(CXType _in_type)
@@ -425,7 +425,7 @@ type_info *type_db::get_type_for_template(CXType _in_type)
 	}
 	auto final_result = new type_info(full_name, _in_type, base_type);
 	final_result->m_template_args = arg_types;
-	_type_data[full_name] = final_result;
+	m_type_data[full_name] = final_result;
 	return final_result;
 }
 type_info *type_db::get_base_type_for_template(CXType _in_type)
@@ -437,8 +437,8 @@ type_info *type_db::get_base_type_for_template(CXType _in_type)
 	auto temp_str1 = utils::to_string(decl_type);
 	auto &the_logger = utils::get_logger();
 	the_logger.debug("get_base_type_for_template in_type {} decl_name {} temp_str0 {} decl_type {}", utils::to_string(_in_type), decl_name, temp_str0, temp_str1);
-	auto decl_iter = _type_data.find(decl_name);
-	if (decl_iter != _type_data.end())
+	auto decl_iter = m_type_data.find(decl_name);
+	if (decl_iter != m_type_data.end())
 	{
 		return decl_iter->second;
 	}
@@ -470,8 +470,8 @@ type_info *type_db::get_type(CXType _in_type)
 	auto &the_logger = utils::get_logger();
 	auto full_name = utils::to_string(_in_type);
 	the_logger.debug("get_type for type {}", full_name);
-	auto type_iter = _type_data.find(full_name);
-	if (type_iter != _type_data.end())
+	auto type_iter = m_type_data.find(full_name);
+	if (type_iter != m_type_data.end())
 	{
 		auto result = type_iter->second;
 		if (result->m_type.kind != CXTypeKind::CXType_Invalid)
@@ -483,7 +483,7 @@ type_info *type_db::get_type(CXType _in_type)
 	if (_in_type.kind == CXType_Auto)
 	{
 		auto final_type = new type_info(full_name, _in_type, nullptr);
-		_type_data[full_name] = final_type;
+		m_type_data[full_name] = final_type;
 		return final_type;
 	}
 	auto is_const = clang_isConstQualifiedType(_in_type);
@@ -506,7 +506,7 @@ type_info *type_db::get_type(CXType _in_type)
 		return get_type_for_template(_in_type);
 	}
 	auto final_type = new type_info(full_name, _in_type, nullptr);
-	_type_data[full_name] = final_type;
+	m_type_data[full_name] = final_type;
 	return final_type;
 }
 type_info *type_db::get_type_for_template_class(CXCursor _template_class_decl)
@@ -518,15 +518,15 @@ type_info *type_db::get_type_for_template_class(CXCursor _template_class_decl)
 		the_logger.warn("get_type_for_template_class for cursor {} with invalid kind {}", qualified_name, utils::to_string(_template_class_decl.kind));
 		return nullptr;
 	}
-	auto cur_iter = _type_data.find(qualified_name);
-	if (cur_iter != _type_data.end())
+	auto cur_iter = m_type_data.find(qualified_name);
+	if (cur_iter != m_type_data.end())
 	{
 		the_logger.warn("duplicated template class decl {}", qualified_name);
 		return cur_iter->second;
 	}
 	the_logger.debug("create type_info for  template class decl {}", qualified_name);
 	auto new_type_info = new type_info(qualified_name, CXTypeKind::CXType_Invalid);
-	_type_data[qualified_name] = new_type_info;
+	m_type_data[qualified_name] = new_type_info;
 	return new_type_info;
 }
 type_info *type_db::get_alias_typedef(CXCursor _in_cursor)
@@ -544,7 +544,7 @@ type_info *type_db::get_alias_typedef(CXCursor _in_cursor)
 	auto alias_type_info = get_type(alias_type);
 	the_logger.debug("get_alias_typedef cursor {} from type {} to type {}", cursor_name, utils::to_string(cur_type), utils::to_string(alias_type));
 	auto result_type = new type_info(cursor_name, cur_type, alias_type_info);
-	_type_data[cursor_name] = result_type;
+	m_type_data[cursor_name] = result_type;
 	return result_type;
 }
 bool type_db::add_class(class_node *_cur_class)
@@ -554,10 +554,10 @@ bool type_db::add_class(class_node *_cur_class)
 		return false;
 	}
 	auto cur_class_name = _cur_class->name();
-	auto cur_iter = _class_data.find(cur_class_name);
-	if (cur_iter == _class_data.end())
+	auto cur_iter = m_class_data.find(cur_class_name);
+	if (cur_iter == m_class_data.end())
 	{
-		_class_data[cur_class_name] = _cur_class;
+		m_class_data[cur_class_name] = _cur_class;
 		return true;
 	}
 	else
@@ -572,10 +572,10 @@ bool type_db::add_enum(enum_node *_cur_enum)
 		return false;
 	}
 	auto cur_enum_name = _cur_enum->name();
-	auto cur_iter = _enum_data.find(cur_enum_name);
-	if (cur_iter == _enum_data.end())
+	auto cur_iter = m_enum_data.find(cur_enum_name);
+	if (cur_iter == m_enum_data.end())
 	{
-		_enum_data[cur_enum_name] = _cur_enum;
+		m_enum_data[cur_enum_name] = _cur_enum;
 		return true;
 	}
 	else
@@ -585,8 +585,8 @@ bool type_db::add_enum(enum_node *_cur_enum)
 }
 class_node *type_db::get_class(const std::string &_class_name)
 {
-	auto cur_iter = _class_data.find(_class_name);
-	if (cur_iter == _class_data.end())
+	auto cur_iter = m_class_data.find(_class_name);
+	if (cur_iter == m_class_data.end())
 	{
 		return nullptr;
 	}
@@ -599,13 +599,13 @@ json type_db::to_json() const
 {
 	json result;
 	json type_data;
-	for (const auto &one_item : _type_data)
+	for (const auto &one_item : m_type_data)
 	{
 		type_data[one_item.first] = one_item.second->to_json();
 	}
 	result["types"] = type_data;
 	json class_data;
-	for (const auto &one_item : _class_data)
+	for (const auto &one_item : m_class_data)
 	{
 		class_data[one_item.first] = one_item.second->to_json();
 	}
