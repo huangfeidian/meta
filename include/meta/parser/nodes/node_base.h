@@ -18,7 +18,7 @@ namespace spiritsaway::meta::language
     {
     public:
 		node_base(const node* _in_node):
-			_node(_in_node)
+			m_node(_in_node)
 		{
 			const auto& _cur_cursor = get_node()->get_cursor();
 			std::vector<CXCursor> children = utils::cursor_get_children(_cur_cursor);
@@ -26,7 +26,7 @@ namespace spiritsaway::meta::language
 			{
 				if (i.kind == CXCursor_AnnotateAttr)
 				{
-					_annotation = utils::string_utils::parse_annotation(utils::to_string(i));
+					m_annotation = utils::string_utils::parse_annotation(utils::to_string(i));
 					m_annotation_str = utils::to_string(i);
 				}
 			}
@@ -34,23 +34,23 @@ namespace spiritsaway::meta::language
 		}
 		const std::string& name() const
 		{
-			return _node->get_qualified_name();
+			return m_node->get_qualified_name();
 		}
 		const std::string& qualified_name() const
 		{
-			return _node->get_qualified_name();
+			return m_node->get_qualified_name();
 		}
 		const std::string& unqualified_name() const
 		{
-			return _node->get_brief_name();
+			return m_node->get_brief_name();
 		}
 		const std::string& comment() const
 		{
-			return _node->comment;
+			return m_node->comment;
 		}
 		const node* get_node() const
 		{
-			return _node;
+			return m_node;
 		}
 		const name_space* get_resident_ns() const
 		{
@@ -58,12 +58,12 @@ namespace spiritsaway::meta::language
 		}
 		const annotation_map& annotations() const
 		{
-			return _annotation;
+			return m_annotation;
 		}
 		std::optional<std::string> get_anotation_detail_value(const std::string& item, const std::string& key) const
 		{
-			auto item_iter = _annotation.find(item);
-			if (item_iter == _annotation.end())
+			auto item_iter = m_annotation.find(item);
+			if (item_iter == m_annotation.end())
 			{
 				return std::nullopt;
 			}
@@ -76,17 +76,17 @@ namespace spiritsaway::meta::language
 		}
 		std::string file() const
 		{
-			return std::get<0>(_node->get_position());
+			return std::get<0>(m_node->get_position());
 		}
 
 		virtual json to_json() const
 		{
 			json result;
-			result["name"] = _node->get_qualified_name();
-			result["location"] = _node->get_position();
-			if (!_annotation.empty())
+			result["name"] = m_node->get_qualified_name();
+			result["location"] = m_node->get_position();
+			if (!m_annotation.empty())
 			{
-				result["annotation"] = _annotation;
+				result["annotation"] = m_annotation;
 			}
 			auto& temp_comment = comment();
 			if (!temp_comment.empty())
@@ -97,9 +97,9 @@ namespace spiritsaway::meta::language
 		}
 
     private:
-        const node* _node;
+        const node* m_node;
 	protected:
-		annotation_map _annotation;
+		annotation_map m_annotation;
 		std::string m_annotation_str;
 
 	};

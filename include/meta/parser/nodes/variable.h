@@ -17,8 +17,8 @@ namespace spiritsaway::meta::language
 		//type_info* from_class_static_field(const node* _in_node);
 		//type_info* from_func_arg(const node* _in_node);
 		//type_info* from_global_variable(const node* _in_node);
-        type_info* _decl_type = nullptr;
-		bool _has_default_value = false;
+        type_info* m_decl_type = nullptr;
+		bool m_has_default_value = false;
 		
 	};
 }

@@ -119,9 +119,9 @@ namespace spiritsaway::meta::language
 		{
 			result["result_type"] = _result_type->to_json();
 		}
-		if (!_annotation.empty())
+		if (!m_annotation.empty())
 		{
-			result["annotation"] = _annotation;
+			result["annotation"] = m_annotation;
 		}
 		// result["location"] = get_node()->get_position();
 		return result;

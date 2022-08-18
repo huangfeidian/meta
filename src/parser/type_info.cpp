@@ -57,96 +57,96 @@ bool is_alias(CXType _cur_type)
 namespace spiritsaway::meta::language
 {
 type_info::type_info(const std::string &_in_name, enum CXTypeKind _in_kind) : 
-	_kind(_in_kind),
-	_ref_type(nullptr),
-	_name(_in_name)
+	m_kind(_in_kind),
+	m_ref_type(nullptr),
+	m_name(_in_name)
 {
 }
-type_info::type_info(const std::string &_in_name, CXType _in_type, const type_info *_in_ref_type) : _type(_in_type),
-																									_kind(_in_type.kind),
-																									_ref_type(_in_ref_type),
-																									_name(_in_name)
+type_info::type_info(const std::string &_in_name, CXType _in_type, const type_info *_in_ref_type) : m_type(_in_type),
+																									m_kind(_in_type.kind),
+																									m_ref_type(_in_ref_type),
+																									m_name(_in_name)
 {
 }
 const std::string& type_info::name() const
 {
-	return _name;
+	return m_name;
 }
 const std::string& type_info::unqualified_name() const
 {
-	return _name;
+	return m_name;
 }
 const std::string& type_info::qualified_name() const
 {
-	return _name;
+	return m_name;
 }
 const std::string& type_info::pretty_name() const
 {
-	if (_pretty_name.empty())
+	if (m_pretty_name.empty())
 	{
-		if (_name.empty())
+		if (m_name.empty())
 		{
-			return _name;
+			return m_name;
 		}
 		else
 		{
-			_pretty_name = _name;
+			m_pretty_name = m_name;
 			for (const auto& one_name_pair : type_db::instance().annotated_typenames())
 			{
-				auto replace_begin = _pretty_name.find(one_name_pair.first);
+				auto replace_begin = m_pretty_name.find(one_name_pair.first);
 				while (replace_begin != std::string::npos)
 				{
-					_pretty_name.replace(replace_begin, one_name_pair.first.size(), one_name_pair.second);
-					replace_begin = _pretty_name.find(one_name_pair.first);
+					m_pretty_name.replace(replace_begin, one_name_pair.first.size(), one_name_pair.second);
+					replace_begin = m_pretty_name.find(one_name_pair.first);
 				}
 			}
 			auto& the_logger = utils::get_logger();
-			the_logger.info("type {} set pretty name {}", _name, _pretty_name);
-			return _pretty_name;
+			the_logger.info("type {} set pretty name {}", m_name, m_pretty_name);
+			return m_pretty_name;
 		}
 	}
 	else
 	{
-		return _pretty_name;
+		return m_pretty_name;
 	}
 }
 CXType type_info::type() const
 {
-	return _type;
+	return m_type;
 }
 enum CXTypeKind type_info::kind() const
 {
-	return _kind;
+	return m_kind;
 }
 const type_info *type_info::ref_type() const
 {
-	return _ref_type;
+	return m_ref_type;
 }
 void type_info::set_type(CXType _in_type)
 {
-	_type = _in_type;
-	_kind = _type.kind;
+	m_type = _in_type;
+	m_kind = m_type.kind;
 }
 const std::vector<const type_info *> &type_info::template_args() const
 {
-	return _template_args;
+	return m_template_args;
 }
 bool type_info::is_completed() const
 {
-	if (_kind == CXTypeKind::CXType_Unexposed)
+	if (m_kind == CXTypeKind::CXType_Unexposed)
 	{
-		auto decl_type = clang_getTypeDeclaration(_type);
+		auto decl_type = clang_getTypeDeclaration(m_type);
 		if (decl_type.kind == CXTypeKind::CXType_Invalid)
 		{
 			return false;
 		}
 		return true;
 	}
-	if (_template_args.empty())
+	if (m_template_args.empty())
 	{
 		return true;
 	}
-	for (auto i : _template_args)
+	for (auto i : m_template_args)
 	{
 		if (!i->is_completed())
 		{
@@ -157,11 +157,11 @@ bool type_info::is_completed() const
 }
 bool type_info::is_templated() const
 {
-	return !_template_args.empty();
+	return !m_template_args.empty();
 }
 bool type_info::is_template_arg() const
 {
-	return !utils::template_types::instance().get_type(_type).empty();
+	return !utils::template_types::instance().get_type(m_type).empty();
 }
 bool type_info::is_callable() const
 {
@@ -169,27 +169,27 @@ bool type_info::is_callable() const
 }
 bool type_info::is_const() const
 {
-	return clang_isConstQualifiedType(_type);
+	return clang_isConstQualifiedType(m_type);
 }
 bool type_info::is_reference() const
 {
-	return _kind == CXTypeKind::CXType_LValueReference || _kind == CXTypeKind::CXType_RValueReference;
+	return m_kind == CXTypeKind::CXType_LValueReference || m_kind == CXTypeKind::CXType_RValueReference;
 }
 bool type_info::is_alias() const
 {
-	return _kind == CXTypeKind::CXType_Typedef;
+	return m_kind == CXTypeKind::CXType_Typedef;
 }
 bool type_info::is_lvalue_refer() const
 {
-	return _kind == CXTypeKind::CXType_LValueReference;
+	return m_kind == CXTypeKind::CXType_LValueReference;
 }
 bool type_info::is_rvalue_refer() const
 {
-	return _kind == CXTypeKind::CXType_RValueReference;
+	return m_kind == CXTypeKind::CXType_RValueReference;
 }
 bool type_info::is_pointer() const
 {
-	return _kind == CXTypeKind::CXType_Pointer || _kind == CXTypeKind::CXType_BlockPointer;
+	return m_kind == CXTypeKind::CXType_Pointer || m_kind == CXTypeKind::CXType_BlockPointer;
 }
 const type_info *type_info::point_to() const
 {
@@ -197,7 +197,7 @@ const type_info *type_info::point_to() const
 	{
 		return nullptr;
 	}
-	return _ref_type;
+	return m_ref_type;
 }
 const type_info *type_info::refer_to() const
 {
@@ -205,7 +205,7 @@ const type_info *type_info::refer_to() const
 	{
 		return nullptr;
 	}
-	return _ref_type;
+	return m_ref_type;
 }
 const type_info *type_info::alias_to() const
 {
@@ -213,7 +213,7 @@ const type_info *type_info::alias_to() const
 	{
 		return nullptr;
 	}
-	return _ref_type;
+	return m_ref_type;
 }
 bool type_info::can_accept_arg_type(const type_info *arg_type) const
 {
@@ -254,18 +254,18 @@ bool type_info::can_accept_arg_type(const type_info *arg_type) const
 
 		return ref_type->can_accept_arg_type(arg_type);
 	}
-	if (_related_class)
+	if (m_related_class)
 	{
 		std::vector<const type_info *> _arg_vec;
 		_arg_vec.push_back(arg_type);
-		return _related_class->has_constructor_for(_arg_vec);
+		return m_related_class->has_constructor_for(_arg_vec);
 	}
 	return false;
 }
 bool type_info::set_related_class(class_node *_in_class)
 {
 	auto &the_logger = utils::get_logger();
-	if (_related_class)
+	if (m_related_class)
 	{
 		return false;
 	}
@@ -274,47 +274,47 @@ bool type_info::set_related_class(class_node *_in_class)
 		return false;
 	}
 	auto &qualified_class_name = _in_class->get_node()->get_qualified_name();
-	if (qualified_class_name != _name)
+	if (qualified_class_name != m_name)
 	{
-		the_logger.info("fail to set related class with class qualified name {} type name {}", qualified_class_name, _name);
+		the_logger.info("fail to set related class with class qualified name {} type name {}", qualified_class_name, m_name);
 		return false;
 	}
 	else
 	{
-		_related_class = _in_class;
+		m_related_class = _in_class;
 		return true;
 	}
 }
 const class_node *type_info::related_class() const
 {
-	return _related_class;
+	return m_related_class;
 }
 json type_info::to_json() const
 {
 	json result;
-	result["name"] = _name;
-	result["kind"] = static_cast<std::uint32_t>(_kind);
-	result["kind_name"] = utils::to_string(_kind);
+	result["name"] = m_name;
+	result["kind"] = static_cast<std::uint32_t>(m_kind);
+	result["kind_name"] = utils::to_string(m_kind);
 	result["is_const"] = is_const();
 	result["is_pointer"] = is_pointer();
 	result["is_alias"] = is_alias();
 	result["is_refer"] = is_reference();
-	if (_ref_type)
+	if (m_ref_type)
 	{
-		result["ref_type"] = _ref_type->name();
+		result["ref_type"] = m_ref_type->name();
 	}
-	if (!_template_args.empty())
+	if (!m_template_args.empty())
 	{
 		std::vector<std::string> args;
-		for (const auto i : _template_args)
+		for (const auto i : m_template_args)
 		{
 			args.push_back(i->name());
 		}
 		result["args"] = args;
 	}
-	if (_related_class)
+	if (m_related_class)
 	{
-		result["related_class"] = _related_class->name();
+		result["related_class"] = m_related_class->name();
 	}
 	return result;
 }
@@ -424,7 +424,7 @@ type_info *type_db::get_type_for_template(CXType _in_type)
 		arg_types.push_back(temp_arg_type);
 	}
 	auto final_result = new type_info(full_name, _in_type, base_type);
-	final_result->_template_args = arg_types;
+	final_result->m_template_args = arg_types;
 	_type_data[full_name] = final_result;
 	return final_result;
 }
@@ -474,7 +474,7 @@ type_info *type_db::get_type(CXType _in_type)
 	if (type_iter != _type_data.end())
 	{
 		auto result = type_iter->second;
-		if (result->_type.kind != CXTypeKind::CXType_Invalid)
+		if (result->m_type.kind != CXTypeKind::CXType_Invalid)
 		{
 			result->set_type(_in_type);
 		}
@@ -619,37 +619,37 @@ void type_db::build_class_under_namespace(const std::string& ns_name)
 	std::queue<language::node*> tasks;
 	auto& all_ns_nodes = language::name_space::get_synonymous_name_spaces(ns_name);
 	auto & the_logger = utils::get_logger();
-	auto cur_visitor = [&ns_name, &the_logger](const language::node* _node)
+	auto cur_visitor = [&ns_name, &the_logger](const language::node* m_node)
 	{
-		switch (_node->get_kind())
+		switch (m_node->get_kind())
 		{
 		case CXCursor_ClassTemplate:
 		case CXCursor_ClassDecl:
 		case CXCursor_StructDecl:
 		{
-			if (clang_isCursorDefinition(_node->get_cursor()))
+			if (clang_isCursorDefinition(m_node->get_cursor()))
 			{
-				auto temp_node = new language::class_node(_node);
+				auto temp_node = new language::class_node(m_node);
 				the_logger.info("new class {}", temp_node->to_json().dump(4));
 				break;
 			}
 			else
 			{
-				the_logger.info("pre decl for class {}", _node->get_name());
+				the_logger.info("pre decl for class {}", m_node->get_name());
 				break;
 			}
 
 		}
 		case CXCursor_EnumDecl:
 		{
-			auto temp_node = new language::enum_node(_node);
+			auto temp_node = new language::enum_node(m_node);
 			the_logger.info("new enum {}", temp_node->to_json().dump(4));
 			break;
 		}
 		case CXCursor_TypedefDecl:
 		case CXCursor_TypeAliasDecl:
 		{
-			language::type_db::instance().get_alias_typedef(_node->get_cursor());
+			language::type_db::instance().get_alias_typedef(m_node->get_cursor());
 			break;
 		}
 		default:
@@ -687,7 +687,7 @@ type_db::type_db()
 void type_db::add_alternate_name(CXType _in_type, const std::string& annotated_typename)
 {
 	auto cur_type_info = get_type(_in_type);
-	cur_type_info->_pretty_name = annotated_typename;
+	cur_type_info->m_pretty_name = annotated_typename;
 	for (int i = 0; i < m_annotated_typenames.size(); i++)
 	{
 		if (cur_type_info->name().size() > m_annotated_typenames[i].first.size())

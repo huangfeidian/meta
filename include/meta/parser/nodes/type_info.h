@@ -44,13 +44,13 @@ namespace spiritsaway::meta::language
 		void set_type(CXType _in_type);
 		type_info(const std::string& _in_name, CXType _in_type, const type_info* _in_ref_type);
 		type_info(const std::string& _in_name, enum CXTypeKind _in_kind);
-		std::vector<const type_info*> _template_args;
-		CXType _type;
-		const std::string _name;
-		mutable std::string _pretty_name;
-		enum CXTypeKind _kind;
-		const type_info* _ref_type;
-		class_node* _related_class = nullptr;
+		std::vector<const type_info*> m_template_args;
+		CXType m_type;
+		const std::string m_name;
+		mutable std::string m_pretty_name;
+		enum CXTypeKind m_kind;
+		const type_info* m_ref_type;
+		class_node* m_related_class = nullptr;
 		friend class type_db;
 
 	};

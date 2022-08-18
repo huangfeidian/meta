@@ -32,16 +32,16 @@ namespace spiritsaway::meta::language
 		template <typename T1, typename T2>
 		std::unordered_map<const variable_node*, std::vector<const callable_node*>> query_method_recursive_with_fields(const T1& func_pred, const T2& field_pred, bool exclude_self) const;
 	private:
-		std::vector<std::string> _template_args;
-		std::unordered_map<std::string, const variable_node*> _fields;
-		std::unordered_map<std::string, const variable_node*> _static_fields;
-		std::multimap<std::string, const callable_node*> _methods;
-		std::multimap<std::string, const callable_node*> _static_methods;
+		std::vector<std::string> m_template_args;
+		std::unordered_map<std::string, const variable_node*> m_fields;
+		std::unordered_map<std::string, const variable_node*> m_static_fields;
+		std::multimap<std::string, const callable_node*> m_methods;
+		std::multimap<std::string, const callable_node*> m_static_methods;
 		std::vector<const callable_node*> _constructors;
-		callable_node* _destructor = nullptr;
-		std::vector<const type_info*> _bases;
+		callable_node* m_destructor = nullptr;
+		std::vector<const type_info*> m_bases;
 		void parse();
-		type_info* _decl_type = nullptr;
+		type_info* m_decl_type = nullptr;
 
 
 	};
@@ -49,7 +49,7 @@ namespace spiritsaway::meta::language
 	std::vector<const variable_node*> class_node::query_fields_with_pred(const T& _pred) const
 	{
 		std::vector<const variable_node*> result;
-		for (const auto& i : _fields)
+		for (const auto& i : m_fields)
 		{
 			if (!i.second)
 			{
@@ -66,7 +66,7 @@ namespace spiritsaway::meta::language
 	std::vector<const variable_node*> class_node::query_fields_with_pred_recursive(const T& _pred) const
 	{
 		std::vector<const variable_node*> result = query_fields_with_pred(_pred);
-		for (auto one_base : _bases)
+		for (auto one_base : m_bases)
 		{
 			auto one_class = one_base->related_class();
 			if (one_class)
@@ -83,7 +83,7 @@ namespace spiritsaway::meta::language
 	std::vector<const callable_node*> class_node::query_method_with_pred(const T& _pred) const
 	{
 		std::vector<const callable_node*> result;
-		for (const auto& i : _methods)
+		for (const auto& i : m_methods)
 		{
 			if (!i.second)
 			{
@@ -100,7 +100,7 @@ namespace spiritsaway::meta::language
 	std::vector<const callable_node*> class_node::query_method_with_pred_recursive(const T& _pred) const
 	{
 		std::vector<const callable_node*> result = query_method_with_pred(_pred);
-		for (auto one_base : _bases)
+		for (auto one_base : m_bases)
 		{
 			auto one_class = one_base->related_class();
 			if (one_class)
@@ -123,7 +123,7 @@ namespace spiritsaway::meta::language
 			final_result[nullptr] = root_result;
 		}
 		
-		for (const auto one_field : _fields)
+		for (const auto one_field : m_fields)
 		{
 			auto cur_variable = one_field.second;
 			if (!field_pred(*cur_variable))

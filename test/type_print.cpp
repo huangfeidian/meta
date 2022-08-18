@@ -171,18 +171,18 @@ void print_template_type(CXType type_a)
 	}
 
 }
-void print_template_func_decl_info(const language::node* _node)
+void print_template_func_decl_info(const language::node* m_node)
 {
-	if (!_node)
+	if (!m_node)
 	{
 		return;
 	}
-	if (_node->get_kind() != CXCursor_FunctionDecl && _node->get_kind() != CXCursor_FunctionTemplate && _node->get_kind() != CXCursor_CXXMethod)
+	if (m_node->get_kind() != CXCursor_FunctionDecl && m_node->get_kind() != CXCursor_FunctionTemplate && m_node->get_kind() != CXCursor_CXXMethod)
 	{
 		return;
 	}
 	auto & the_logger = utils::get_logger();
-	auto cur_cursor = _node->get_cursor();
+	auto cur_cursor = m_node->get_cursor();
 	auto ref_cursor = clang_getCursorDefinition(cur_cursor);
 	//if (!clang_isCursorDefinition(cur_cursor))
 	//{
@@ -190,8 +190,8 @@ void print_template_func_decl_info(const language::node* _node)
 	//	return;
 	//}
 	
-	const auto& all_children = _node->get_children_with_kind(CXCursor_ParmDecl);
-	the_logger.info("func {} has {} children for parm", utils::to_string(clang_getCursorSpelling(_node->get_cursor())), all_children.size());
+	const auto& all_children = m_node->get_children_with_kind(CXCursor_ParmDecl);
+	the_logger.info("func {} has {} children for parm", utils::to_string(clang_getCursorSpelling(m_node->get_cursor())), all_children.size());
 	for (const auto one_node : all_children)
 	{
 		
@@ -202,18 +202,18 @@ void print_template_func_decl_info(const language::node* _node)
 	}
 
 }
-void print_class_decl_info(const language::node* _node)
+void print_class_decl_info(const language::node* m_node)
 {
-	if (!_node)
+	if (!m_node)
 	{
 		return;
 	}
-	if (_node->get_kind() != CXCursor_ClassTemplate && _node->get_kind() != CXCursor_ClassDecl && _node->get_kind() != CXCursor_StructDecl)
+	if (m_node->get_kind() != CXCursor_ClassTemplate && m_node->get_kind() != CXCursor_ClassDecl && m_node->get_kind() != CXCursor_StructDecl)
 	{
 		return;
 	}
 	auto & the_logger = utils::get_logger();
-	auto cur_cursor = _node->get_cursor();
+	auto cur_cursor = m_node->get_cursor();
 	recursive_print_anything_under_cursor(cur_cursor);
 	auto cur_type = clang_getCursorType(cur_cursor);
 	recursive_dump_type_info(cur_type);
@@ -245,39 +245,39 @@ void recursive_build_class_node_under_namespace(const std::string& ns_name)
 	std::queue<language::node*> tasks;
 	auto& all_ns_nodes = language::name_space::get_synonymous_name_spaces(ns_name);
 	auto & the_logger = utils::get_logger();
-	auto cur_visitor = [&ns_name, &the_logger](const language::node* _node)
+	auto cur_visitor = [&ns_name, &the_logger](const language::node* m_node)
 	{
-		switch (_node->get_kind())
+		switch (m_node->get_kind())
 		{
 		case CXCursor_ClassTemplate:
 		case CXCursor_ClassDecl:
 		case CXCursor_StructDecl:
 		{
-			auto cur_comment = clang_Cursor_getRawCommentText(_node->get_cursor());
+			auto cur_comment = clang_Cursor_getRawCommentText(m_node->get_cursor());
 			
-			if (clang_isCursorDefinition(_node->get_cursor()))
+			if (clang_isCursorDefinition(m_node->get_cursor()))
 			{
-				auto temp_node = new language::class_node(_node);
+				auto temp_node = new language::class_node(m_node);
 				the_logger.info("new class {}", temp_node->to_json().dump(4));
 				break;
 			}
 			else
 			{
-				the_logger.info("pre decl for class {}", _node->get_name());
+				the_logger.info("pre decl for class {}", m_node->get_name());
 				break;
 			}
 			
 		}
 		case CXCursor_EnumDecl:
 		{
-			auto temp_node = new language::enum_node(_node);
+			auto temp_node = new language::enum_node(m_node);
 			the_logger.info("new enum {}", temp_node->to_json().dump(4));
 			break;
 		}
 		case CXCursor_TypedefDecl:
 		case CXCursor_TypeAliasDecl:
 		{
-			language::type_db::instance().get_alias_typedef(_node->get_cursor());
+			language::type_db::instance().get_alias_typedef(m_node->get_cursor());
 			break;
 		}
 		default:
@@ -293,13 +293,13 @@ void recursive_build_class_node_under_namespace(const std::string& ns_name)
 	}
 
 }
-void print_func_decl_info(const language::node* _node)
+void print_func_decl_info(const language::node* m_node)
 {
-	if (!_node)
+	if (!m_node)
 	{
 		return;
 	}
-	auto _cur_cursor = _node->get_cursor();
+	auto _cur_cursor = m_node->get_cursor();
 
 	int num_args = clang_Cursor_getNumArguments(_cur_cursor);
 	auto & the_logger = utils::get_logger();
