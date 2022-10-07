@@ -499,4 +499,27 @@ namespace spiritsaway::meta::utils
 		}
 		return result;
 	}
+	std::filesystem::path create_dir_for_sub_namespace(const std::string& parent_ns, const std::string& cur_ns, const std::string& parent_dir)
+	{
+		if (cur_ns.rfind(parent_ns, 0) != 0)
+		{
+			return {};
+		}
+		if (cur_ns == parent_ns)
+		{
+			return parent_dir;
+		}
+		auto remain_ns = cur_ns.substr(parent_ns.size() + 2);
+		auto split_iter = remain_ns.find("::");
+		auto cur_path = std::filesystem::path(parent_dir);
+		while (split_iter != std::string::npos)
+		{
+			auto cur_part = remain_ns.substr(0, split_iter);
+			remain_ns = remain_ns.substr(split_iter + 2);
+			cur_path = cur_path / cur_part;
+		}
+		cur_path = cur_path / remain_ns;
+		std::filesystem::create_directories(cur_path);
+		return cur_path;
+	}
 }

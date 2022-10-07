@@ -3,10 +3,12 @@
 #include <string>
 #include <clang-c/Index.h>
 #include <optional>
+#include <filesystem>
 
 namespace spiritsaway::meta::utils
 {
 	std::string to_string(const CXCursor& _in_cursor);
+	std::filesystem::path create_dir_for_sub_namespace(const std::string& parent_ns, const std::string& cur_ns, const std::string& parent_dir);
 	// remove blank after ,
 	std::string remove_blank_in_type(const std::string& name);
 	std::string to_string(const CXString &str);
