@@ -33,7 +33,8 @@ namespace spiritsaway::meta::language
 		std::unordered_map<const variable_node*, std::vector<const callable_node*>> query_method_recursive_with_fields(const T1& func_pred, const T2& field_pred, bool exclude_self) const;
 	private:
 		std::vector<std::string> m_template_args;
-		std::unordered_map<std::string, const variable_node*> m_fields;
+		std::vector<const variable_node*> m_fields;
+		std::unordered_map<std::string, const variable_node*> m_fields_map;
 		std::unordered_map<std::string, const variable_node*> m_static_fields;
 		std::multimap<std::string, const callable_node*> m_methods;
 		std::multimap<std::string, const callable_node*> m_static_methods;
@@ -51,13 +52,9 @@ namespace spiritsaway::meta::language
 		std::vector<const variable_node*> result;
 		for (const auto& i : m_fields)
 		{
-			if (!i.second)
+			if (_pred(*i))
 			{
-				continue;
-			}
-			if (_pred(*i.second))
-			{
-				result.push_back(i.second);
+				result.push_back(i);
 			}
 		}
 		return result;
@@ -123,9 +120,8 @@ namespace spiritsaway::meta::language
 			final_result[nullptr] = root_result;
 		}
 		
-		for (const auto one_field : m_fields)
+		for (const auto cur_variable : m_fields)
 		{
-			auto cur_variable = one_field.second;
 			if (!field_pred(*cur_variable))
 			{
 				continue;

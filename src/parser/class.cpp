@@ -55,13 +55,14 @@ namespace spiritsaway::meta::language
 				
 				auto cur_var_node = new variable_node(node_db::get_instance().create_node(i));
 				auto cur_var_name = cur_var_node->name();
-				auto pre_iter = m_fields.find(cur_var_name);
-				if (pre_iter != m_fields.end())
+				auto pre_iter = m_fields_map.find(cur_var_name);
+				if (pre_iter != m_fields_map.end())
 				{
 					the_logger.warn("duplicate variable {} in class {}", cur_var_name, get_node()->get_name());
 				}
 				the_logger.debug("class {} has variable {} with type {}", get_node()->get_name(), cur_var_name, cur_var_node->decl_type()->name());
-				m_fields[cur_var_name] = cur_var_node;
+				m_fields_map[cur_var_name] = cur_var_node;
+				m_fields.push_back(cur_var_node);
 				break;
 			}
 				
@@ -235,8 +236,8 @@ namespace spiritsaway::meta::language
 	}
 	const variable_node* class_node::has_field(const std::string& _field_name) const
 	{
-		auto cur_iter = m_fields.find(_field_name);
-		if (cur_iter == m_fields.end())
+		auto cur_iter = m_fields_map.find(_field_name);
+		if (cur_iter == m_fields_map.end())
 		{
 			return nullptr;
 		}
@@ -302,7 +303,7 @@ namespace spiritsaway::meta::language
 		json fields_json;
 		for (const auto i : m_fields)
 		{
-			fields_json[i.first] = *i.second;
+			fields_json.push_back(*i);
 
 		}
 		result["fields"] = fields_json;
