@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include "type_info.h"
 #include "forward.h"
+#include "variable.h"
 
 
 namespace spiritsaway::meta::language
