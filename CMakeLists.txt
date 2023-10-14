@@ -37,6 +37,10 @@ include_directories(${CMAKE_SOURCE_DIR}/third_party/Mustache)
 # add json support
 find_package(nlohmann_json CONFIG REQUIRED)
 
+# add fmt support
+find_package(fmt CONFIG REQUIRED)
+INCLUDE_DIRECTORIES(${fmt_include_dirs})
+
 # add log support
 find_package(spdlog CONFIG REQUIRED)
 INCLUDE_DIRECTORIES(${spdlog_include_dirs})
@@ -58,7 +62,7 @@ FILE(GLOB_RECURSE META_SRC_LISTS ${META_SOURCE_DIR}/*.cpp)
 
 add_library(${CMAKE_PROJECT_NAME} ${META_SRC_LISTS})
 target_link_libraries(${CMAKE_PROJECT_NAME} PUBLIC ${LIBCLANG_LIBRARY})
-target_link_libraries(${CMAKE_PROJECT_NAME} PUBLIC nlohmann_json::nlohmann_json)
+target_link_libraries(${CMAKE_PROJECT_NAME} PUBLIC nlohmann_json::nlohmann_json fmt)
 target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC ${LLVM_INCLUDE_DIRS} ${CLANG_INCLUDE_DIRS})
 
 foreach(p LIB BIN INCLUDE)
