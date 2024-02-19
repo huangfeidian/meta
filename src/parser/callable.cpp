@@ -73,6 +73,31 @@ namespace spiritsaway::meta::language
 		}
 		return true;
 	}
+
+	std::string callable_node::func_arg_desc() const
+	{
+		std::string result = "(";
+		for (std::uint32_t i = 0; i < _args.size(); i++)
+		{
+			auto cur_arg_name = _args[i]->name();
+			result += _args[i]->decl_type()->pretty_name();
+			result += " ";
+			auto temp_iter = cur_arg_name.rfind("::");
+			if (temp_iter != std::string::npos)
+			{
+				cur_arg_name = cur_arg_name.substr(temp_iter + 2);
+			}
+			result += cur_arg_name;
+			if (i + 1 != _args.size())
+			{
+				result += ", ";
+			}
+
+		}
+		result += ")";
+		return result;
+	}
+
 	void callable_node::parse()
 	{
 		auto& the_logger = utils::get_logger();
@@ -105,6 +130,7 @@ namespace spiritsaway::meta::language
 		result["is_class_method"] = is_class_method();
 		result["is_static_method"] = is_static_method();
 		result["is_public_method"] = is_public_method();
+		result["args_description"] = func_arg_desc();
 		if (!comment().empty())
 		{
 			result["comment"] = comment();
@@ -123,6 +149,7 @@ namespace spiritsaway::meta::language
 		{
 			result["annotation"] = m_annotation;
 		}
+		
 		// result["location"] = get_node()->get_position();
 		return result;
 

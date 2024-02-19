@@ -17,6 +17,7 @@ namespace spiritsaway::meta::language
 		bool can_accept(const std::vector<std::string> _in_arg_names) const;
 		std::string func_name() const;
 		json to_json() const;
+		std::string func_arg_desc() const;
 	private:
 		type_info* _result_type = nullptr;
 		std::vector<const variable_node*> _args;
