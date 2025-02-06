@@ -3,7 +3,7 @@ PROJECT(meta)
 #dependency
 
 
-set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
+set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -32,7 +32,7 @@ endif(MSVC)
 
 
 
-include_directories(${CMAKE_SOURCE_DIR}/third_party/Mustache)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/third_party/Mustache)
 
 # add json support
 find_package(nlohmann_json CONFIG REQUIRED)
@@ -50,10 +50,10 @@ INCLUDE_DIRECTORIES(${spdlog_include_dirs})
 
 # statically link with  LibClang and json
 
-set(META_SOURCE_DIR ${CMAKE_SOURCE_DIR}/src/parser)
-set(META_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/include)
-set(META_TEST_DIR ${CMAKE_SOURCE_DIR}/test)
-set(META_EXAMPLE_DIR ${CMAKE_SOURCE_DIR}/example)
+set(META_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/parser)
+set(META_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
+set(META_TEST_DIR ${CMAKE_CURRENT_SOURCE_DIR}/test)
+set(META_EXAMPLE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/example)
 
 include_directories(${META_INCLUDE_DIR})
 include_directories(${META_ANY_INCLUDE_DIR})
@@ -90,7 +90,7 @@ install(TARGETS ${PROJECT_NAME} EXPORT ${PROJECT_NAME}Targets
     RUNTIME DESTINATION bin
   )
 
-install(DIRECTORY ${CMAKE_SOURCE_DIR}/include/ DESTINATION include/)
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/ DESTINATION include/)
 
 install(EXPORT ${PROJECT_NAME}Targets
         DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME})
