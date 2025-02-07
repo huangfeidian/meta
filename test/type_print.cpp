@@ -55,7 +55,7 @@ void recursive_dump_type_info(CXType _cur_type)
 	}
 	auto type_decl_self = clang_getTypeDeclaration(_cur_type);
 	auto type_decl_ref = clang_getTypeDeclaration(is_pointer);
-	the_logger.info("type {} kind {} is_const {} is_reference {} is_volatile {} is_pointer to {} is_const_ref {} self decl is {} ref decl is {}", utils::to_string(_cur_type), _cur_type.kind, is_const, is_refer, is_volatile, utils::to_string(is_pointer), is_const_ref, utils::full_name(type_decl_self), utils::full_name(type_decl_ref));
+	the_logger.info("type {} kind {} is_const {} is_reference {} is_volatile {} is_pointer to {} is_const_ref {} self decl is {} ref decl is {}", utils::to_string(_cur_type), int(_cur_type.kind), is_const, is_refer, is_volatile, utils::to_string(is_pointer), is_const_ref, utils::full_name(type_decl_self), utils::full_name(type_decl_ref));
 	auto tee_template_arg_num = clang_Type_getNumTemplateArguments(is_pointer);
 	if (tee_template_arg_num != -1)
 	{

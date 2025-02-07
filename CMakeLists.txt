@@ -62,8 +62,16 @@ FILE(GLOB_RECURSE META_SRC_LISTS ${META_SOURCE_DIR}/*.cpp)
 
 add_library(${PROJECT_NAME} ${META_SRC_LISTS})
 target_link_libraries(${PROJECT_NAME} PUBLIC ${LIBCLANG_LIBRARY})
-target_link_libraries(${PROJECT_NAME} PUBLIC nlohmann_json::nlohmann_json fmt)
+target_link_libraries(${PROJECT_NAME} PUBLIC nlohmann_json::nlohmann_json fmt::fmt spdlog::spdlog)
 target_include_directories(${PROJECT_NAME} PUBLIC ${LLVM_INCLUDE_DIRS} ${CLANG_INCLUDE_DIRS})
+
+if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
+  set(IS_TOPLEVEL_PROJECT TRUE)
+else()
+  set(IS_TOPLEVEL_PROJECT FALSE)
+endif()
+
+if(IS_TOPLEVEL_PROJECT)
 
 foreach(p LIB BIN INCLUDE)
 	set(var CMAKE_INSTALL_${p}DIR)
@@ -98,7 +106,7 @@ install(EXPORT ${PROJECT_NAME}Targets
 add_subdirectory(test)
 
 add_subdirectory(example)
-
+endif(IS_TOPLEVEL_PROJECT)
 
 
 
