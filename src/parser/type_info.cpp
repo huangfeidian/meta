@@ -136,11 +136,7 @@ bool type_info::is_completed() const
 	if (m_kind == CXTypeKind::CXType_Unexposed)
 	{
 		auto decl_type = clang_getTypeDeclaration(m_type);
-		if (decl_type.kind == CXTypeKind::CXType_Invalid)
-		{
-			return false;
-		}
-		return true;
+		return int(decl_type.kind) != 0;
 	}
 	if (m_template_args.empty())
 	{
