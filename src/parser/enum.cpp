@@ -21,8 +21,8 @@ namespace spiritsaway::meta::language
 			{
 				auto cur_key_name = utils::to_string(i);
 				auto cur_value = clang_getEnumConstantDeclUnsignedValue(i);
-				_keys.push_back(std::move(cur_key_name));
-				_values.push_back(cur_value);
+				m_keys.push_back(std::move(cur_key_name));
+				m_values.push_back(cur_value);
 				break;
 			}
 			default:
@@ -41,64 +41,64 @@ namespace spiritsaway::meta::language
 		switch (cur_int_kind)
 		{
 		case CXType_SChar:
-			_int_width = 8;
+			m_int_width = 8;
 			break;
 		case CXType_UChar:
-			_int_width = 8;
+			m_int_width = 8;
 			break;
 		case CXType_Short:
-			_int_width = 16;
+			m_int_width = 16;
 			break;
 		case CXType_UShort:
-			_int_width = 16;
+			m_int_width = 16;
 			break;
 		case CXType_Int:
-			_int_width = 32;
+			m_int_width = 32;
 			break;
 		case CXType_UInt:
-			_int_width = 32;
+			m_int_width = 32;
 			break;
 		case CXType_Long:
-			_int_width = 32;
+			m_int_width = 32;
 			break;
 		case CXType_ULong:
-			_int_width = 32;
+			m_int_width = 32;
 			break;
 		case CXType_LongLong:
-			_int_width = 64;
+			m_int_width = 64;
 			break;
 		case CXType_ULongLong:
-			_int_width = 64;
+			m_int_width = 64;
 			break;
 		case CXType_Elaborated:
 			
 		default:
-			_int_width = 32;
+			m_int_width = 32;
 
 		}
 	}
 	const std::vector<std::string>& enum_node::keys() const
 	{
-		return _keys;
+		return m_keys;
 	}
 	const std::vector<std::uint64_t>& enum_node::values() const
 	{
-		return _values;
+		return m_values;
 	}
 	std::uint64_t enum_node::value_for(const std::string& _in_key) const
 	{
-		for (std::size_t i = 0; i < _keys.size(); i++)
+		for (std::size_t i = 0; i < m_keys.size(); i++)
 		{
-			if (_keys[i] == _in_key)
+			if (m_keys[i] == _in_key)
 			{
-				return _values[i];
+				return m_values[i];
 			}
 		}
 		return 0;
 	}
 	std::uint8_t enum_node::value_int_width() const
 	{
-		return _int_width;
+		return m_int_width;
 	}
 	json enum_node::to_json()const
 	{
@@ -111,12 +111,12 @@ namespace spiritsaway::meta::language
 			result["comment"] = comment();
 		}
 		json values;
-		for (std::size_t i = 0; i < _keys.size(); i++)
+		for (std::size_t i = 0; i < m_keys.size(); i++)
 		{
-			values[_keys[i]] = _values[i];
+			values[m_keys[i]] = m_values[i];
 		}
 		result["values"] = values;
-		result["value_int_width"] = _int_width;
+		result["value_int_width"] = m_int_width;
 		return result;
 	}
 

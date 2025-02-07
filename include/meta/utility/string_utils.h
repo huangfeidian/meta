@@ -224,34 +224,13 @@ namespace spiritsaway::meta::utils
 		}
 		static bool starts_with(std::string_view content, std::string_view pattern)
 		{
-			if(pattern.size() > content.size())
-			{
-				return false;
-			}
-			for(std::size_t i = 0; i < pattern.size(); i++)
-			{
-				if(content[i] != pattern[i])
-				{
-					return false;
-				}
-			}
-			return true;
+			return content.rfind(pattern, 0) == 0;
 		}
 		static bool ends_with(std::string_view content, std::string_view pattern)
 		{
-			auto diff = content.size() - pattern.size();
-			if(diff < 0)
-			{
-				return false;
-			}
-			for(std::size_t i = 0; i < pattern.size(); i++)
-			{
-				if(content[i + diff] != pattern[i])
-				{
-					return false;
-				}
-			}
-			return true;
+			if(pattern.size() > content.size()) return false;
+			return std::equal(content.rbegin(), pattern.rend(), pattern.rbegin());
+		
 		}
 		static std::string join(const std::vector<std::string_view>& tokens, std::string_view glue)
 		{
