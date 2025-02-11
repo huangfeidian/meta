@@ -37,8 +37,9 @@ class test_class
     Meta(attr(type=var)) const std::string b;
     Meta(attr(type=var)) std::string& c;
     Meta(attr(type=var)) const std::string& d;
-
+#ifndef __meta_parse__
 #include "test_class.generated_h"
+#endif
 }Meta(attr);
 class test_class_B: public test_class
 {
@@ -64,6 +65,8 @@ class test_class_B: public test_class
     Meta(attr(type=var)) std::string e;
     Meta(attr(type=var)) const std::string f;
     Meta(attr(type=var)) const int g;
+#ifndef __meta_parse__
 #include "test_class_B.generated_h"
+#endif
 }Meta(attr);
 }

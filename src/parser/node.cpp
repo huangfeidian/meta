@@ -20,13 +20,22 @@ namespace spiritsaway::meta::language
 		, qualified_name(utils::full_name(in_cursor))
 	{
 		comment = utils::to_string(clang_Cursor_getRawCommentText(in_cursor));
-		if (in_cursor.kind == CXCursorKind::CXCursor_TranslationUnit)
+		auto cursor_pos = get_position();
+		utils::get_logger().debug("new node name {0} qualified name {1} kind {2}::{6} at file {3} row {4} col {5}",
+			get_brief_name(), get_qualified_name(), int(m_cursor.kind), std::get<0>(cursor_pos), std::get<1>(cursor_pos), std::get<2>(cursor_pos), utils::to_string(m_cursor.kind));
+		if (in_cursor.kind >= CXCursorKind::CXCursor_TranslationUnit || in_cursor.kind == CXCursorKind::CXCursor_LinkageSpec)
 		{
 			m_parent = nullptr;
 		}
 		else
 		{
-			m_parent = node_db::get_instance().create_node(clang_getCursorSemanticParent(in_cursor));
+			auto parent_cursor = clang_getCursorSemanticParent(in_cursor);
+			if (parent_cursor.kind == CXCursorKind::CXCursor_LinkageSpec ||parent_cursor.kind == CXCursorKind::CXCursor_UnexposedDecl ||parent_cursor.kind == CXCursorKind::CXCursor_FirstInvalid)
+			{
+				m_parent = nullptr;
+				return;
+			}
+			m_parent = node_db::get_instance().create_node(parent_cursor);
 			m_parent->m_children.push_back(this);
 		}
 	}
@@ -95,9 +104,7 @@ namespace spiritsaway::meta::language
 		}
 		auto temp_node = new node(m_cursor);
 		_nodes[m_cursor] = temp_node;
-		auto cursor_pos = temp_node->get_position();
-		utils::get_logger().debug("new node name {0} qualified name {1} kind {2}::{6} at file {3} row {4} col {5}", 
-			temp_node->get_name(), temp_node->get_qualified_name(), int(m_cursor.kind), std::get<0>(cursor_pos), std::get<1>(cursor_pos), std::get<2>(cursor_pos), utils::to_string(m_cursor.kind));
+
 		if (temp_node->get_kind() == CXCursor_Namespace)
 		{
 			name_space::get_name_space_for_node(temp_node);

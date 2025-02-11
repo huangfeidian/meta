@@ -336,15 +336,16 @@ namespace spiritsaway::meta::utils
 			return cur_iter->second;
 		}
 		std::string result;
-		if (in_cursor.kind == CXCursorKind::CXCursor_TranslationUnit)
+
+		if (in_cursor.kind >= int(CXCursorKind::CXCursor_TranslationUnit) || in_cursor.kind == CXCursorKind::CXCursor_LinkageSpec)
 		{
 			qualified_cache[in_cursor] = meta::utils::to_string(in_cursor);
 		}
 		else
 		{
 			auto parent = clang_getCursorSemanticParent(in_cursor);
-			
-			if (clang_isInvalid(parent.kind))
+
+			if (clang_isInvalid(parent.kind) || parent.kind >= int(CXCursorKind::CXCursor_TranslationUnit) || parent.kind == CXCursorKind::CXCursor_LinkageSpec)
 			{
 				qualified_cache[in_cursor] = meta::utils::to_string(in_cursor);
 				
@@ -358,15 +359,7 @@ namespace spiritsaway::meta::utils
 				}
 				else
 				{
-					if (parent.kind == CXCursorKind::CXCursor_TranslationUnit)
-					{
-						qualified_cache[in_cursor] = meta::utils::to_string(in_cursor);
-					}
-					else
-					{
-						qualified_cache[in_cursor] = full_name(parent) + "::" + meta::utils::to_string(in_cursor);
-					}
-
+					qualified_cache[in_cursor] = full_name(parent) + "::" + meta::utils::to_string(in_cursor);
 				}
 			}
 			
